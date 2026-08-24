@@ -1,8 +1,8 @@
 {
-  "comment": "固定竖屏微调；真机用 100% 视口",
-  "cabin_max_width_px": 420,
+  "comment": "网页预览加宽；真机仍用 100% 视口",
+  "cabin_max_width_px": 560,
   "left_column_percent": 34,
-  "zone2_featured_max_px": 150,
+  "zone2_featured_max_px": 140,
   "zone_empty_percent": 4,
   "end_hold_seconds": 18,
   "featured_ids": [
