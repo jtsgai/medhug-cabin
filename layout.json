@@ -1,0 +1,23 @@
+{
+  "comment": "固定竖屏微调；真机用 100% 视口",
+  "cabin_max_width_px": 420,
+  "left_column_percent": 34,
+  "zone2_featured_max_px": 150,
+  "zone_empty_percent": 4,
+  "end_hold_seconds": 18,
+  "featured_ids": [
+    "01",
+    "09",
+    "11",
+    "17"
+  ],
+  "default_lang": "zh",
+  "show_featured": true,
+  "show_shortlist": true,
+  "attract_enabled": true,
+  "attract_fullscreen": false,
+  "attract_auto_enter": true,
+  "attract_dwell_seconds": 5,
+  "attract_idle_seconds": 45,
+  "exit_carousel_seconds": 4
+}
