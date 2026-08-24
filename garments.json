@@ -1,0 +1,82 @@
+[
+  {
+    "id": "01",
+    "name": "White Oversized Shirt",
+    "name_cn": "白色廓形衬衫",
+    "product": "product_white_oversized_shirt.png",
+    "model": "model_full_white_oversized_shirt.png",
+    "colors": ["#F8F5F0", "#1C1C1C", "#D8D0C4"],
+    "color_active": "#F8F5F0",
+    "prompt": "Substitute the upper body garment with a white oversized tailored shirt in premium cotton, relaxed architectural silhouette, classic collar, button front, single chest pocket"
+  },
+  {
+    "id": "02",
+    "name": "Charcoal Shirt",
+    "name_cn": "炭黑精纺衬衫",
+    "product": "product_charcoal_shirt.png",
+    "model": "model_full_charcoal_shirt.png",
+    "colors": ["#1C1C1C", "#8A8580", "#F8F5F0"],
+    "color_active": "#1C1C1C",
+    "prompt": "Substitute the upper body garment with a charcoal black tailored shirt in fine cotton, sharp but relaxed silhouette, clean minimal details, button front"
+  },
+  {
+    "id": "03",
+    "name": "Oat Knit",
+    "name_cn": "燕麦色薄针织",
+    "product": "product_oat_knit.png",
+    "model": "model_full_oat_knit.png",
+    "colors": ["#D8D0C4", "#8A8580", "#F8F5F0"],
+    "color_active": "#D8D0C4",
+    "prompt": "Substitute the upper body garment with an oat beige fine-gauge knit sweater, soft premium texture, relaxed minimal silhouette"
+  },
+  {
+    "id": "04",
+    "name": "Warm Gray Turtleneck",
+    "name_cn": "暖灰高领针织",
+    "product": "product_warm_gray_turtleneck.png",
+    "model": "model_full_warm_gray_turtleneck.png",
+    "colors": ["#8A8580", "#1C1C1C", "#D8D0C4"],
+    "color_active": "#8A8580",
+    "prompt": "Substitute the upper body garment with a warm gray fine-gauge turtleneck sweater, soft premium merino texture, clean minimal silhouette"
+  },
+  {
+    "id": "05",
+    "name": "Ivory Sheer Blouse",
+    "name_cn": "象牙白轻薄罩衫",
+    "product": "product_ivory_sheer_blouse.png",
+    "model": "model_full_ivory_sheer_blouse.png",
+    "colors": ["#F8F5F0", "#D8D0C4", "#B8A48A"],
+    "color_active": "#F8F5F0",
+    "prompt": "Substitute the upper body garment with an ivory lightweight sheer blouse, soft premium drape, relaxed architectural silhouette"
+  },
+  {
+    "id": "06",
+    "name": "Architectural Cropped Top",
+    "name_cn": "结构感短上衣",
+    "product": "product_architectural_cropped_top.png",
+    "model": "model_full_architectural_cropped_top.png",
+    "colors": ["#1C1C1C", "#8A8580", "#F8F5F0"],
+    "color_active": "#1C1C1C",
+    "prompt": "Substitute the upper body garment with an architectural cropped top, structured minimal design, clean sharp lines, premium matte fabric"
+  },
+  {
+    "id": "07",
+    "name": "Refined Camisole",
+    "name_cn": "精致吊带背心",
+    "product": "product_refined_camisole.png",
+    "model": "model_full_refined_camisole.png",
+    "colors": ["#F8F5F0", "#1C1C1C", "#B8A48A"],
+    "color_active": "#F8F5F0",
+    "prompt": "Substitute the upper body garment with a refined silk camisole top, clean minimal design, subtle elegant straps, soft drape"
+  },
+  {
+    "id": "08",
+    "name": "Dark Silk Top",
+    "name_cn": "深色丝质感上衣",
+    "product": "product_dark_silk_top.png",
+    "model": "model_full_dark_silk_top.png",
+    "colors": ["#1C1C1C", "#8A8580", "#B8A48A"],
+    "color_active": "#1C1C1C",
+    "prompt": "Substitute the upper body garment with a dark charcoal silk-feel blouse, soft fluid fabric, elegant minimal silhouette, V-neck"
+  }
+]
