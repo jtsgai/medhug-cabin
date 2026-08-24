@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JT 管理后台 v2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #070707;
+      color: #f2f0ec;
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+    }
+    aside {
+      border-right: 1px solid #2a2a2a;
+      background: #101010;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .head {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .ver {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: #1a1510;
+      background: #B8A48A;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    h1 { font-size: 16px; letter-spacing: 0.06em; color: #B8A48A; }
+    .sub { font-size: 11px; color: #888; margin-top: 6px; line-height: 1.45; }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .tab {
+      font-size: 11px;
+      padding: 8px 4px;
+      border-radius: 8px;
+      border: 1px solid #2a2a2a;
+      background: #161616;
+      color: #9a9690;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-color: #B8A48A;
+      color: #B8A48A;
+      background: #1a1814;
+    }
+
+    .panels { flex: 1; overflow-y: auto; padding: 12px 14px 20px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .group { margin-bottom: 16px; }
+    .group h3 {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #B8A48A;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    label.field {
+      display: block;
+      font-size: 11px;
+      color: #9a9690;
+      margin: 10px 0 4px;
+    }
+    .ctrl {
+      display: grid;
+      grid-template-columns: 1fr 64px;
+      gap: 8px;
+      align-items: center;
+    }
+    input[type="range"] { width: 100%; accent-color: #B8A48A; }
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #1a1a1a;
+      color: #eee;
+      font-size: 12px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 12px;
+      color: #ddd;
+    }
+    .row input[type="checkbox"] { width: auto; accent-color: #B8A48A; }
+
+    .foot {
+      border-top: 1px solid #2a2a2a;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    button {
+      padding: 10px 12px;
+      border-radius: 9px;
+      border: 1px solid #333;
+      background: #1c1c1c;
+      color: #eee;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    button.primary {
+      background: #B8A48A;
+      border-color: #B8A48A;
+      color: #1a1510;
+      font-weight: 700;
+    }
+    .msg { font-size: 11px; color: #8dcb9a; min-height: 16px; }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: #050505;
+    }
+    .preview-bar {
+      padding: 10px 14px;
+      border-bottom: 1px solid #2a2a2a;
+      font-size: 12px;
+      color: #9a9690;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+    .preview-bar strong { color: #B8A48A; }
+    .workspace {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .frame-wrap {
+      width: min(420px, 92vw);
+      height: min(86vh, calc(min(420px, 92vw) * 16 / 9));
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #3a3a3a;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+      background: #000;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .hint {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="head">
+      <div class="ver">ADMIN v3 · UI 2026-08-24</div>
+      <h1>JT 管理后台</h1>
+      <p class="sub">若左上角没有金色「ADMIN v3」标签，说明本机还是旧文件，请重新覆盖 admin.html。</p>
+    </div>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="layout">版面</button>
+      <button type="button" class="tab" data-tab="modules">模块</button>
+      <button type="button" class="tab" data-tab="products">商品</button>
+      <button type="button" class="tab" data-tab="session">会话</button>
+    </div>
+
+    <div class="panels">
+      <div class="panel active" id="panel-layout">
+        <div class="group">
+          <h3>会真正改顾客页的参数</h3>
+          <label class="field">舱最大宽度 (px)</label>
+          <div class="ctrl">
+            <input type="range" id="cabin_max_width_px" min="400" max="440" value="420" />
+            <input type="number" id="cabin_max_width_px_n" min="400" max="440" value="420" />
+          </div>
+          <label class="field">左栏宽度 (%)</label>
+          <div class="ctrl">
+            <input type="range" id="left_column_percent" min="32" max="38" value="34" />
+            <input type="number" id="left_column_percent_n" min="32" max="38" value="34" />
+          </div>
+          <label class="field">主推图高度上限 (px)</label>
+          <div class="ctrl">
+            <input type="range" id="zone2_featured_max_px" min="120" max="180" value="150" />
+            <input type="number" id="zone2_featured_max_px_n" min="120" max="180" value="150" />
+          </div>
+          <label class="field">底部留白 (%)</label>
+          <div class="ctrl">
+            <input type="range" id="zone_empty_percent" min="0" max="12" value="4" />
+            <input type="number" id="zone_empty_percent_n" min="0" max="12" value="4" />
+          </div>
+          <p class="hint">选衣区 / 备选区高度由系统自动分配，不在此写死，避免重叠。</p>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-modules">
+        <div class="group">
+          <h3>显示开关</h3>
+          <div class="row"><input type="checkbox" id="show_featured" checked /><span>显示主推区</span></div>
+          <div class="row"><input type="checkbox" id="show_shortlist" checked /><span>显示备选区</span></div>
+          <div class="row"><input type="checkbox" id="attract_enabled" checked /><span>无人时播放吸引视频</span></div>
+          <div class="row"><input type="checkbox" id="attract_auto_enter" checked /><span>停留自动进入试衣页</span></div>
+          <div class="row"><input type="checkbox" id="attract_fullscreen" /><span>吸引视频铺满整舱</span></div>
+        </div>
+        <div class="group">
+          <h3>语言</h3>
+          <label class="field">默认语言</label>
+          <select id="default_lang">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-products">
+        <div class="group">
+          <h3>主推商品</h3>
+          <label class="field">主推 ID（逗号分隔，与 catalog 中 id 对应）</label>
+          <input type="text" id="featured_ids" value="01,09,11,17" />
+          <p class="hint">例：01,09,11,17。发送后刷新顾客页，主推轮播会换成这些款。</p>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-session">
+        <div class="group">
+          <h3>时间参数</h3>
+          <label class="field">停留多少秒自动进入</label>
+          <div class="ctrl">
+            <input type="range" id="attract_dwell_seconds" min="2" max="20" value="5" />
+            <input type="number" id="attract_dwell_seconds_n" min="2" max="20" value="5" />
+          </div>
+          <label class="field">空闲多少秒回吸引视频</label>
+          <div class="ctrl">
+            <input type="range" id="attract_idle_seconds" min="15" max="120" value="45" />
+            <input type="number" id="attract_idle_seconds_n" min="15" max="120" value="45" />
+          </div>
+          <label class="field">结束页保留秒数</label>
+          <div class="ctrl">
+            <input type="range" id="end_hold_seconds" min="5" max="40" value="18" />
+            <input type="number" id="end_hold_seconds_n" min="5" max="40" value="18" />
+          </div>
+          <label class="field">离场轮播每张秒数</label>
+          <div class="ctrl">
+            <input type="range" id="exit_carousel_seconds" min="2" max="10" value="4" />
+            <input type="number" id="exit_carousel_seconds_n" min="2" max="10" value="4" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <button type="button" id="btn-deploy" class="primary">确定并发送至全息舱</button>
+      <button type="button" id="btn-refresh">刷新右侧预览</button>
+      <button type="button" id="btn-open">新窗口打开顾客页</button>
+      <button type="button" id="btn-clear">清除已发送配置</button>
+      <p class="msg" id="msg"></p>
+    </div>
+  </aside>
+
+  <main>
+    <div class="preview-bar">
+      <span>右侧 = 真实顾客页预览 · <strong>ADMIN v3</strong></span>
+      <span id="live-vals">—</span>
+    </div>
+    <div class="workspace">
+      <div class="frame-wrap">
+        <iframe id="preview" title="顾客页预览" src="./index.html"></iframe>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => [...document.querySelectorAll(s)];
+
+    $$(".tab").forEach((btn) => {
+      btn.onclick = () => {
+        $$(".tab").forEach((b) => b.classList.remove("active"));
+        $$(".panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        $("#panel-" + btn.dataset.tab).classList.add("active");
+      };
+    });
+
+    function bindPair(id) {
+      const r = $("#" + id);
+      const n = $("#" + id + "_n");
+      if (!r || !n) return;
+      const sync = (from) => {
+        const v = from.value;
+        r.value = v;
+        n.value = v;
+        updateLive();
+      };
+      r.oninput = () => sync(r);
+      n.oninput = () => sync(n);
+    }
+    [
+      "cabin_max_width_px",
+      "left_column_percent",
+      "zone2_featured_max_px",
+      "zone_empty_percent",
+      "attract_dwell_seconds",
+      "attract_idle_seconds",
+      "end_hold_seconds",
+      "exit_carousel_seconds",
+    ].forEach(bindPair);
+
+    function readDeploy() {
+      const ids = $("#featured_ids").value.split(/[,，\s]+/).filter(Boolean);
+      return {
+        cabin_max_width_px: Number($("#cabin_max_width_px").value) || 420,
+        left_column_percent: Number($("#left_column_percent").value) || 34,
+        zone2_featured_max_px: Number($("#zone2_featured_max_px").value) || 150,
+        zone_empty_percent: Number($("#zone_empty_percent").value) || 4,
+        featured_ids: ids,
+        default_lang: $("#default_lang").value,
+        show_featured: $("#show_featured").checked,
+        show_shortlist: $("#show_shortlist").checked,
+        attract_enabled: $("#attract_enabled").checked,
+        attract_auto_enter: $("#attract_auto_enter").checked,
+        attract_fullscreen: $("#attract_fullscreen").checked,
+        attract_dwell_seconds: Number($("#attract_dwell_seconds").value) || 5,
+        attract_idle_seconds: Number($("#attract_idle_seconds").value) || 45,
+        end_hold_seconds: Number($("#end_hold_seconds").value) || 18,
+        exit_carousel_seconds: Number($("#exit_carousel_seconds").value) || 4,
+        admin_version: "v3-ui-2026-08-24",
+      };
+    }
+
+    function fillFrom(L) {
+      if (!L) return;
+      const set = (id, v) => {
+        if (v == null) return;
+        const r = $("#" + id);
+        const n = $("#" + id + "_n");
+        if (r) r.value = v;
+        if (n) n.value = v;
+      };
+      set("cabin_max_width_px", L.cabin_max_width_px);
+      set("left_column_percent", L.left_column_percent);
+      set("zone2_featured_max_px", L.zone2_featured_max_px);
+      set("zone_empty_percent", L.zone_empty_percent);
+      set("attract_dwell_seconds", L.attract_dwell_seconds);
+      set("attract_idle_seconds", L.attract_idle_seconds);
+      set("end_hold_seconds", L.end_hold_seconds);
+      set("exit_carousel_seconds", L.exit_carousel_seconds);
+      if (L.featured_ids) {
+        $("#featured_ids").value = Array.isArray(L.featured_ids)
+          ? L.featured_ids.join(",")
+          : String(L.featured_ids);
+      }
+      if (L.default_lang) $("#default_lang").value = L.default_lang;
+      if (typeof L.show_featured === "boolean") $("#show_featured").checked = L.show_featured;
+      if (typeof L.show_shortlist === "boolean") $("#show_shortlist").checked = L.show_shortlist;
+      if (typeof L.attract_enabled === "boolean") $("#attract_enabled").checked = L.attract_enabled;
+      if (typeof L.attract_auto_enter === "boolean") $("#attract_auto_enter").checked = L.attract_auto_enter;
+      if (typeof L.attract_fullscreen === "boolean") $("#attract_fullscreen").checked = L.attract_fullscreen;
+      updateLive();
+    }
+
+    function updateLive() {
+      const d = readDeploy();
+      $("#live-vals").textContent =
+        `宽 ${d.cabin_max_width_px} · 左 ${d.left_column_percent}% · 主推高 ${d.zone2_featured_max_px}`;
+      scheduleLivePush();
+    }
+
+    let liveTimer = null;
+    function scheduleLivePush() {
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(() => {
+        const data = readDeploy();
+        // 写入 localStorage，顾客页 / iframe 都能读到
+        localStorage.setItem("jt_layout_deployed", JSON.stringify(data));
+        const f = $("#preview");
+        try {
+          f.contentWindow.postMessage({ type: "jt-layout-live", layout: data }, "*");
+        } catch (_) {}
+        $("#msg").textContent = "已实时同步到预览（拖动即生效）";
+      }, 120);
+    }
+
+    function refreshPreview() {
+      const data = readDeploy();
+      localStorage.setItem("jt_layout_deployed", JSON.stringify(data));
+      const f = $("#preview");
+      f.src = "./index.html?t=" + Date.now();
+    }
+
+    (async () => {
+      try {
+        const s = localStorage.getItem("jt_layout_deployed");
+        if (s) {
+          fillFrom(JSON.parse(s));
+          $("#msg").textContent = "已载入本机已发送配置";
+          return;
+        }
+        const res = await fetch("./layout.json");
+        if (res.ok) fillFrom(await res.json());
+      } catch (_) {}
+      updateLive();
+    })();
+
+    function wireExtras() {
+      ["show_featured","show_shortlist","attract_enabled","attract_auto_enter","attract_fullscreen","default_lang","featured_ids"].forEach((id) => {
+        const el = $("#" + id);
+        if (!el) return;
+        el.addEventListener("change", updateLive);
+        el.addEventListener("input", updateLive);
+      });
+    }
+    wireExtras();
+
+    $("#btn-deploy").onclick = () => {
+      const data = readDeploy();
+      localStorage.setItem("jt_layout_deployed", JSON.stringify(data));
+      $("#msg").textContent = "已发送。右侧预览将刷新；顾客页请 Cmd+Shift+R";
+      refreshPreview();
+    };
+    $("#btn-refresh").onclick = refreshPreview;
+    $("#btn-open").onclick = () => window.open("./index.html", "_blank");
+    $("#btn-clear").onclick = () => {
+      localStorage.removeItem("jt_layout_deployed");
+      $("#msg").textContent = "已清除。刷新后将用 layout.json 默认值";
+      refreshPreview();
+    };
+  </script>
+</body>
+</html>

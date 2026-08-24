@@ -1,0 +1,334 @@
+{
+  "version": 3,
+  "categories": [
+    {
+      "id": "tops",
+      "name_zh": "上衣",
+      "name_en": "Tops"
+    },
+    {
+      "id": "outerwear",
+      "name_zh": "外套",
+      "name_en": "Outerwear"
+    },
+    {
+      "id": "bottoms",
+      "name_zh": "下装",
+      "name_en": "Bottoms"
+    },
+    {
+      "id": "dresses",
+      "name_zh": "裙装",
+      "name_en": "Dresses"
+    }
+  ],
+  "featured_ids": [
+    "01",
+    "09",
+    "11",
+    "17"
+  ],
+  "items": [
+    {
+      "id": "01",
+      "category": "tops",
+      "name": "White Oversized Shirt",
+      "name_cn": "白色廓形衬衫",
+      "product": "product_white_oversized_shirt.png",
+      "model": "model_full_white_oversized_shirt.png",
+      "colors": [
+        "#F8F5F0",
+        "#1C1C1C",
+        "#D8D0C4"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the upper body garment with a white oversized tailored shirt in premium cotton, relaxed architectural silhouette, classic collar, button front, single chest pocket"
+    },
+    {
+      "id": "02",
+      "category": "tops",
+      "name": "Charcoal Shirt",
+      "name_cn": "炭黑精纺衬衫",
+      "product": "product_charcoal_shirt.png",
+      "model": "model_full_charcoal_shirt.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the upper body garment with a charcoal black tailored shirt in fine cotton, sharp but relaxed silhouette, clean minimal details, button front"
+    },
+    {
+      "id": "03",
+      "category": "tops",
+      "name": "Oat Knit",
+      "name_cn": "燕麦色薄针织",
+      "product": "product_oat_knit.png",
+      "model": "model_full_oat_knit.png",
+      "colors": [
+        "#D8D0C4",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#D8D0C4",
+      "prompt": "Substitute the upper body garment with an oat beige fine-gauge knit sweater, soft premium texture, relaxed minimal silhouette"
+    },
+    {
+      "id": "04",
+      "category": "tops",
+      "name": "Warm Gray Turtleneck",
+      "name_cn": "暖灰高领针织",
+      "product": "product_warm_gray_turtleneck.png",
+      "model": "model_full_warm_gray_turtleneck.png",
+      "colors": [
+        "#8A8580",
+        "#1C1C1C",
+        "#D8D0C4"
+      ],
+      "color_active": "#8A8580",
+      "prompt": "Substitute the upper body garment with a warm gray fine-gauge turtleneck sweater, soft premium merino texture, clean minimal silhouette"
+    },
+    {
+      "id": "05",
+      "category": "tops",
+      "name": "Ivory Sheer Blouse",
+      "name_cn": "象牙白轻薄罩衫",
+      "product": "product_ivory_sheer_blouse.png",
+      "model": "model_full_ivory_sheer_blouse.png",
+      "colors": [
+        "#F8F5F0",
+        "#D8D0C4",
+        "#B8A48A"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the upper body garment with an ivory lightweight sheer blouse, soft premium drape, relaxed architectural silhouette"
+    },
+    {
+      "id": "06",
+      "category": "tops",
+      "name": "Architectural Cropped Top",
+      "name_cn": "结构感短上衣",
+      "product": "product_architectural_cropped_top.png",
+      "model": "model_full_architectural_cropped_top.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the upper body garment with an architectural cropped top, structured minimal design, clean sharp lines, premium matte fabric"
+    },
+    {
+      "id": "07",
+      "category": "tops",
+      "name": "Refined Camisole",
+      "name_cn": "精致吊带背心",
+      "product": "product_refined_camisole.png",
+      "model": "model_full_refined_camisole.png",
+      "colors": [
+        "#F8F5F0",
+        "#1C1C1C",
+        "#B8A48A"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the upper body garment with a refined silk camisole top, clean minimal design, subtle elegant straps, soft drape"
+    },
+    {
+      "id": "08",
+      "category": "tops",
+      "name": "Dark Silk Top",
+      "name_cn": "深色丝质感上衣",
+      "product": "product_dark_silk_top.png",
+      "model": "model_full_dark_silk_top.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#B8A48A"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the upper body garment with a dark charcoal silk-feel blouse, soft fluid fabric, elegant minimal silhouette, V-neck"
+    },
+    {
+      "id": "09",
+      "category": "outerwear",
+      "name": "Charcoal Structured Jacket",
+      "name_cn": "炭黑结构短外套",
+      "product": "product_charcoal_structured_jacket.png",
+      "model": "model_full_charcoal_structured_jacket.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the outer garment with a charcoal black structured short jacket, soft cashmere-feel fabric, architectural silhouette, clean minimal luxury"
+    },
+    {
+      "id": "10",
+      "category": "outerwear",
+      "name": "Soft Gold Edge Blazer",
+      "name_cn": "软金线极简西装外套",
+      "product": "product_soft_gold_edge_blazer.png",
+      "model": "model_full_soft_gold_edge_blazer.png",
+      "colors": [
+        "#F8F5F0",
+        "#B8A48A",
+        "#D8D0C4"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the outer garment with a minimal tailored blazer in warm ivory with subtle soft-gold edge stitching, clean architectural silhouette"
+    },
+    {
+      "id": "11",
+      "category": "outerwear",
+      "name": "Ivory Cropped Coat",
+      "name_cn": "象牙白短大衣",
+      "product": "product_ivory_cropped_coat.png",
+      "model": "model_full_ivory_cropped_coat.png",
+      "colors": [
+        "#F8F5F0",
+        "#1C1C1C",
+        "#D8D0C4"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the outer garment with an ivory cropped coat, soft wool-feel fabric, soft structured silhouette, clean minimal luxury"
+    },
+    {
+      "id": "12",
+      "category": "outerwear",
+      "name": "Charcoal Cropped Coat",
+      "name_cn": "炭黑短大衣",
+      "product": "product_charcoal_cropped_coat.png",
+      "model": "model_full_charcoal_cropped_coat.png",
+      "colors": [
+        "#1C1C1C",
+        "#F8F5F0",
+        "#D8D0C4"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the outer garment with a charcoal black cropped coat, soft wool-feel fabric, soft structured silhouette, clean minimal luxury"
+    },
+    {
+      "id": "13",
+      "category": "outerwear",
+      "name": "Oat Cropped Coat",
+      "name_cn": "燕麦色短大衣",
+      "product": "product_oat_cropped_coat.png",
+      "model": "model_full_oat_cropped_coat.png",
+      "colors": [
+        "#D8D0C4",
+        "#1C1C1C",
+        "#F8F5F0"
+      ],
+      "color_active": "#D8D0C4",
+      "prompt": "Substitute the outer garment with an oat beige cropped coat, soft wool-feel fabric, soft structured silhouette, clean minimal luxury"
+    },
+    {
+      "id": "14",
+      "category": "bottoms",
+      "name": "Charcoal Wide Trousers V1",
+      "name_cn": "炭黑阔腿裤（款式一）",
+      "product": "product_charcoal_wide_trousers.png",
+      "model": "model_full_charcoal_wide_trousers.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the lower body garment with charcoal black high-waist wide-leg trousers, clean architectural drape, soft premium fabric",
+      "multi_color": false
+    },
+    {
+      "id": "15",
+      "category": "bottoms",
+      "name": "Ivory Straight Pants",
+      "name_cn": "象牙色直筒西裤",
+      "product": "product_ivory_straight_pants.png",
+      "model": "model_full_ivory_straight_pants.png",
+      "colors": [
+        "#F8F5F0",
+        "#D8D0C4",
+        "#1C1C1C"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the lower body garment with ivory straight-leg tailored trousers, clean sharp crease, soft premium fabric"
+    },
+    {
+      "id": "16",
+      "category": "bottoms",
+      "name": "Oat Pleated Culottes",
+      "name_cn": "燕麦色百褶裙裤",
+      "product": "product_oat_pleated_culottes.png",
+      "model": "model_full_oat_pleated_culottes.png",
+      "colors": [
+        "#D8D0C4",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#D8D0C4",
+      "prompt": "Substitute the lower body garment with oat beige soft pleated culottes, elegant fluid drape, premium light fabric"
+    },
+    {
+      "id": "17",
+      "category": "dresses",
+      "name": "Ivory Column Dress",
+      "name_cn": "象牙色直筒长裙",
+      "product": "product_ivory_column_dress.png",
+      "model": "model_full_ivory_column_dress.png",
+      "colors": [
+        "#F8F5F0",
+        "#D8D0C4",
+        "#1C1C1C"
+      ],
+      "color_active": "#F8F5F0",
+      "prompt": "Substitute the outfit with an ivory long column dress, soft premium fabric, clean elegant minimal silhouette"
+    },
+    {
+      "id": "18",
+      "category": "dresses",
+      "name": "Charcoal Midi Dress",
+      "name_cn": "炭黑中长裙",
+      "product": "product_charcoal_midi_dress.png",
+      "model": "model_full_charcoal_midi_dress.png",
+      "colors": [
+        "#1C1C1C",
+        "#8A8580",
+        "#F8F5F0"
+      ],
+      "color_active": "#1C1C1C",
+      "prompt": "Substitute the outfit with a charcoal black midi dress, soft premium fabric, clean elegant minimal silhouette"
+    },
+    {
+      "id": "19",
+      "category": "bottoms",
+      "name": "Wide Leg Trousers",
+      "name_cn": "高腰直筒阔腿西裤",
+      "product": "product_charcoal.png",
+      "model": "model_full_charcoal.png",
+      "multi_color": true,
+      "variants": [
+        {
+          "id": "charcoal",
+          "name_zh": "炭黑",
+          "name_en": "Charcoal",
+          "hex": "#1C1C1C",
+          "product": "product_charcoal.png",
+          "model": "model_full_charcoal.png",
+          "prompt": "Substitute the lower body garment with charcoal black high-waist straight wide-leg tailored trousers, matte fine wool texture, clean architectural silhouette, sharp straight side seams, full length with a slight break"
+        },
+        {
+          "id": "warm_sand",
+          "name_zh": "暖沙",
+          "name_en": "Warm Sand",
+          "hex": "#C4B5A0",
+          "product": "product_warm_sand.png",
+          "model": "model_full_warm_sand.png",
+          "prompt": "Substitute the lower body garment with warm sand beige high-waist straight wide-leg tailored trousers, matte fine wool texture, clean architectural silhouette, sharp straight side seams, full length with a slight break"
+        }
+      ],
+      "prompt": "Substitute the lower body garment with charcoal black high-waist straight wide-leg tailored trousers, matte fine wool texture, clean architectural silhouette, sharp straight side seams, full length with a slight break"
+    }
+  ]
+}
