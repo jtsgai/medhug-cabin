@@ -5,12 +5,7 @@
   "zone2_featured_max_px": 140,
   "zone_empty_percent": 4,
   "end_hold_seconds": 18,
-  "featured_ids": [
-    "01",
-    "09",
-    "11",
-    "17"
-  ],
+  "featured_ids": ["01", "09", "11", "17"],
   "default_lang": "zh",
   "show_featured": true,
   "show_shortlist": true,
@@ -18,6 +13,6 @@
   "attract_fullscreen": false,
   "attract_auto_enter": true,
   "attract_dwell_seconds": 5,
-  "attract_idle_seconds": 45,
+  "attract_idle_seconds": 90,
   "exit_carousel_seconds": 4
 }
