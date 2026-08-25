@@ -5,19 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>JT 试衣舱</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./cabin-aspect.css" />
 </head>
 <body>
   <div id="error-banner" class="error-banner"></div>
   <div id="toast" class="toast hidden"></div>
 
   <div class="cabin-stage">
-    <!-- 吸引态：全舱全屏，横/竖视频 contain 不裁切 -->
     <div id="attract-layer" class="attract-layer hidden">
       <video id="attract-video" autoplay muted loop playsinline></video>
       <div class="attract-hint" data-i18n="attract_hint">轻触屏幕开始体验</div>
     </div>
 
-    <!-- 离场轮播 -->
     <div id="exit-carousel" class="exit-carousel hidden">
       <div class="exit-carousel-inner">
         <img id="exit-carousel-img" alt="" />
@@ -115,5 +114,6 @@
   </div>
 
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./cabin-aspect-runtime.js"></script>
 </body>
 </html>
