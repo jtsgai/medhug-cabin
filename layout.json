@@ -8,7 +8,7 @@
   "zone_empty_percent": 4,
   "end_hold_seconds": 18,
   "featured_ids": ["01", "09", "11", "17"],
-  "default_lang": "zh",
+  "default_lang": "en",
   "show_featured": true,
   "show_shortlist": true,
   "attract_enabled": true,
