@@ -1,8 +1,10 @@
 {
-  "comment": "网页预览加宽；真机仍用 100% 视口",
+  "comment": "全息舱外框 136:208（与 Kids 一致）",
   "cabin_max_width_px": 560,
+  "cabin_aspect_w": 136,
+  "cabin_aspect_h": 208,
   "left_column_percent": 34,
-  "zone2_featured_max_px": 140,
+  "zone2_featured_max_px": 150,
   "zone_empty_percent": 4,
   "end_hold_seconds": 18,
   "featured_ids": ["01", "09", "11", "17"],
