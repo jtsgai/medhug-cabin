@@ -1,0 +1,7 @@
+/* 全息舱外框与 Kids 一致：136 : 208 */
+.cabin-stage {
+  width: min(var(--cabin-w, 560px), 96vw) !important;
+  height: min(94vh, calc(min(var(--cabin-w, 560px), 96vw) * 208 / 136)) !important;
+  max-height: 94vh !important;
+  aspect-ratio: 136 / 208 !important;
+}
