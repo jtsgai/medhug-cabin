@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JT Cabin</title>
+  <style>
+    html, body {
+      margin: 0; width: 100%; height: 100%;
+      background: #000; color: #f8f5f0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+      overflow: hidden;
+    }
+    .wrap {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 48px;
+    }
+    .brand {
+      font-size: 18px; letter-spacing: 0.28em;
+      font-weight: 600; color: rgba(255,255,255,0.72);
+    }
+    .choices {
+      display: flex; flex-direction: column; gap: 22px;
+      width: min(72vw, 420px);
+    }
+    a.choice {
+      display: block; text-decoration: none; color: #fff;
+      text-align: center; padding: 28px 16px;
+      border: 1px solid rgba(184,164,138,0.45);
+      background: transparent;
+      font-size: clamp(20px, 3.2vh, 28px);
+      font-weight: 650; letter-spacing: 0.06em;
+    }
+    a.choice:hover, a.choice:active {
+      border-color: #B8A48A;
+      background: rgba(184,164,138,0.08);
+    }
+    .sub {
+      display: block; margin-top: 8px;
+      font-size: 13px; letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.45); font-weight: 400;
+    }
+    .hint {
+      position: fixed; bottom: 28px; left: 0; right: 0;
+      text-align: center; font-size: 12px;
+      color: rgba(255,255,255,0.28);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">JT CABIN</div>
+    <div class="choices">
+      <a class="choice" href="./index.html">TRY ON<span class="sub">Virtual try-on</span></a>
+      <a class="choice" href="./kids/">KIDS<span class="sub">Become a character</span></a>
+    </div>
+  </div>
+  <div class="hint">Tap to enter · 轻触进入</div>
+</body>
+</html>
