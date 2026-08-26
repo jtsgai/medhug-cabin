@@ -1,0 +1,17 @@
+{
+  "cabin_width_cm": 136,
+  "cabin_height_cm": 208,
+  "aspect": 0.5625,
+  "modules": {
+    "topbar_height": 64,
+    "side_width": 112,
+    "char_img": 74,
+    "logo_3d_pct": 52,
+    "gap": 4,
+    "padding": 8,
+    "logo_text_h": 32,
+    "headline_size": 16,
+    "topbar_offset_y": 0,
+    "char_gap": 6
+  }
+}
