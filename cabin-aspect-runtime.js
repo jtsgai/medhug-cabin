@@ -40,7 +40,8 @@ function applyFullCabin(layout) {
 
   const video = document.querySelector("#video-output");
   if (video) {
-    video.style.objectFit = "contain";
+    video.style.objectFit = "cover";
+    video.style.objectPosition = "center center";
     video.style.background = "#000";
   }
 

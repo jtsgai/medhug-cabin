@@ -1,4 +1,4 @@
-/* Holo try-on: video FULL SCREEN. Explore module overlays LEFT, transparent. */
+/* Holo try-on: video FULL SCREEN cover. Explore overlays LEFT, transparent. */
 html, body {
   width: 100% !important;
   height: 100% !important;
@@ -46,7 +46,8 @@ html, body {
   inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
+  object-position: center center !important;
   background: #000 !important;
 }
 
