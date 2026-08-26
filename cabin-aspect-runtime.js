@@ -1,29 +1,43 @@
-/**
- * Force try-on cabin aspect 136:208 and sync admin layout ranges.
- */
 function clamp(n, lo, hi, fb) {
   const x = Number(n);
   return Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : fb;
 }
 
-function applyCabin136(layout) {
+function applyFullCabin(layout) {
   const stage = document.querySelector(".cabin-stage");
   if (!stage) return;
   const L = layout || window.__jtLayout || {};
-  const w = clamp(L.cabin_max_width_px, 360, 720, 560);
-  stage.style.setProperty("--cabin-w", w + "px");
-  stage.style.width = `min(${w}px, 96vw)`;
-  stage.style.height = `min(94vh, calc(min(${w}px, 96vw) * 208 / 136))`;
-  stage.style.aspectRatio = "136 / 208";
+
+  stage.style.position = "fixed";
+  stage.style.inset = "0";
+  stage.style.width = "100vw";
+  stage.style.height = "100vh";
+  stage.style.maxWidth = "none";
+  stage.style.maxHeight = "none";
+  stage.style.aspectRatio = "auto";
+  stage.style.margin = "0";
+  stage.style.border = "0";
+  stage.style.borderRadius = "0";
+  stage.style.boxShadow = "none";
+  stage.style.background = "#000";
+
+  document.documentElement.style.background = "#000";
+  document.body.style.background = "#000";
+
   const cabin = document.querySelector(".cabin");
-  if (cabin && L.left_column_percent != null) {
-    const pct = clamp(L.left_column_percent, 28, 45, 34);
-    cabin.style.gridTemplateColumns = `${pct}% 1fr`;
+  if (cabin) {
+    cabin.style.width = "100%";
+    cabin.style.height = "100%";
+    cabin.style.background = "#000";
+    if (L.left_column_percent != null) {
+      const pct = clamp(L.left_column_percent, 22, 42, 30);
+      cabin.style.gridTemplateColumns = `${pct}% 1fr`;
+    }
   }
   if (L.zone2_featured_max_px != null) {
     document.documentElement.style.setProperty(
       "--feat-max",
-      clamp(L.zone2_featured_max_px, 100, 240, 150) + "px"
+      clamp(L.zone2_featured_max_px, 100, 320, 180) + "px"
     );
   }
 }
@@ -43,22 +57,22 @@ async function boot() {
   } catch (_) {}
   const L = { ...(window.__jtLayout || {}), ...readLayout() };
   window.__jtLayout = L;
-  applyCabin136(L);
+  applyFullCabin(L);
 
   const stage = document.querySelector(".cabin-stage");
   if (stage) {
-    const obs = new MutationObserver(() => applyCabin136(readLayout()));
+    const obs = new MutationObserver(() => applyFullCabin(readLayout()));
     obs.observe(stage, { attributes: true, attributeFilter: ["style"] });
   }
 
   window.addEventListener("message", (ev) => {
     if (ev.data && ev.data.type === "jt-layout-live") {
       window.__jtLayout = { ...(window.__jtLayout || {}), ...(ev.data.layout || {}) };
-      applyCabin136(window.__jtLayout);
+      applyFullCabin(window.__jtLayout);
     }
   });
 
-  setInterval(() => applyCabin136(readLayout()), 800);
+  setInterval(() => applyFullCabin(readLayout()), 800);
 }
 
 if (document.readyState === "loading") {
