@@ -1,4 +1,6 @@
-// JT Try-On – API config (required for ES module load)
-// Replace with your Decart key (dct_...) if you need online try-on.
-// Warning: public repo exposes this key — use a low-quota demo key only.
+// JT cabin API config
+// Public repo exposes keys — use low-quota keys only.
 export const DECART_API_KEY = "dct_redfunplanet_YqmfFFPwDxWNDXlffmrBoKixZUHbWljLEjrPMpqxoyLOJDTlMqWUzMWEOPidaFWI";
+
+// Meshy Image-to-3D (paste msy_... here). Used only to generate GLB, not at cabin runtime.
+export const MESHY_API_KEY = "YOUR_MESHY_API_KEY_HERE";
