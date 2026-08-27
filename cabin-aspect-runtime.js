@@ -27,9 +27,15 @@ function applyFullCabin() {
 }
 function ensureModeSwitch() {
   const old = document.getElementById("jt-home-switch"); if (old) old.remove();
-  if (document.getElementById("jt-mode-switch")) return;
-  const a = document.createElement("a"); a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
-  document.body.appendChild(a);
+  if (!document.getElementById("jt-mode-switch")) {
+    const a = document.createElement("a"); a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
+    document.body.appendChild(a);
+  }
+  if (!document.getElementById("jt-fx-switch")) {
+    const a = document.createElement("a"); a.id = "jt-fx-switch"; a.href = "./fx/"; a.textContent = "FX";
+    a.style.cssText = "position:fixed;top:14px;right:86px;z-index:50;color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;letter-spacing:0.1em;border:1px solid rgba(184,164,138,0.45);padding:8px 12px;background:transparent";
+    document.body.appendChild(a);
+  }
 }
 function dismissAttract() {
   const layer = document.querySelector("#attract-layer");
