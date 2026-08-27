@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./holo.css" />
   <link rel="stylesheet" href="../shared-dock.css" />
-  <link rel="stylesheet" href="../ui-over-video.css" />
+  <link rel="stylesheet" href="../ui-over-video.css?v=cam2" />
 </head>
 <body>
   <video id="video-output" class="holo-video" autoplay playsinline muted></video>
@@ -44,6 +44,7 @@
   window.confirm = function () { return true; };</script>
   <script type="module" src="./app.js"></script>
   <script src="./blank-exit.js"></script>
-  <script src="../camera-quality.js"></script>
+  <script src="../camera-quality.js?v=cam2"></script>
+  <script src="../force-cam.js?v=cam2"></script>
 </body>
 </html>
