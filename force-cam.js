@@ -1,24 +1,70 @@
 (function () {
+  let canvas, ctx, raf = 0;
+  function ensureCanvas() {
+    canvas = document.getElementById("video-sharp");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.id = "video-sharp";
+      document.body.insertBefore(canvas, document.body.firstChild);
+    }
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;background:transparent;";
+    ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+    return canvas;
+  }
+  function sizeCanvas() {
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(window.innerWidth * dpr));
+    const h = Math.max(1, Math.round(window.innerHeight * dpr));
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w;
+      canvas.height = h;
+    }
+    if (ctx) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+    }
+  }
+  function hideTag(v) {
+    v.style.setProperty("opacity", "0", "important");
+    v.style.setProperty("position", "fixed", "important");
+    v.style.setProperty("left", "0", "important");
+    v.style.setProperty("top", "0", "important");
+    v.style.setProperty("width", "2px", "important");
+    v.style.setProperty("height", "2px", "important");
+    v.style.setProperty("transform", "none", "important");
+    v.style.setProperty("z-index", "-1", "important");
+    v.style.setProperty("pointer-events", "none", "important");
+  }
+  function draw(video) {
+    if (!ctx || !canvas || video.readyState < 2 || !video.videoWidth) {
+      raf = requestAnimationFrame(() => draw(video));
+      return;
+    }
+    const w = canvas.width, h = canvas.height;
+    const vw = video.videoWidth, vh = video.videoHeight;
+    const scale = Math.min(w / vh, h / vw);
+    ctx.clearRect(0, 0, w, h);
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+    ctx.restore();
+    raf = requestAnimationFrame(() => draw(video));
+  }
   function apply() {
     const v = document.getElementById("video-output");
     if (!v) return;
     if (v.parentElement !== document.body) document.body.insertBefore(v, document.body.firstChild);
-    v.style.setProperty("position", "fixed", "important");
-    v.style.setProperty("left", "50%", "important");
-    v.style.setProperty("top", "50%", "important");
-    v.style.setProperty("right", "auto", "important");
-    v.style.setProperty("bottom", "auto", "important");
-    v.style.setProperty("width", "100vh", "important");
-    v.style.setProperty("height", "100vw", "important");
-    v.style.setProperty("max-width", "none", "important");
-    v.style.setProperty("max-height", "none", "important");
-    v.style.setProperty("object-fit", "contain", "important");
-    v.style.setProperty("object-position", "center center", "important");
-    v.style.setProperty("transform-origin", "center center", "important");
-    v.style.setProperty("transform", "translate(-50%, -50%) rotate(-90deg)", "important");
-    v.style.setProperty("background", "transparent", "important");
-    v.style.setProperty("z-index", "0", "important");
+    hideTag(v);
+    ensureCanvas();
+    sizeCanvas();
+    if (!v._sharpLoop) {
+      v._sharpLoop = true;
+      draw(v);
+    }
   }
+  window.addEventListener("resize", sizeCanvas);
   apply();
-  setInterval(apply, 300);
+  setInterval(apply, 800);
 })();
