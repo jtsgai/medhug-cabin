@@ -5,9 +5,9 @@ import { createCutea, createFilo, createHalo, animateCutea, animateFilo, animate
 const canvas = document.querySelector("#stage");
 const hint = document.querySelector("#hint");
 const SPECS = [
-  { id: "cutea", name: "Cutea", glb: "cutea.glb", make: createCutea, anim: animateCutea, home: { x: 0, y: -0.2, z: 0, s: 1 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.15 } },
-  { id: "filo", name: "Filo", glb: "filo.glb", make: createFilo, anim: animateFilo, home: { x: 1.45, y: -0.2, z: -0.5, s: 0.88 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.12 } },
-  { id: "halo", name: "Halo", glb: "halo.glb", make: createHalo, anim: animateHalo, home: { x: -1.25, y: 1.05, z: -0.1, s: 0.78 }, greet: { x: 0, y: 0.55, z: 1.35, s: 1.05 } }
+  { id: "cutea", name: "Cutea", glb: "cutea_web.glb", make: createCutea, anim: animateCutea, home: { x: 0, y: -0.2, z: 0, s: 1 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.15 } },
+  { id: "filo", name: "Filo", glb: "filo_web.glb", make: createFilo, anim: animateFilo, home: { x: 1.45, y: -0.2, z: -0.5, s: 0.88 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.12 } },
+  { id: "halo", name: "Halo", glb: "halo_web.glb", make: createHalo, anim: animateHalo, home: { x: -1.25, y: 1.05, z: -0.1, s: 0.78 }, greet: { x: 0, y: 0.55, z: 1.35, s: 1.05 } }
 ];
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000000);
 const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 60); camera.position.set(0, 1.15, 6.5);
@@ -17,18 +17,33 @@ scene.add(new THREE.HemisphereLight(0xffffff, 0x101010, 0.75));
 scene.add(new THREE.DirectionalLight(0xfff4e5, 1.4)).position.set(2, 4, 3.2);
 const actors = []; let selected = "cutea", state = "idle", presence = false, presentSince = 0, absentSince = 0, lastFaceCheck = 0, going = false;
 const clock = new THREE.Clock(); const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2(); const gltfLoader = new GLTFLoader();
+const mixers = [];
 function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); }
 addEventListener("resize", resize); resize();
 function tryGLB(spec) {
   return new Promise((resolve) => {
     gltfLoader.load(`./models/${spec.glb}`, (gltf) => {
-      const root = gltf.scene; const box = new THREE.Box3().setFromObject(root);
+      const root = gltf.scene;
+      const box = new THREE.Box3().setFromObject(root);
       const size = box.getSize(new THREE.Vector3()).length() || 1;
       root.scale.multiplyScalar(2.3 / size);
       root.position.sub(box.getCenter(new THREE.Vector3()).multiplyScalar(root.scale.x));
+      if (gltf.animations && gltf.animations.length) {
+        const mixer = new THREE.AnimationMixer(root);
+        mixer.clipAction(gltf.animations[0]).play();
+        mixers.push(mixer);
+        root.userData.mixer = mixer;
+      }
+      root.userData.isGltf = true;
       resolve(root);
     }, undefined, () => resolve(null));
   });
+}
+function waveCutea(root, t, greet) {
+  root.rotation.y = greet ? Math.sin(t * 3.2) * 0.35 : Math.sin(t * 0.8) * 0.18;
+  root.position.y += Math.sin(t * 2.2) * 0.002;
+  const arm = root.getObjectByName("armR") || root.getObjectByProperty("name", "RightArm");
+  if (arm) arm.rotation.z = greet ? -0.4 + Math.sin(t * 8) * 0.5 : Math.sin(t * 1.4) * 0.1;
 }
 async function boot() {
   for (const spec of SPECS) {
@@ -38,7 +53,7 @@ async function boot() {
     root.scale.setScalar(spec.home.s);
     scene.add(root); actors.push(root);
   }
-  hint.textContent = "3D friends on stage";
+  hint.textContent = "Friends on stage";
 }
 async function detectPerson() {
   const now = performance.now(); if (now - lastFaceCheck < 350) return presence; lastFaceCheck = now;
@@ -80,7 +95,8 @@ canvas.addEventListener("pointerdown", (ev) => {
 });
 function tick() {
   requestAnimationFrame(tick);
-  const t = clock.getElapsedTime(), now = performance.now();
+  const dt = clock.getDelta(); const t = clock.elapsedTime; const now = performance.now();
+  mixers.forEach((m) => m.update(dt));
   detectPerson().then((seen) => {
     if (going) return;
     if (seen) {
@@ -88,7 +104,7 @@ function tick() {
       if (state === "idle" && now - presentSince > 2200) { state = "greet"; selected = "cutea"; hint.textContent = "Cutea sees you"; }
     } else {
       if (!absentSince) absentSince = now;
-      if (now - absentSince > 5000) { presence = false; presentSince = 0; state = "idle"; selected = "cutea"; hint.textContent = "3D friends on stage"; }
+      if (now - absentSince > 5000) { presence = false; presentSince = 0; state = "idle"; selected = "cutea"; hint.textContent = "Friends on stage"; }
     }
   });
   for (const actor of actors) {
@@ -99,7 +115,8 @@ function tick() {
     actor.position.y += (tgt.y - actor.position.y) * 0.07;
     actor.position.z += (tgt.z - actor.position.z) * 0.07;
     const s = actor.scale.x + (tgt.s - actor.scale.x) * 0.07; actor.scale.setScalar(s);
-    if (spec.anim && actor.userData.joints) spec.anim(actor, t, on);
+    if (spec.id === "cutea") waveCutea(actor, t, on);
+    else if (spec.anim && actor.userData.joints) spec.anim(actor, t, on);
     else actor.rotation.y += on ? 0.02 : 0.008;
   }
   renderer.render(scene, camera);
