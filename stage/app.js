@@ -1,51 +1,74 @@
 import * as THREE from "https://esm.sh/three@0.167.1";
 import { GLTFLoader } from "https://esm.sh/three@0.167.1/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "https://esm.sh/three@0.167.1/examples/jsm/loaders/DRACOLoader.js";
 import { createCutea, createFilo, createHalo, animateCutea, animateFilo, animateHalo } from "./characters.js";
 
 const canvas = document.querySelector("#stage");
 const hint = document.querySelector("#hint");
 const SPECS = [
-  { id: "cutea", name: "Cutea", glb: "cutea_web.glb", make: createCutea, anim: animateCutea, home: { x: 0, y: -0.2, z: 0, s: 1 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.15 } },
-  { id: "filo", name: "Filo", glb: "filo_web.glb", make: createFilo, anim: animateFilo, home: { x: 1.45, y: -0.2, z: -0.5, s: 0.88 }, greet: { x: 0, y: -0.15, z: 1.25, s: 1.12 } },
-  { id: "halo", name: "Halo", glb: "halo_web.glb", make: createHalo, anim: animateHalo, home: { x: -1.25, y: 1.05, z: -0.1, s: 0.78 }, greet: { x: 0, y: 0.55, z: 1.35, s: 1.05 } }
+  { id: "cutea", name: "Cutea", glb: "cutea_web.glb", make: createCutea, anim: animateCutea, home: { x: 0, y: -0.35, z: 0, s: 1 }, greet: { x: 0, y: -0.2, z: 1.2, s: 1.12 } },
+  { id: "filo", name: "Filo", glb: "filo_web.glb", make: createFilo, anim: animateFilo, home: { x: 1.55, y: -0.35, z: -0.45, s: 0.9 }, greet: { x: 0, y: -0.2, z: 1.2, s: 1.1 } },
+  { id: "halo", name: "Halo", glb: "halo_web.glb", make: createHalo, anim: animateHalo, home: { x: -1.35, y: 1.0, z: -0.1, s: 0.8 }, greet: { x: 0, y: 0.5, z: 1.3, s: 1.05 } }
 ];
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x000000);
-const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 60); camera.position.set(0, 1.15, 6.5);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 60);
+camera.position.set(0, 1.2, 6.4);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setClearColor(0x000000, 1); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-scene.add(new THREE.HemisphereLight(0xffffff, 0x101010, 0.75));
-scene.add(new THREE.DirectionalLight(0xfff4e5, 1.4)).position.set(2, 4, 3.2);
-const actors = []; let selected = "cutea", state = "idle", presence = false, presentSince = 0, absentSince = 0, lastFaceCheck = 0, going = false;
-const clock = new THREE.Clock(); const raycaster = new THREE.Raycaster(); const pointer = new THREE.Vector2(); const gltfLoader = new GLTFLoader();
+renderer.setClearColor(0x000000, 1);
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x111111, 1));
+const key = new THREE.DirectionalLight(0xffffff, 1.6);
+key.position.set(2, 4, 4); scene.add(key);
+
+const draco = new DRACOLoader();
+draco.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(draco);
+
+const actors = [];
 const mixers = [];
-function resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight, false); }
+let selected = "cutea", state = "idle", presence = false, presentSince = 0, absentSince = 0, lastFaceCheck = 0, going = false;
+const clock = new THREE.Clock();
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+
+function resize() {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight, false);
+}
 addEventListener("resize", resize); resize();
+
 function tryGLB(spec) {
   return new Promise((resolve) => {
     gltfLoader.load(`./models/${spec.glb}`, (gltf) => {
       const root = gltf.scene;
       const box = new THREE.Box3().setFromObject(root);
       const size = box.getSize(new THREE.Vector3()).length() || 1;
-      root.scale.multiplyScalar(2.3 / size);
-      root.position.sub(box.getCenter(new THREE.Vector3()).multiplyScalar(root.scale.x));
+      root.scale.multiplyScalar(2.4 / size);
+      const c = box.getCenter(new THREE.Vector3());
+      root.position.sub(c.multiplyScalar(root.scale.x));
       if (gltf.animations && gltf.animations.length) {
         const mixer = new THREE.AnimationMixer(root);
         mixer.clipAction(gltf.animations[0]).play();
         mixers.push(mixer);
-        root.userData.mixer = mixer;
       }
       root.userData.isGltf = true;
+      hint.textContent = `${spec.name} model loaded`;
       resolve(root);
-    }, undefined, () => resolve(null));
+    }, undefined, (err) => {
+      console.warn("glb fail", spec.glb, err);
+      hint.textContent = `${spec.name} using stand-in`;
+      resolve(null);
+    });
   });
 }
 function waveCutea(root, t, greet) {
   root.rotation.y = greet ? Math.sin(t * 3.2) * 0.35 : Math.sin(t * 0.8) * 0.18;
-  root.position.y += Math.sin(t * 2.2) * 0.002;
-  const arm = root.getObjectByName("armR") || root.getObjectByProperty("name", "RightArm");
-  if (arm) arm.rotation.z = greet ? -0.4 + Math.sin(t * 8) * 0.5 : Math.sin(t * 1.4) * 0.1;
 }
 async function boot() {
+  hint.textContent = "Loading friends…";
   for (const spec of SPECS) {
     const root = (await tryGLB(spec)) || spec.make();
     root.userData.spec = spec;
@@ -56,7 +79,9 @@ async function boot() {
   hint.textContent = "Friends on stage";
 }
 async function detectPerson() {
-  const now = performance.now(); if (now - lastFaceCheck < 350) return presence; lastFaceCheck = now;
+  const now = performance.now();
+  if (now - lastFaceCheck < 400) return presence;
+  lastFaceCheck = now;
   if (!window.FaceDetector || !detectPerson.video) return presence;
   try {
     const det = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
@@ -84,14 +109,16 @@ function pickActor(ev) {
 }
 function goKids(id) {
   if (going) return; going = true;
-  hint.textContent = `${SPECS.find(s => s.id === id).name} will perform`;
+  hint.textContent = `${SPECS.find((s) => s.id === id).name} will perform`;
   setTimeout(() => { location.href = `../kids/?char=${id}`; }, 1400);
 }
 canvas.addEventListener("pointerdown", (ev) => {
-  const hit = pickActor(ev); if (!hit) return;
+  const hit = pickActor(ev);
+  if (!hit) return;
   const id = hit.userData.spec.id;
   if (selected === id && state === "greet") { goKids(id); return; }
-  selected = id; state = "greet"; hint.textContent = `${hit.userData.spec.name} steps forward — tap again`;
+  selected = id; state = "greet";
+  hint.textContent = `${hit.userData.spec.name} steps forward — tap again`;
 });
 function tick() {
   requestAnimationFrame(tick);
