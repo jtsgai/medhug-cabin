@@ -1,6 +1,9 @@
 #video-output, .holo-video {
   z-index: 0 !important;
   pointer-events: none !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  background: transparent !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }
 .jt-dock { z-index: 90 !important; }

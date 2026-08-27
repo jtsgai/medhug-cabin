@@ -1,7 +1,8 @@
 (function () {
   const MODES = [
-    { width: 3840, height: 2160 },
-    { width: 2560, height: 1440 },
+    { width: 2160, height: 3840 },
+    { width: 1080, height: 1920 },
+    { width: 720, height: 1280 },
     { width: 1920, height: 1080 },
     { width: 1280, height: 720 }
   ];
@@ -16,7 +17,7 @@
         let s = 0;
         if (/usb|logitech|brio|studio|4k|1080|hd|c920|c922|c930|osmo|insta/i.test(n)) s += 5;
         if (/integrated|ir |infrared|face|metadata/i.test(n)) s -= 4;
-        return { id: d.deviceId, s, n };
+        return { id: d.deviceId, s };
       }).sort((a, b) => b.s - a.s);
       return scored[0].id;
     } catch (_) {
@@ -24,9 +25,21 @@
     }
   }
 
+  function fitVideo(video) {
+    video.style.position = "fixed";
+    video.style.inset = "0";
+    video.style.width = "100vw";
+    video.style.height = "100vh";
+    video.style.objectFit = "contain";
+    video.style.objectPosition = "center bottom";
+    video.style.background = "transparent";
+    video.style.imageRendering = "auto";
+  }
+
   async function openHighRes() {
     const video = document.querySelector("#video-output");
     if (!video) return;
+    fitVideo(video);
     const deviceId = await bestDeviceId();
     let stream = null;
     for (const mode of MODES) {
@@ -37,12 +50,12 @@
             deviceId: deviceId ? { exact: deviceId } : undefined,
             width: { ideal: mode.width },
             height: { ideal: mode.height },
+            aspectRatio: { ideal: mode.height / mode.width },
             frameRate: { ideal: 30, max: 30 }
           }
         });
-        const track = stream.getVideoTracks()[0];
-        const set = track.getSettings ? track.getSettings() : {};
-        if ((set.width || 0) >= 1280 || mode.width <= 1280) break;
+        const set = stream.getVideoTracks()[0].getSettings?.() || {};
+        if ((set.height || 0) >= 720) break;
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
       } catch (_) {
@@ -57,23 +70,15 @@
     video.srcObject = stream;
     video.muted = true;
     video.playsInline = true;
-    video.style.imageRendering = "auto";
+    fitVideo(video);
     await video.play().catch(() => {});
-    video._hqW = (stream.getVideoTracks()[0].getSettings() || {}).width || 0;
-  }
-
-  async function keep() {
-    const video = document.querySelector("#video-output");
-    if (!video) return;
-    const w = video.videoWidth || video._hqW || 0;
-    if (w && w < 1280) await openHighRes();
-    if (!video.srcObject) await openHighRes();
   }
 
   function boot() {
-    setTimeout(openHighRes, 400);
-    setTimeout(openHighRes, 1600);
-    setInterval(keep, 4000);
+    const video = document.querySelector("#video-output");
+    if (video) fitVideo(video);
+    setTimeout(openHighRes, 500);
+    setTimeout(openHighRes, 1800);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
