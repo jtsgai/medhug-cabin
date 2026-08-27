@@ -1,30 +1,80 @@
-(async function () {
-  const video = document.querySelector("#video-output");
-  if (!video || video._hqCam) return;
-  video._hqCam = true;
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const cams = devices.filter((d) => d.kind === "videoinput");
-    const prefer = cams.find((d) => /usb|hd|4k|logitech|c9|c92|brio|studio|external/i.test(d.label))
-      || cams.find((d) => !/integrated|ir |infrared|face/i.test(d.label))
-      || cams[0];
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: {
-        deviceId: prefer?.deviceId ? { ideal: prefer.deviceId } : undefined,
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 30, max: 30 }
+(function () {
+  const MODES = [
+    { width: 3840, height: 2160 },
+    { width: 2560, height: 1440 },
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 720 }
+  ];
+
+  async function bestDeviceId() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter((d) => d.kind === "videoinput");
+      if (!cams.length) return undefined;
+      const scored = cams.map((d) => {
+        const n = (d.label || "").toLowerCase();
+        let s = 0;
+        if (/usb|logitech|brio|studio|4k|1080|hd|c920|c922|c930|osmo|insta/i.test(n)) s += 5;
+        if (/integrated|ir |infrared|face|metadata/i.test(n)) s -= 4;
+        return { id: d.deviceId, s, n };
+      }).sort((a, b) => b.s - a.s);
+      return scored[0].id;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  async function openHighRes() {
+    const video = document.querySelector("#video-output");
+    if (!video) return;
+    const deviceId = await bestDeviceId();
+    let stream = null;
+    for (const mode of MODES) {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            deviceId: deviceId ? { exact: deviceId } : undefined,
+            width: { ideal: mode.width },
+            height: { ideal: mode.height },
+            frameRate: { ideal: 30, max: 30 }
+          }
+        });
+        const track = stream.getVideoTracks()[0];
+        const set = track.getSettings ? track.getSettings() : {};
+        if ((set.width || 0) >= 1280 || mode.width <= 1280) break;
+        stream.getTracks().forEach((t) => t.stop());
+        stream = null;
+      } catch (_) {
+        stream = null;
       }
-    });
-    const old = video.srcObject;
-    if (old && old !== stream) {
-      try { old.getTracks().forEach((t) => t.stop()); } catch (_) {}
+    }
+    if (!stream) return;
+    const prev = video.srcObject;
+    if (prev && prev !== stream) {
+      try { prev.getTracks().forEach((t) => t.stop()); } catch (_) {}
     }
     video.srcObject = stream;
     video.muted = true;
+    video.playsInline = true;
+    video.style.imageRendering = "auto";
     await video.play().catch(() => {});
-  } catch (e) {
-    console.warn("camera-quality", e);
+    video._hqW = (stream.getVideoTracks()[0].getSettings() || {}).width || 0;
   }
+
+  async function keep() {
+    const video = document.querySelector("#video-output");
+    if (!video) return;
+    const w = video.videoWidth || video._hqW || 0;
+    if (w && w < 1280) await openHighRes();
+    if (!video.srcObject) await openHighRes();
+  }
+
+  function boot() {
+    setTimeout(openHighRes, 400);
+    setTimeout(openHighRes, 1600);
+    setInterval(keep, 4000);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 })();
