@@ -70,11 +70,18 @@ function ensureModeSwitch() {
     document.body.appendChild(dock);
   }
 }
+function loadCamQuality() {
+  if (document.querySelector('script[src*="camera-quality.js"]')) return;
+  const s = document.createElement("script");
+  s.src = "./camera-quality.js";
+  document.body.appendChild(s);
+}
 function boot() {
   applyFullCabin();
   bindFeaturedSwipe();
   bindModalBlankClose();
   ensureModeSwitch();
+  setTimeout(loadCamQuality, 600);
   setInterval(applyFullCabin, 800);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
