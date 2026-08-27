@@ -1,30 +1,58 @@
-/* Kids hologram: video fills cabin, UI overlays, no white plates */
-html, body { background: #000; }
-.stage { position: relative; }
-.stage-center {
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 1;
-  background: #000 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-}
+html, body { background: #000; margin: 0; height: 100%; overflow: hidden; }
+.holo-video,
 #video-output {
-  position: absolute !important;
+  position: fixed !important;
   inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
+  width: 100vw !important;
+  height: 100vh !important;
   object-fit: cover !important;
   object-position: center center !important;
   background: #000 !important;
+  z-index: 1 !important;
 }
-.topbar, .col, .col-left, .col-right, .empty-state {
+.cabin {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: transparent !important;
+  z-index: 2;
+  display: grid !important;
+  grid-template-rows: var(--topbar-h, 64px) 1fr !important;
+}
+.stage {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: var(--side-w, 120px) 1fr var(--side-w, 120px) !important;
+  align-items: stretch !important;
+  min-height: 0 !important;
+}
+.stage-center {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 3;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: 0 !important;
+}
+.empty-state {
+  position: relative !important;
+  inset: auto !important;
+  background: transparent !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.col, .col-left, .col-right, .topbar {
   position: relative;
-  z-index: 8;
+  z-index: 4;
   background: transparent !important;
 }
 .char-card, .char-card img, .logo-3d, .logo-text {
   background: transparent !important;
   mix-blend-mode: normal !important;
 }
-.empty-state { background: transparent !important; }
