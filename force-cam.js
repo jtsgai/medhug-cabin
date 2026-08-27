@@ -7,7 +7,7 @@
       canvas.id = "video-sharp";
       document.body.insertBefore(canvas, document.body.firstChild);
     }
-    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;background:transparent;";
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:transparent;";
     ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   }
   function sizeCanvas() {
@@ -27,15 +27,13 @@
   function hideTag(v) {
     v.style.setProperty("opacity", "0", "important");
     v.style.setProperty("position", "fixed", "important");
-    v.style.setProperty("width", "4px", "important");
-    v.style.setProperty("height", "4px", "important");
+    v.style.setProperty("left", "0", "important");
+    v.style.setProperty("top", "0", "important");
+    v.style.setProperty("width", "8px", "important");
+    v.style.setProperty("height", "8px", "important");
+    v.style.setProperty("transform", "none", "important");
     v.style.setProperty("z-index", "-1", "important");
-  }
-  function isPortrait(video) {
-    const set = video._camSet || {};
-    const w = set.width || video.videoWidth || 0;
-    const h = set.height || video.videoHeight || 0;
-    return h > w;
+    v.style.setProperty("pointer-events", "none", "important");
   }
   function draw(video) {
     if (!ctx || !canvas) {
@@ -48,14 +46,9 @@
       ctx.clearRect(0, 0, w, h);
       ctx.save();
       ctx.translate(w / 2, h / 2);
-      if (isPortrait(video)) {
-        const scale = Math.min(w / vw, h / vh);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      } else {
-        ctx.rotate(-Math.PI / 2);
-        const scale = Math.min(w / vh, h / vw);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      }
+      ctx.rotate(-Math.PI / 2);
+      const scale = Math.min(w / vh, h / vw);
+      ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
       ctx.restore();
     }
     requestAnimationFrame(() => draw(video));
@@ -74,5 +67,5 @@
   }
   window.addEventListener("resize", sizeCanvas);
   apply();
-  setInterval(apply, 800);
+  setInterval(apply, 200);
 })();
