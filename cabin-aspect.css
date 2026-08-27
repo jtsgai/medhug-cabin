@@ -24,9 +24,9 @@ html, body {
 .video-placeholder, .attract-hint { display: none !important; }
 .left-panel:not(.collapsed) {
   position: absolute !important;
-  left: 2% !important; top: 1.5% !important;
-  width: 34vw !important; max-width: 480px !important;
-  height: 68vh !important; max-height: 68vh !important;
+  left: 1.6% !important; top: 1% !important;
+  width: 36vw !important; max-width: 520px !important;
+  height: 72vh !important; max-height: 72vh !important;
   z-index: 8 !important;
   background: transparent !important; border: 0 !important;
   transform: none !important;
@@ -34,70 +34,53 @@ html, body {
   overflow: hidden !important;
   pointer-events: auto !important;
 }
-.left-panel:not(.collapsed) .zone-1 { flex: 0 0 auto !important; }
+.left-panel:not(.collapsed) .zone-1 { flex: 0 0 auto !important; padding: 4px 8px !important; }
 .left-panel:not(.collapsed) .zone-2 {
-  flex: 0 0 32% !important;
-  max-height: 32% !important;
-  min-height: 18% !important;
+  flex: 0 0 38% !important;
+  max-height: 38% !important;
+  min-height: 22% !important;
   overflow: hidden !important;
   display: flex !important; flex-direction: column !important;
+  padding-top: 0 !important;
 }
+.left-panel:not(.collapsed) .zone-2 .zone-label { margin-bottom: 4px !important; }
 .left-panel:not(.collapsed) .featured-slot {
   flex: 1 1 auto !important; min-height: 0 !important;
   display: flex !important; align-items: center !important; justify-content: center !important;
 }
 .left-panel:not(.collapsed) .featured-slot img {
+  width: auto !important; height: 100% !important;
   max-width: 100% !important; max-height: 100% !important;
-  width: auto !important; height: auto !important;
   object-fit: contain !important;
 }
 .left-panel:not(.collapsed) .zone-3 {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
+  flex: 1 1 auto !important; min-height: 0 !important;
   display: flex !important; flex-direction: column !important;
   overflow: hidden !important;
 }
 .left-panel:not(.collapsed) .explore-wrap {
-  flex: 1 1 auto !important; min-height: 0 !important;
-  overflow: hidden !important;
-  display: flex !important; flex-direction: column !important;
+  flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
 }
 .left-panel:not(.collapsed) #explore-list {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  height: auto !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  height: 100% !important; overflow-y: auto !important;
   scroll-snap-type: y mandatory !important;
 }
 .left-panel:not(.collapsed) .explore-page {
-  height: 100% !important;
-  min-height: 100% !important;
-  max-height: 100% !important;
-  scroll-snap-align: start !important;
+  height: 100% !important; max-height: 100% !important;
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   grid-template-rows: 1fr 1fr !important;
-  gap: 8px !important;
   overflow: hidden !important;
+  scroll-snap-align: start !important;
 }
 .left-panel:not(.collapsed) .zone-4 {
-  flex: 0 0 130px !important;
-  height: 130px !important; max-height: 130px !important;
+  flex: 0 0 150px !important; height: 150px !important; max-height: 150px !important;
 }
-.left-panel:not(.collapsed) .shortlist {
-  height: 84px !important; max-height: 84px !important;
-}
+.left-panel:not(.collapsed) .shortlist { height: 100px !important; max-height: 100px !important; }
 .left-panel:not(.collapsed) .shortlist-item {
-  width: 64px !important; height: 84px !important; flex: 0 0 64px !important;
-}
-.left-panel.collapsed {
-  left: 0 !important; top: 12% !important; width: 72px !important; transform: none !important;
+  width: 76px !important; height: 100px !important; flex: 0 0 76px !important;
 }
 .modal {
-  align-items: flex-start !important;
-  justify-content: center !important;
-  padding-top: 12vh !important;
-  z-index: 70 !important;
-  pointer-events: auto !important;
+  align-items: flex-start !important; justify-content: center !important;
+  padding-top: 12vh !important; z-index: 70 !important; pointer-events: auto !important;
 }
