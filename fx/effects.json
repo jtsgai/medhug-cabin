@@ -1,0 +1,34 @@
+{
+  "effects": [
+    {
+      "id": "ears",
+      "emoji": "👂",
+      "label": "Ears",
+      "prompt": "Add a pair of large, cute, highly visible animal ears on top of the person's head. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "fire",
+      "emoji": "🔥",
+      "label": "Fire",
+      "prompt": "Add bright realistic flames burning on the person's hair only. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "brick",
+      "emoji": "🧱",
+      "label": "Brick",
+      "prompt": "Transform only the person's jacket or outer clothing into colorful toy-brick blocks, like interlocking plastic bricks. Keep the same face, identity, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "bone",
+      "emoji": "💀",
+      "label": "Bone",
+      "prompt": "Transform only the person's hands into realistic skeletal bone hands. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "water",
+      "emoji": "💧",
+      "label": "Water",
+      "prompt": "Add clear water dripping down the person's hair and shoulders, looking wet. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    }
+  ]
+}
