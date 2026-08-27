@@ -1,6 +1,28 @@
-html, body { margin: 0; width: 100%; height: 100%; background: #000; overflow: hidden; }
-#stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; background: #000; }
-.page-top { position: fixed; top: 3%; left: 0; right: 0; z-index: 7; text-align: center; pointer-events: none; }
+html, body {
+  margin: 0; width: 100%; height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+#stage {
+  position: fixed; inset: 0;
+  width: 100vw; height: 100vh;
+  display: block;
+  background: transparent;
+}
+.page-top {
+  position: fixed; top: 3%; left: 0; right: 0; z-index: 7;
+  text-align: center; pointer-events: none;
+}
 .page-logo { height: 64px; width: auto; max-width: 70%; object-fit: contain; }
-.page-title { margin: 6px 0 0; font-size: 28px; font-weight: 700; letter-spacing: 0.04em; color: #fff; }
-.hint { position: fixed; left: 0; right: 0; bottom: 7%; text-align: center; z-index: 8; color: rgba(255,255,255,0.45); font: 600 14px/1.3 -apple-system, BlinkMacSystemFont, sans-serif; pointer-events: none; }
+.page-title {
+  margin: 6px 0 0; font-size: 28px; font-weight: 700;
+  letter-spacing: 0.04em; color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+.hint {
+  position: fixed; left: 0; right: 0; bottom: 7%;
+  text-align: center; z-index: 8;
+  color: rgba(255,255,255,0.5);
+  font: 600 14px/1.3 -apple-system, BlinkMacSystemFont, sans-serif;
+  pointer-events: none;
+}
