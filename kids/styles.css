@@ -73,6 +73,8 @@ html, body {
   width: auto;
   max-width: 58%;
   object-fit: contain;
+  background: transparent;
+  mix-blend-mode: multiply;
 }
 .headline {
   margin: 0;
@@ -147,7 +149,8 @@ html, body {
   object-fit: contain;
   border-radius: 12px;
   background: transparent;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+  mix-blend-mode: multiply;
+  filter: none;
 }
 
 .stage-center {
@@ -161,7 +164,7 @@ html, body {
 #video-output {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   transform: scaleX(-1);
   background: #000;
 }
@@ -194,7 +197,9 @@ html, body {
   width: min(var(--logo-pct, 52%), 280px);
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 12px 28px rgba(255, 60, 60, 0.25));
+  background: transparent;
+  mix-blend-mode: multiply;
+  filter: none;
   transform-origin: center center;
 }
 .logo-hit.pulse .logo-3d,
@@ -261,3 +266,17 @@ html, body {
   max-width: 90vw;
 }
 .toast.hidden { display: none; }
+
+#jt-mode-switch {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9;
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(255,255,255,0.18);
+  padding: 6px 10px;
+}

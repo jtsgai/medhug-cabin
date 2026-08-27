@@ -48,7 +48,7 @@ function applyI18n() {
   const hl = $("#headline");
   if (hl) hl.textContent = t("headline");
   const btnLang = $("#btn-lang");
-  if (btnLang) btnLang.textContent = t("lang");
+  if (btnLang) btnLang.textContent = "TRY ON";
   const btnStop = $("#btn-stop");
   if (btnStop) btnStop.textContent = t("exit");
   updateLogoState();
@@ -260,7 +260,6 @@ async function startCamera() {
     const tracks = localStream.getVideoTracks?.() || [];
     if (localStream.active && tracks.some((tr) => tr.readyState === "live")) {
       $("#video-output").srcObject = localStream;
-      showEmpty(false);
       return localStream;
     }
     try {
@@ -281,7 +280,6 @@ async function startCamera() {
   v.srcObject = localStream;
   v.muted = true;
   await v.play().catch(() => {});
-  showEmpty(false);
   return localStream;
 }
 
@@ -393,18 +391,13 @@ async function stopTransform(showToast = true) {
   }
   sessionActive = false;
   switching = false;
-  if (localStream) {
-    try {
-      localStream.getTracks().forEach((tr) => tr.stop());
-    } catch (_) {}
-    localStream = null;
-  }
-  const v = $("#video-output");
-  if (v) v.srcObject = null;
-  showEmpty(true);
   $("#btn-stop").classList.add("hidden");
   setStatus("", false);
+  showEmpty(true);
   updateLogoState();
+  try {
+    await startCamera();
+  } catch (_) {}
   if (showToast) toast(t("ended"));
 }
 
@@ -428,7 +421,18 @@ async function init() {
   updateLogoState();
   $("#btn-logo-start").onclick = () => startTransform();
   $("#btn-stop").onclick = () => requestStop();
-  $("#btn-lang").onclick = () => toggleLang();
+  const btnLang = $("#btn-lang");
+  if (btnLang) {
+    btnLang.textContent = "TRY ON";
+    btnLang.onclick = () => {
+      window.location.href = "../index.html";
+    };
+  }
+  try {
+    await startCamera();
+  } catch (e) {
+    console.warn("camera", e);
+  }
 
   window.addEventListener("beforeunload", () => {
     try {
