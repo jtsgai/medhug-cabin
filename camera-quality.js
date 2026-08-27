@@ -1,15 +1,12 @@
 (function () {
-  function fitVideo(video) {
-    video.style.position = "fixed";
-    video.style.left = "50%";
-    video.style.top = "50%";
-    video.style.width = "100vh";
-    video.style.height = "100vw";
-    video.style.objectFit = "contain";
-    video.style.objectPosition = "center center";
-    video.style.transformOrigin = "center center";
-    video.style.transform = "translate(-50%, -50%) rotate(-90deg)";
-  }
+  const MODES = [
+    { width: 1080, height: 1920 },
+    { width: 720, height: 1280 },
+    { width: 1440, height: 2560 },
+    { width: 2160, height: 3840 },
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 720 }
+  ];
   async function bestDeviceId() {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -27,14 +24,12 @@
       return undefined;
     }
   }
-  async function openHighRes() {
-    const video = document.querySelector("#video-output");
+  async function openPortrait() {
+    const video = document.getElementById("video-output");
     if (!video) return;
-    fitVideo(video);
     const deviceId = await bestDeviceId();
     let stream = null;
-    const modes = [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }];
-    for (const mode of modes) {
+    for (const mode of MODES) {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
@@ -42,13 +37,18 @@
             deviceId: deviceId ? { exact: deviceId } : undefined,
             width: { ideal: mode.width },
             height: { ideal: mode.height },
+            aspectRatio: { ideal: mode.height / mode.width },
             frameRate: { ideal: 30, max: 30 }
           }
         });
-        if ((stream.getVideoTracks()[0].getSettings?.().width || 0) >= 720) break;
+        const set = stream.getVideoTracks()[0].getSettings?.() || {};
+        video._camSet = set;
+        if ((set.width || 0) >= 640) break;
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
-      } catch (_) { stream = null; }
+      } catch (_) {
+        stream = null;
+      }
     }
     if (!stream) return;
     const prev = video.srcObject;
@@ -58,14 +58,11 @@
     video.srcObject = stream;
     video.muted = true;
     video.playsInline = true;
-    fitVideo(video);
     await video.play().catch(() => {});
   }
   function boot() {
-    const video = document.querySelector("#video-output");
-    if (video) fitVideo(video);
-    setTimeout(openHighRes, 400);
-    setTimeout(openHighRes, 1600);
+    setTimeout(openPortrait, 300);
+    setTimeout(openPortrait, 1400);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
