@@ -1,29 +1,20 @@
 (function () {
+  try { localStorage.setItem("jt_cam_rot", "-90"); } catch (_) {}
   const MODES = [
-    { width: 1080, height: 1920 },
-    { width: 2160, height: 3840 },
-    { width: 720, height: 1280 },
     { width: 1920, height: 1080 },
-    { width: 1280, height: 720 }
+    { width: 1280, height: 720 },
+    { width: 1080, height: 1920 }
   ];
-  function rot() {
-    const n = Number(localStorage.getItem("jt_cam_rot"));
-    return n === 90 || n === -90 || n === 0 || n === 180 ? n : 0;
-  }
   function fitVideo(video) {
-    const r = rot();
     video.style.position = "fixed";
-    video.style.left = r ? "50%" : "0";
-    video.style.top = r ? "50%" : "0";
-    video.style.right = "auto";
-    video.style.bottom = "auto";
-    video.style.width = r ? "100vh" : "100vw";
-    video.style.height = r ? "100vw" : "100vh";
+    video.style.left = "50%";
+    video.style.top = "50%";
+    video.style.width = "100vh";
+    video.style.height = "100vw";
     video.style.objectFit = "cover";
     video.style.objectPosition = "center center";
-    video.style.background = "transparent";
     video.style.transformOrigin = "center center";
-    video.style.transform = r ? "translate(-50%, -50%) rotate(" + r + "deg)" : "none";
+    video.style.transform = "translate(-50%, -50%) rotate(-90deg)";
   }
   async function bestDeviceId() {
     try {
@@ -33,8 +24,8 @@
       const scored = cams.map((d) => {
         const n = (d.label || "").toLowerCase();
         let s = 0;
-        if (/usb|logitech|brio|studio|4k|1080|hd|c920|c922|c930|osmo|insta/i.test(n)) s += 5;
-        if (/integrated|ir |infrared|face|metadata/i.test(n)) s -= 4;
+        if (/usb|logitech|brio|studio|4k|1080|hd|c920|c922|c930/i.test(n)) s += 5;
+        if (/integrated|ir |infrared|face/i.test(n)) s -= 4;
         return { id: d.deviceId, s };
       }).sort((a, b) => b.s - a.s);
       return scored[0].id;
@@ -62,9 +53,7 @@
         if ((stream.getVideoTracks()[0].getSettings?.().width || 0) >= 720) break;
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
-      } catch (_) {
-        stream = null;
-      }
+      } catch (_) { stream = null; }
     }
     if (!stream) return;
     const prev = video.srcObject;
@@ -78,7 +67,6 @@
     await video.play().catch(() => {});
   }
   function boot() {
-    try { localStorage.setItem("jt_cam_rot", String(rot())); } catch (_) {}
     const video = document.querySelector("#video-output");
     if (video) fitVideo(video);
     setTimeout(openHighRes, 400);
