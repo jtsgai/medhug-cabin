@@ -11,20 +11,16 @@
 <body>
   <div id="error-banner" class="error-banner"></div>
   <div id="toast" class="toast hidden"></div>
-
   <div class="cabin-stage">
     <div id="attract-layer" class="attract-layer hidden">
-      <video id="attract-video" autoplay muted loop playsinline></video>
-      <div class="attract-hint" data-i18n="attract_hint">轻触屏幕开始体验</div>
+      <video id="attract-video" muted playsinline></video>
     </div>
-
     <div id="exit-carousel" class="exit-carousel hidden">
       <div class="exit-carousel-inner">
         <img id="exit-carousel-img" alt="" />
         <div id="exit-carousel-caption" class="exit-carousel-caption"></div>
       </div>
     </div>
-
     <div class="cabin">
       <aside id="left-panel" class="left-panel">
         <button type="button" id="btn-expand-strip" class="btn-expand-strip hidden" aria-label="expand"></button>
@@ -37,14 +33,12 @@
             </div>
           </div>
         </div>
-
         <div class="zone zone-2" id="zone-featured">
           <div class="zone-label" data-i18n="featured">主推</div>
           <div id="featured-slot" class="featured-slot"></div>
           <button type="button" id="btn-feat-prev" class="icon-btn">‹</button>
           <button type="button" id="btn-feat-next" class="icon-btn icon-btn-next">›</button>
         </div>
-
         <div class="zone zone-3">
           <div class="zone-label" data-i18n="explore">选衣</div>
           <div id="cat-tabs" class="cat-tabs"></div>
@@ -53,7 +47,6 @@
             <div id="explore-scroll-hint" class="explore-scroll-hint hidden" aria-hidden="true">∨</div>
           </div>
         </div>
-
         <div class="zone zone-session-done hidden" id="zone-session-done">
           <button type="button" id="btn-session-done" class="btn-session-done" data-i18n="done">完成</button>
         </div>
@@ -62,31 +55,27 @@
           <div id="shortlist" class="shortlist"></div>
           <button type="button" id="btn-end-link" class="btn-end-link hidden" data-i18n="end_session">结束试穿</button>
         </div>
-
         <div class="zone-empty"></div>
       </aside>
-        <button type="button" id="btn-return-dot" class="btn-return-dot hidden" aria-label="back"></button>
-
+      <button type="button" id="btn-return-dot" class="btn-return-dot hidden" aria-label="back"></button>
       <section class="right-panel">
         <button id="btn-end" class="btn-end hidden" data-i18n="end">结束</button>
         <button id="btn-change" class="btn-change hidden" data-i18n="change">换衣</button>
-        <button type="button" id="btn-cam-toggle" class="btn-cam-toggle hidden" aria-label="camera" title=""></button>
+        <button type="button" id="btn-cam-toggle" class="btn-cam-toggle hidden" aria-label="camera"></button>
         <div id="camera-off-stage" class="camera-off-stage hidden" aria-hidden="true">
           <div class="cam-off-glass"></div>
           <div class="cam-off-mark">JT</div>
         </div>
         <button id="btn-save" class="btn-save hidden" data-i18n="add_shortlist">加入备选</button>
-
         <video id="video-output" autoplay playsinline muted></video>
-        <div id="api-credit-hint" class="api-credit-hint hidden" title="" aria-hidden="true">
+        <div id="api-credit-hint" class="api-credit-hint hidden" aria-hidden="true">
           <span class="api-credit-ring"></span>
           <span class="api-credit-core"></span>
         </div>
-        <div id="video-placeholder" class="video-placeholder" data-i18n="placeholder">影像准备中…</div>
+        <div id="video-placeholder" class="video-placeholder" data-i18n="placeholder"></div>
       </section>
     </div>
   </div>
-
   <div id="product-modal" class="modal hidden">
     <div class="modal-card">
       <img id="product-modal-img" alt="" />
@@ -99,22 +88,21 @@
       </div>
     </div>
   </div>
-
   <div id="end-overlay" class="overlay hidden">
     <div class="overlay-card">
       <h3 data-i18n="session_title">本次试穿</h3>
       <p class="overlay-sub" data-i18n="session_thanks">感谢体验</p>
       <div id="end-tried" class="end-list"></div>
       <div id="end-shortlist-wrap" class="hidden">
-        <h4 data-i18n="session_shortlist">你的备选 · 可再试一次</h4>
+        <h4 data-i18n="session_shortlist">你的备选</h4>
         <div id="end-shortlist" class="end-list end-list-clickable"></div>
       </div>
       <p class="overlay-hint" data-i18n="session_hint">画面将保留片刻</p>
       <button id="btn-end-close" class="primary" data-i18n="done">完成</button>
     </div>
   </div>
-
   <script type="module" src="./app.js"></script>
   <script type="module" src="./cabin-aspect-runtime.js"></script>
+  <script src="./skip-attract.js"></script>
 </body>
 </html>
