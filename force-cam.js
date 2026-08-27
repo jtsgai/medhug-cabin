@@ -1,5 +1,5 @@
 (function () {
-  let canvas, ctx;
+  let canvas, ctx, started = false;
   function ensureCanvas() {
     canvas = document.getElementById("video-sharp");
     if (!canvas) {
@@ -8,11 +8,11 @@
       document.body.insertBefore(canvas, document.body.firstChild);
     }
     canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:transparent;";
-    ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+    if (!ctx) ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   }
   function sizeCanvas() {
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.max(1, Math.round(window.innerWidth * dpr));
     const h = Math.max(1, Math.round(window.innerHeight * dpr));
     if (canvas.width !== w || canvas.height !== h) {
@@ -27,11 +27,8 @@
   function hideTag(v) {
     v.style.setProperty("opacity", "0", "important");
     v.style.setProperty("position", "fixed", "important");
-    v.style.setProperty("left", "0", "important");
-    v.style.setProperty("top", "0", "important");
     v.style.setProperty("width", "8px", "important");
     v.style.setProperty("height", "8px", "important");
-    v.style.setProperty("transform", "none", "important");
     v.style.setProperty("z-index", "-1", "important");
     v.style.setProperty("pointer-events", "none", "important");
   }
@@ -60,12 +57,12 @@
     hideTag(v);
     ensureCanvas();
     sizeCanvas();
-    if (!v._sharpLoop) {
-      v._sharpLoop = true;
+    if (!started) {
+      started = true;
       draw(v);
     }
   }
   window.addEventListener("resize", sizeCanvas);
   apply();
-  setInterval(apply, 200);
+  setInterval(apply, 400);
 })();

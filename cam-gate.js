@@ -6,10 +6,8 @@
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
     }
     const video = {
-      facingMode: "user",
-      width: { ideal: 1080 },
-      height: { ideal: 1920 },
-      aspectRatio: { ideal: 9 / 16 },
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
       frameRate: { ideal: 30, max: 30 }
     };
     if (constraints && constraints.video && constraints.video.deviceId) {
@@ -21,8 +19,9 @@
   function off() {
     window.__jtAllowCam = false;
     document.querySelectorAll("video").forEach((v) => {
+      if (v.id === "attract-video") return;
       const s = v.srcObject;
-      if (!s || v.id === "attract-video") return;
+      if (!s) return;
       try { s.getTracks().forEach((t) => t.stop()); } catch (_) {}
       v.srcObject = null;
     });
