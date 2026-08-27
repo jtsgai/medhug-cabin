@@ -30,9 +30,10 @@
     video.style.inset = "0";
     video.style.width = "100vw";
     video.style.height = "100vh";
-    video.style.objectFit = "cover";
-    video.style.objectPosition = "center 28%";
+    video.style.objectFit = "contain";
+    video.style.objectPosition = "center center";
     video.style.background = "transparent";
+    video.style.transform = "none";
   }
 
   async function openHighRes() {
