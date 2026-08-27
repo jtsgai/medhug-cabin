@@ -36,27 +36,41 @@ html, body {
 }
 .left-panel:not(.collapsed) .zone-1 { flex: 0 0 auto !important; padding: 4px 8px !important; }
 .left-panel:not(.collapsed) .zone-2 {
-  flex: 0 0 38% !important;
-  max-height: 38% !important;
-  min-height: 22% !important;
+  flex: 0 0 25% !important;
+  height: 25% !important;
+  max-height: 25% !important;
+  min-height: 25% !important;
   overflow: hidden !important;
   display: flex !important; flex-direction: column !important;
-  padding-top: 0 !important;
+  padding: 0 8px !important;
 }
-.left-panel:not(.collapsed) .zone-2 .zone-label { margin-bottom: 4px !important; }
+.left-panel:not(.collapsed) .zone-2 .zone-label { display: none !important; }
 .left-panel:not(.collapsed) .featured-slot {
-  flex: 1 1 auto !important; min-height: 0 !important;
-  display: flex !important; align-items: center !important; justify-content: center !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important; padding: 0 !important;
+  overflow: hidden !important;
 }
 .left-panel:not(.collapsed) .featured-slot img {
-  width: auto !important; height: 100% !important;
-  max-width: 100% !important; max-height: 100% !important;
-  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  display: block !important;
+}
+.left-panel:not(.collapsed) .icon-btn {
+  top: 50% !important;
 }
 .left-panel:not(.collapsed) .zone-3 {
-  flex: 1 1 auto !important; min-height: 0 !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
   display: flex !important; flex-direction: column !important;
   overflow: hidden !important;
+  padding: 6px 8px 0 !important;
 }
 .left-panel:not(.collapsed) .explore-wrap {
   flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
@@ -70,8 +84,28 @@ html, body {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   grid-template-rows: 1fr 1fr !important;
+  gap: 6px !important;
+  padding: 0 !important;
   overflow: hidden !important;
   scroll-snap-align: start !important;
+}
+.left-panel:not(.collapsed) .explore-card {
+  margin: 0 !important; padding: 0 !important;
+  height: 100% !important; width: 100% !important;
+  overflow: hidden !important;
+  display: block !important;
+  background: #111 !important;
+}
+.left-panel:not(.collapsed) .explore-card img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+  display: block !important;
+  background: #111 !important;
+  border-radius: 8px !important;
 }
 .left-panel:not(.collapsed) .zone-4 {
   flex: 0 0 150px !important; height: 150px !important; max-height: 150px !important;
