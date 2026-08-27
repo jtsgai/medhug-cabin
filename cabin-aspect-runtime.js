@@ -2,6 +2,13 @@ function applyFullCabin() {
   document.documentElement.style.setProperty("--feat-max", "9999px");
   document.documentElement.style.background = "transparent";
   document.body.style.background = "transparent";
+  const left = document.querySelector("#left-panel");
+  if (left) {
+    left.style.border = "none";
+    left.style.borderRight = "none";
+    left.style.outline = "none";
+    left.style.boxShadow = "none";
+  }
   const featImg = document.querySelector("#featured-slot img");
   if (featImg) {
     featImg.style.maxHeight = "none";
@@ -29,13 +36,13 @@ function bindFeaturedSwipe() {
   const zone = document.querySelector("#zone-featured");
   if (!zone || zone._swipeBound) return;
   zone._swipeBound = true;
-  let x0 = 0, y0 = 0, tracking = false;
-  zone.addEventListener("pointerdown", (e) => { x0 = e.clientX; y0 = e.clientY; tracking = true; });
+  let x0 = 0, tracking = false;
+  zone.addEventListener("pointerdown", (e) => { x0 = e.clientX; tracking = true; });
   zone.addEventListener("pointerup", (e) => {
     if (!tracking) return;
     tracking = false;
-    const dx = e.clientX - x0, dy = e.clientY - y0;
-    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+    const dx = e.clientX - x0;
+    if (Math.abs(dx) < 48) return;
     if (dx < 0) document.getElementById("btn-feat-next")?.click();
     else document.getElementById("btn-feat-prev")?.click();
   });
@@ -52,20 +59,13 @@ function ensureModeSwitch() {
   ["jt-home-switch", "jt-mode-switch", "jt-fx-switch"].forEach((id) => {
     const n = document.getElementById(id); if (n) n.remove();
   });
-  document.querySelectorAll("body > a").forEach((a) => {
-    const t = (a.textContent || "").replace(/\s+/g, "").toLowerCase();
-    if ("tryonkidsfxstage".includes(t) && !a.closest(".jt-dock")) a.remove();
-  });
   if (!document.querySelector('link[href*="shared-dock.css"]')) {
     const l = document.createElement("link");
-    l.rel = "stylesheet";
-    l.href = "./shared-dock.css";
-    document.head.appendChild(l);
+    l.rel = "stylesheet"; l.href = "./shared-dock.css"; document.head.appendChild(l);
   }
   if (!document.getElementById("jt-dock")) {
     const dock = document.createElement("nav");
-    dock.id = "jt-dock";
-    dock.className = "jt-dock";
+    dock.id = "jt-dock"; dock.className = "jt-dock";
     dock.innerHTML = '<a href="./index.html" class="is-here">TRY ON</a><a href="./kids/">KIDS</a><a href="./fx/">FX</a><a href="./stage/">STAGE</a>';
     document.body.appendChild(dock);
   }
