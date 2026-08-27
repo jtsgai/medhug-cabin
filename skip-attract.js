@@ -7,16 +7,23 @@
   const hide = () => {
     const layer = document.getElementById("attract-layer");
     const video = document.getElementById("attract-video");
-    if (layer && !layer.classList.contains("hidden")) {
+    if (layer) {
+      layer.classList.remove("allow-attract");
       layer.classList.add("hidden");
       try { layer.click(); } catch (e) {}
     }
     if (video) {
-      try { video.pause(); } catch (e) {}
+      try { video.pause(); video.removeAttribute("src"); video.load(); } catch (e) {}
     }
   };
   hide();
   setInterval(() => {
-    if (Date.now() - lastAct < 90000) hide();
-  }, 250);
+    const idle = Date.now() - lastAct >= 90000;
+    const layer = document.getElementById("attract-layer");
+    if (!idle) {
+      hide();
+    } else if (layer) {
+      layer.classList.add("allow-attract");
+    }
+  }, 200);
 })();

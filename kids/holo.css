@@ -1,71 +1,48 @@
-html, body {
-  background: transparent !important;
-  margin: 0;
-  height: 100%;
-  overflow: hidden;
-}
+html, body { background: transparent !important; margin: 0; height: 100%; overflow: hidden; }
 .holo-video, #video-output {
   position: fixed !important; inset: 0 !important;
   width: 100vw !important; height: 100vh !important;
-  object-fit: cover !important; object-position: center center !important;
+  object-fit: cover !important;
   background: transparent !important; z-index: 1 !important;
   pointer-events: none !important;
 }
-.cabin {
-  position: fixed !important; inset: 0 !important;
-  width: 100vw !important; height: 100vh !important;
-  background: transparent !important; z-index: 2;
-  display: block !important;
-  pointer-events: none !important;
-}
-.topbar {
-  position: absolute !important;
-  left: 0 !important; right: 0 !important;
-  top: 3% !important;
-  height: auto !important;
-  z-index: 6;
-  transform: none !important;
-  pointer-events: none !important;
+.cabin, .stage, .topbar, .empty-state, .stage-center {
   background: transparent !important;
 }
-.logo-text { height: 64px !important; max-width: 70% !important; background: transparent !important; }
+.logo-3d, .logo-text, .char-card img {
+  background: transparent !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+}
+.logo-hit:disabled { opacity: 1 !important; filter: none !important; }
+.logo-hit:disabled .logo-3d {
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+.char-card {
+  border: 3px solid transparent !important;
+}
+.char-card.active {
+  border: 5px solid transparent !important;
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    linear-gradient(130deg, #ff4d6d, #ffd166, #06d6a0, #4cc9f0, #b5179e, #ff4d6d) border-box !important;
+  box-shadow: 0 0 0 2px #ffd166, 0 0 18px rgba(255, 77, 109, 0.85) !important;
+}
+.char-card.active img {
+  filter: drop-shadow(0 0 10px rgba(255, 209, 102, 0.9)) !important;
+}
+.topbar { position: absolute !important; left: 0; right: 0; top: 3%; z-index: 6; }
+.logo-text { height: 64px !important; max-width: 70% !important; }
 .headline { font-size: 32px !important; }
 .stage {
   position: absolute !important; inset: 0 !important;
   display: grid !important;
   grid-template-columns: 22vw 1fr 22vw !important;
   pointer-events: none !important;
-  background: transparent !important;
 }
-.col {
-  justify-content: center !important;
-  gap: 18px !important;
-  pointer-events: auto !important;
-  background: transparent !important;
-}
-.char-card {
-  transform-style: preserve-3d;
-  animation: card3d 6.5s ease-in-out infinite;
-  pointer-events: auto !important;
-  background: transparent !important;
-}
-.char-card:nth-child(2n) { animation-delay: -2.2s; }
-.char-card:nth-child(3n) { animation-delay: -4.1s; }
-@keyframes card3d {
-  0%, 100% { transform: rotateY(-16deg) rotateX(4deg); }
-  50% { transform: rotateY(16deg) rotateX(-3deg); }
-}
+.col, .char-card, .stage-center, .empty-state, .logo-hit, .btn-stop { pointer-events: auto !important; }
 .char-card img {
   width: 222px !important; height: 222px !important;
-  filter: drop-shadow(10px 14px 16px rgba(0,0,0,0.45));
-  background: transparent !important;
 }
-.stage-center, .empty-state, .logo-hit, .btn-stop {
-  pointer-events: auto !important;
-  background: transparent !important;
-}
-.char-card, .char-card img, .logo-3d, .logo-text {
-  background: transparent !important;
-  mix-blend-mode: normal !important;
-}
-.btn-lang { display: none !important; }

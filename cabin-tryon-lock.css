@@ -1,3 +1,12 @@
+#attract-layer:not(.allow-attract),
+#attract-layer.hidden {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+#attract-video { pointer-events: none !important; }
 #left-panel.left-panel:not(.collapsed) {
   position: absolute !important;
   left: 1.6% !important;
@@ -11,13 +20,11 @@
   background: transparent !important;
 }
 #left-panel.left-panel:not(.collapsed) .zone,
-#left-panel.left-panel:not(.collapsed) .zone-1,
-#left-panel.left-panel:not(.collapsed) .zone-2,
-#left-panel.left-panel:not(.collapsed) .zone-3,
-#left-panel.left-panel:not(.collapsed) .zone-4,
-#left-panel.left-panel:not(.collapsed) .featured-slot,
-#left-panel.left-panel:not(.collapsed) .explore-card {
+#left-panel.left-panel:not(.collapsed) .explore-wrap,
+#left-panel.left-panel:not(.collapsed) #explore-list {
   background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 #left-panel.left-panel:not(.collapsed) #zone-featured.zone-2 {
   flex: 0 0 25% !important;
@@ -33,23 +40,20 @@
 #left-panel.left-panel:not(.collapsed) #featured-slot.featured-slot {
   flex: 1 1 auto !important;
   width: 100% !important; height: 100% !important;
-  min-height: 0 !important; max-height: none !important;
-  overflow: hidden !important; background: transparent !important;
+  min-height: 0 !important; overflow: hidden !important;
 }
 #left-panel.left-panel:not(.collapsed) #featured-slot.featured-slot img {
   width: 100% !important; height: 100% !important;
-  max-width: none !important; max-height: none !important;
+  max-height: none !important;
   object-fit: cover !important; object-position: center top !important;
   display: block !important; border-radius: 12px !important;
   background: transparent !important;
 }
 #left-panel.left-panel:not(.collapsed) .explore-wrap {
-  flex: 1 1 auto !important; min-height: 0 !important; height: auto !important;
-  overflow: hidden !important;
+  flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
 }
 #left-panel.left-panel:not(.collapsed) #explore-list {
   height: 100% !important;
-  overflow-x: hidden !important;
   overflow-y: auto !important;
   scroll-snap-type: y mandatory !important;
 }
@@ -62,23 +66,24 @@
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   grid-template-rows: 1fr 1fr !important;
-  gap: 6px !important;
+  gap: 8px !important;
   padding: 0 !important;
   margin: 0 !important;
   overflow: hidden !important;
   scroll-snap-align: start !important;
-  scroll-snap-stop: always !important;
+  border: 0 !important;
 }
 #left-panel.left-panel:not(.collapsed) #explore-list .explore-card {
-  width: auto !important; height: auto !important;
-  max-width: none !important; max-height: none !important;
-  margin: 0 !important; padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
   overflow: hidden !important;
 }
 #left-panel.left-panel:not(.collapsed) #explore-list .explore-card img {
   width: 100% !important; height: 100% !important;
-  max-width: none !important; max-height: none !important;
   object-fit: cover !important; object-position: center top !important;
   background: transparent !important;
+  border-radius: 10px !important;
+  border: 0 !important;
 }
 .right-panel, #video-output, .cabin-stage, .cabin { background: transparent !important; }
