@@ -23,9 +23,9 @@ function applyFullCabin() {
   const left = document.querySelector(".left-panel");
   if (left && !left.classList.contains("collapsed")) {
     left.style.position = "absolute";
-    left.style.left = "2%"; left.style.top = "8%";
-    left.style.width = "30vw"; left.style.maxWidth = "420px";
-    left.style.height = "58vh"; left.style.maxHeight = "58vh";
+    left.style.left = "2%"; left.style.top = "2%";
+    left.style.width = "32vw"; left.style.maxWidth = "460px";
+    left.style.height = "64vh"; left.style.maxHeight = "64vh";
     left.style.background = "transparent"; left.style.zIndex = "8";
     left.style.transform = "none";
     left.style.pointerEvents = "auto";

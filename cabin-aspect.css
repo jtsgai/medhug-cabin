@@ -16,33 +16,44 @@ html, body {
 .right-panel {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important; background: #000 !important; z-index: 1;
+  pointer-events: none !important;
 }
 #video-output {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
   object-fit: cover !important; object-position: center center !important; background: #000 !important;
+  pointer-events: none !important;
 }
 .left-panel:not(.collapsed) {
   position: absolute !important;
-  left: 2% !important; top: 8% !important;
-  width: 30vw !important; max-width: 420px !important;
-  height: 58vh !important; max-height: 58vh !important;
+  left: 2% !important; top: 2% !important;
+  width: 32vw !important; max-width: 460px !important;
+  height: 64vh !important; max-height: 64vh !important;
   z-index: 8 !important;
   background: transparent !important; border: 0 !important;
   transform: none !important;
   display: flex !important; flex-direction: column !important;
   overflow: hidden !important;
+  pointer-events: auto !important;
 }
-.left-panel.collapsed {
-  left: 0 !important; top: 12% !important; width: 72px !important;
-  transform: none !important; background: transparent !important;
+.left-panel:not(.collapsed) .zone-2 {
+  flex: 0 0 33% !important;
+  max-height: 33% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important; flex-direction: column !important;
+}
+.left-panel:not(.collapsed) .featured-slot {
+  flex: 1 1 auto !important; min-height: 0 !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+}
+.left-panel:not(.collapsed) .featured-slot img {
+  max-width: 100% !important; max-height: 100% !important;
+  width: auto !important; height: auto !important;
+  object-fit: contain !important;
 }
 .left-panel:not(.collapsed) .zone-3 {
   flex: 1 1 auto !important; min-height: 0 !important;
-}
-.left-panel:not(.collapsed) .explore-list,
-.left-panel:not(.collapsed) #explore-list {
-  display: block !important;
 }
 .left-panel:not(.collapsed) .explore-page {
   display: grid !important;
@@ -50,32 +61,27 @@ html, body {
   grid-template-rows: 1fr 1fr !important;
 }
 .left-panel:not(.collapsed) .zone-4 {
-  flex: 0 0 auto !important;
-  position: relative !important;
-  bottom: auto !important;
-  margin-top: 8px !important;
+  flex: 0 0 120px !important;
+  height: 120px !important; max-height: 120px !important;
+  overflow: visible !important;
 }
-.zone, .explore-card, .cat-tab { background: transparent !important; }
-.jt-mode-dock,
-#jt-mode-switch, #jt-fx-switch {
-  position: fixed !important;
-  top: auto !important;
-  z-index: 50 !important;
+.left-panel:not(.collapsed) .shortlist-item {
+  width: 58px !important; height: 76px !important; flex: 0 0 58px !important;
 }
-.jt-mode-dock {
-  top: 12% !important; right: 22px !important;
-  display: flex !important; flex-direction: column !important; gap: 10px !important;
+.left-panel.collapsed {
+  left: 0 !important; top: 12% !important; width: 72px !important;
+  transform: none !important; background: transparent !important;
 }
-#jt-mode-switch, #jt-fx-switch {
-  color: rgba(255,255,255,0.82) !important;
-  text-decoration: none !important;
-  font-size: 14px !important;
-  letter-spacing: 0.16em !important;
-  border: 1px solid rgba(248,245,240,0.28) !important;
-  padding: 12px 16px !important;
-  border-radius: 999px !important;
-  background: rgba(0,0,0,0.28) !important;
-  backdrop-filter: blur(10px);
+.modal {
+  align-items: flex-start !important;
+  justify-content: center !important;
+  padding-top: 12vh !important;
+  z-index: 70 !important;
+  pointer-events: auto !important;
+}
+.modal-card { margin-top: 0 !important; }
+.jt-dock {
+  position: fixed !important; top: 8% !important; right: 22px !important; z-index: 90 !important;
 }
 .attract-layer {
   position: absolute !important; inset: 0 !important;
@@ -85,6 +91,5 @@ html, body {
 .attract-layer video, #attract-video {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
-  object-fit: cover !important; object-position: center center !important;
-  background: #000 !important;
+  object-fit: cover !important; background: #000 !important;
 }
