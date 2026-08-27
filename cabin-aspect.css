@@ -1,87 +1,50 @@
-/* Holo try-on: video FULL SCREEN cover. Explore overlays LEFT, transparent. */
 html, body {
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  background: #000 !important;
-  overflow: hidden !important;
-  display: block !important;
+  width: 100% !important; height: 100% !important; margin: 0 !important;
+  background: #000 !important; overflow: hidden !important; display: block !important;
 }
 .cabin-stage {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-  background: #000 !important;
-  overflow: hidden !important;
+  position: fixed !important; inset: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  max-width: none !important; max-height: none !important;
+  aspect-ratio: auto !important; margin: 0 !important; border: 0 !important;
+  border-radius: 0 !important; box-shadow: none !important; background: #000 !important;
 }
 .cabin {
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: #000 !important;
-  grid-template-columns: none !important;
+  display: block !important; width: 100% !important; height: 100% !important;
+  background: #000 !important; grid-template-columns: none !important;
 }
 .right-panel {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  background: #000 !important;
-  z-index: 1;
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important; background: #000 !important; z-index: 1;
 }
 #video-output {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  object-position: center center !important;
-  background: #000 !important;
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important;
+  object-fit: cover !important; object-position: center center !important; background: #000 !important;
 }
 .left-panel {
-  position: absolute !important;
-  left: 12px !important;
-  top: 4% !important;
-  bottom: 8% !important;
-  width: min(28vw, 420px) !important;
-  max-width: 420px !important;
-  z-index: 8 !important;
-  background: transparent !important;
-  border: 0 !important;
+  position: absolute !important; left: 8px !important; top: 2% !important;
+  width: 260px !important; max-width: 260px !important; z-index: 8 !important;
+  background: transparent !important; border: 0 !important;
+  transform: scale(1.5); transform-origin: top left;
 }
 .left-panel.collapsed {
-  left: 12px !important;
-  top: 12% !important;
-  height: 48% !important;
-  width: 76px !important;
+  left: 8px !important; top: 12% !important; width: 72px !important;
+  transform: scale(1.25); transform-origin: top left;
   background: transparent !important;
-  border: 1px solid rgba(184, 164, 138, 0.2) !important;
+  border: 1px solid rgba(184,164,138,0.2) !important;
 }
 .zone, .zone-1, .zone-2, .zone-3, .zone-4, .zone-empty,
-.explore-wrap, .featured-slot, .shortlist,
-.explore-card, .cat-tab {
-  background: transparent !important;
-  box-shadow: none !important;
+.explore-wrap, .featured-slot, .shortlist {
+  background: transparent !important; box-shadow: none !important;
 }
+.zone { padding-top: 4px !important; padding-bottom: 4px !important; }
+.explore-card, .cat-tab { background: transparent !important; }
 .attract-layer { background: #000 !important; z-index: 20; }
-#jt-home-switch {
-  position: fixed;
-  top: 14px;
-  right: 16px;
-  z-index: 40;
-  color: rgba(255,255,255,0.55);
-  text-decoration: none;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  border: 1px solid rgba(255,255,255,0.18);
-  padding: 6px 10px;
-  background: transparent;
+#jt-mode-switch {
+  position: fixed; top: 14px; right: 16px; z-index: 50;
+  color: rgba(255,255,255,0.7); text-decoration: none;
+  font-size: 13px; letter-spacing: 0.1em;
+  border: 1px solid rgba(184,164,138,0.45);
+  padding: 8px 12px; background: transparent;
 }
