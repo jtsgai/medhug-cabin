@@ -1,4 +1,4 @@
-function applyFullCabin(layout) {
+function applyFullCabin() {
   const stage = document.querySelector(".cabin-stage");
   if (!stage) return;
   stage.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;max-width:none;max-height:none;aspect-ratio:auto;margin:0;border:0;border-radius:0;box-shadow:none;background:#000";
@@ -12,8 +12,19 @@ function applyFullCabin(layout) {
   const right = document.querySelector(".right-panel");
   if (right) {
     right.style.position = "absolute"; right.style.inset = "0";
-    right.style.width = "100%"; right.style.height = "100%";
-    right.style.background = "#000"; right.style.zIndex = "1";
+    right.style.width = "100%"; right.style.height = "100%"; right.style.background = "#000"; right.style.zIndex = "1";
+  }
+  const attract = document.querySelector("#attract-video");
+  if (attract) {
+    attract.style.objectFit = "cover"; attract.style.objectPosition = "center center";
+    attract.style.width = "100%"; attract.style.height = "100%";
+    attract.style.position = "absolute"; attract.style.inset = "0"; attract.style.background = "#000";
+  }
+  const layer = document.querySelector(".attract-layer");
+  if (layer) {
+    layer.style.position = "absolute"; layer.style.inset = "0";
+    layer.style.width = "100%"; layer.style.height = "100%";
+    layer.style.background = "#000"; layer.style.zIndex = "20";
   }
   const video = document.querySelector("#video-output");
   if (video) {
@@ -27,26 +38,14 @@ function applyFullCabin(layout) {
   }
 }
 function ensureModeSwitch() {
-  const old = document.getElementById("jt-home-switch");
-  if (old) old.remove();
+  const old = document.getElementById("jt-home-switch"); if (old) old.remove();
   if (document.getElementById("jt-mode-switch")) return;
-  const a = document.createElement("a");
-  a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
+  const a = document.createElement("a"); a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
   document.body.appendChild(a);
 }
-async function boot() {
-  try {
-    const res = await fetch("./layout.json");
-    if (res.ok) window.__jtLayout = await res.json();
-  } catch (_) {}
-  applyFullCabin(window.__jtLayout || {});
-  ensureModeSwitch();
-  const stage = document.querySelector(".cabin-stage");
-  if (stage) {
-    const obs = new MutationObserver(() => applyFullCabin({}));
-    obs.observe(stage, { attributes: true, attributeFilter: ["style"] });
-  }
-  setInterval(() => applyFullCabin({}), 800);
+function boot() {
+  applyFullCabin(); ensureModeSwitch();
+  setInterval(applyFullCabin, 800);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
 else boot();

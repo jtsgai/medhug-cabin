@@ -32,19 +32,24 @@ html, body {
   left: 8px !important; top: 12% !important; width: 72px !important;
   transform: scale(1.25); transform-origin: top left;
   background: transparent !important;
-  border: 1px solid rgba(184,164,138,0.2) !important;
 }
-.zone, .zone-1, .zone-2, .zone-3, .zone-4, .zone-empty,
-.explore-wrap, .featured-slot, .shortlist {
-  background: transparent !important; box-shadow: none !important;
-}
-.zone { padding-top: 4px !important; padding-bottom: 4px !important; }
-.explore-card, .cat-tab { background: transparent !important; }
-.attract-layer { background: #000 !important; z-index: 20; }
+.zone, .explore-card, .cat-tab { background: transparent !important; }
 #jt-mode-switch {
   position: fixed; top: 14px; right: 16px; z-index: 50;
   color: rgba(255,255,255,0.7); text-decoration: none;
   font-size: 13px; letter-spacing: 0.1em;
   border: 1px solid rgba(184,164,138,0.45);
   padding: 8px 12px; background: transparent;
+}
+.attract-layer {
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important;
+  background: #000 !important; z-index: 20 !important;
+}
+.attract-layer video,
+#attract-video {
+  position: absolute !important; inset: 0 !important;
+  width: 100% !important; height: 100% !important;
+  object-fit: cover !important; object-position: center center !important;
+  background: #000 !important;
 }
