@@ -9,10 +9,7 @@ html, body {
   aspect-ratio: auto !important; margin: 0 !important; border: 0 !important;
   border-radius: 0 !important; box-shadow: none !important; background: #000 !important;
 }
-.cabin {
-  display: block !important; width: 100% !important; height: 100% !important;
-  background: #000 !important; grid-template-columns: none !important;
-}
+.cabin { display: block !important; width: 100% !important; height: 100% !important; background: #000 !important; }
 .right-panel {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important; background: #000 !important; z-index: 1;
@@ -21,14 +18,15 @@ html, body {
 #video-output {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
-  object-fit: cover !important; object-position: center center !important; background: #000 !important;
+  object-fit: cover !important; background: #000 !important;
   pointer-events: none !important;
 }
+.video-placeholder, .attract-hint { display: none !important; }
 .left-panel:not(.collapsed) {
   position: absolute !important;
-  left: 2% !important; top: 2% !important;
-  width: 32vw !important; max-width: 460px !important;
-  height: 64vh !important; max-height: 64vh !important;
+  left: 2% !important; top: 1.5% !important;
+  width: 34vw !important; max-width: 480px !important;
+  height: 68vh !important; max-height: 68vh !important;
   z-index: 8 !important;
   background: transparent !important; border: 0 !important;
   transform: none !important;
@@ -36,10 +34,11 @@ html, body {
   overflow: hidden !important;
   pointer-events: auto !important;
 }
+.left-panel:not(.collapsed) .zone-1 { flex: 0 0 auto !important; }
 .left-panel:not(.collapsed) .zone-2 {
-  flex: 0 0 33% !important;
-  max-height: 33% !important;
-  min-height: 0 !important;
+  flex: 0 0 32% !important;
+  max-height: 32% !important;
+  min-height: 18% !important;
   overflow: hidden !important;
   display: flex !important; flex-direction: column !important;
 }
@@ -53,24 +52,47 @@ html, body {
   object-fit: contain !important;
 }
 .left-panel:not(.collapsed) .zone-3 {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important; flex-direction: column !important;
+  overflow: hidden !important;
+}
+.left-panel:not(.collapsed) .explore-wrap {
   flex: 1 1 auto !important; min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important; flex-direction: column !important;
+}
+.left-panel:not(.collapsed) #explore-list {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-snap-type: y mandatory !important;
 }
 .left-panel:not(.collapsed) .explore-page {
+  height: 100% !important;
+  min-height: 100% !important;
+  max-height: 100% !important;
+  scroll-snap-align: start !important;
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
   grid-template-rows: 1fr 1fr !important;
+  gap: 8px !important;
+  overflow: hidden !important;
 }
 .left-panel:not(.collapsed) .zone-4 {
-  flex: 0 0 120px !important;
-  height: 120px !important; max-height: 120px !important;
-  overflow: visible !important;
+  flex: 0 0 130px !important;
+  height: 130px !important; max-height: 130px !important;
+}
+.left-panel:not(.collapsed) .shortlist {
+  height: 84px !important; max-height: 84px !important;
 }
 .left-panel:not(.collapsed) .shortlist-item {
-  width: 58px !important; height: 76px !important; flex: 0 0 58px !important;
+  width: 64px !important; height: 84px !important; flex: 0 0 64px !important;
 }
 .left-panel.collapsed {
-  left: 0 !important; top: 12% !important; width: 72px !important;
-  transform: none !important; background: transparent !important;
+  left: 0 !important; top: 12% !important; width: 72px !important; transform: none !important;
 }
 .modal {
   align-items: flex-start !important;
@@ -78,18 +100,4 @@ html, body {
   padding-top: 12vh !important;
   z-index: 70 !important;
   pointer-events: auto !important;
-}
-.modal-card { margin-top: 0 !important; }
-.jt-dock {
-  position: fixed !important; top: 8% !important; right: 22px !important; z-index: 90 !important;
-}
-.attract-layer {
-  position: absolute !important; inset: 0 !important;
-  width: 100% !important; height: 100% !important;
-  background: #000 !important; z-index: 20 !important;
-}
-.attract-layer video, #attract-video {
-  position: absolute !important; inset: 0 !important;
-  width: 100% !important; height: 100% !important;
-  object-fit: cover !important; background: #000 !important;
 }
