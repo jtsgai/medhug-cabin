@@ -30,7 +30,6 @@
     v.style.setProperty("width", "8px", "important");
     v.style.setProperty("height", "8px", "important");
     v.style.setProperty("z-index", "-1", "important");
-    v.style.setProperty("pointer-events", "none", "important");
   }
   function draw(video) {
     if (!ctx || !canvas) {
@@ -43,9 +42,14 @@
       ctx.clearRect(0, 0, w, h);
       ctx.save();
       ctx.translate(w / 2, h / 2);
-      ctx.rotate(-Math.PI / 2);
-      const scale = Math.min(w / vh, h / vw);
-      ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+      if (vh >= vw) {
+        const scale = Math.min(w / vw, h / vh);
+        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+      } else {
+        ctx.rotate(-Math.PI / 2);
+        const scale = Math.min(w / vh, h / vw);
+        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+      }
       ctx.restore();
     }
     requestAnimationFrame(() => draw(video));

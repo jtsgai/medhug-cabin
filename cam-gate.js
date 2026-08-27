@@ -1,23 +1,53 @@
 (function () {
   window.__jtAllowCam = false;
+  window.__jtRawStream = null;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-  navigator.mediaDevices.getUserMedia = function (constraints) {
+
+  function portraitize(stream) {
+    window.__jtRawStream = stream;
+    const inv = document.createElement("video");
+    inv.setAttribute("playsinline", "");
+    inv.muted = true;
+    inv.srcObject = stream;
+    inv.play().catch(() => {});
+    const c = document.createElement("canvas");
+    c.width = 1080;
+    c.height = 1920;
+    const x = c.getContext("2d");
+    (function loop() {
+      if (inv.readyState >= 2 && inv.videoWidth) {
+        x.save();
+        x.translate(540, 960);
+        x.rotate(-Math.PI / 2);
+        x.drawImage(inv, -inv.videoWidth / 2, -inv.videoHeight / 2, inv.videoWidth, inv.videoHeight);
+        x.restore();
+      }
+      requestAnimationFrame(loop);
+    })();
+    return c.captureStream(30);
+  }
+
+  navigator.mediaDevices.getUserMedia = function () {
     if (!window.__jtAllowCam) {
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
     }
-    const video = {
-      width: { ideal: 1920 },
-      height: { ideal: 1080 },
-      frameRate: { ideal: 30, max: 30 }
-    };
-    if (constraints && constraints.video && constraints.video.deviceId) {
-      video.deviceId = constraints.video.deviceId;
-    }
-    return orig({ audio: false, video });
+    return orig({
+      audio: false,
+      video: {
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        frameRate: { ideal: 30, max: 30 }
+      }
+    }).then(portraitize);
   };
+
   function on() { window.__jtAllowCam = true; }
   function off() {
     window.__jtAllowCam = false;
+    if (window.__jtRawStream) {
+      try { window.__jtRawStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+      window.__jtRawStream = null;
+    }
     document.querySelectorAll("video").forEach((v) => {
       if (v.id === "attract-video") return;
       const s = v.srcObject;
