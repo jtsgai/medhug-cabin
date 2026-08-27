@@ -1,120 +1,24 @@
 html, body {
   width: 100% !important; height: 100% !important; margin: 0 !important;
-  background: #000 !important; overflow: hidden !important; display: block !important;
+  background: transparent !important; overflow: hidden !important; display: block !important;
 }
 .cabin-stage {
   position: fixed !important; inset: 0 !important;
   width: 100vw !important; height: 100vh !important;
   max-width: none !important; max-height: none !important;
   aspect-ratio: auto !important; margin: 0 !important; border: 0 !important;
-  border-radius: 0 !important; box-shadow: none !important; background: #000 !important;
+  border-radius: 0 !important; box-shadow: none !important; background: transparent !important;
 }
-.cabin { display: block !important; width: 100% !important; height: 100% !important; background: #000 !important; }
+.cabin { display: block !important; width: 100% !important; height: 100% !important; background: transparent !important; }
 .right-panel {
   position: absolute !important; inset: 0 !important;
-  width: 100% !important; height: 100% !important; background: #000 !important; z-index: 1;
+  width: 100% !important; height: 100% !important; background: transparent !important; z-index: 1;
   pointer-events: none !important;
 }
 #video-output {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
-  object-fit: cover !important; background: #000 !important;
+  object-fit: cover !important; background: transparent !important;
   pointer-events: none !important;
 }
 .video-placeholder, .attract-hint { display: none !important; }
-.left-panel:not(.collapsed) {
-  position: absolute !important;
-  left: 1.6% !important; top: 1% !important;
-  width: 36vw !important; max-width: 520px !important;
-  height: 72vh !important; max-height: 72vh !important;
-  z-index: 8 !important;
-  background: transparent !important; border: 0 !important;
-  transform: none !important;
-  display: flex !important; flex-direction: column !important;
-  overflow: hidden !important;
-  pointer-events: auto !important;
-}
-.left-panel:not(.collapsed) .zone-1 { flex: 0 0 auto !important; padding: 4px 8px !important; }
-.left-panel:not(.collapsed) .zone-2 {
-  flex: 0 0 25% !important;
-  height: 25% !important;
-  max-height: 25% !important;
-  min-height: 25% !important;
-  overflow: hidden !important;
-  display: flex !important; flex-direction: column !important;
-  padding: 0 8px !important;
-}
-.left-panel:not(.collapsed) .zone-2 .zone-label { display: none !important; }
-.left-panel:not(.collapsed) .featured-slot {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important; padding: 0 !important;
-  overflow: hidden !important;
-}
-.left-panel:not(.collapsed) .featured-slot img {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  object-fit: cover !important;
-  object-position: center top !important;
-  display: block !important;
-}
-.left-panel:not(.collapsed) .icon-btn {
-  top: 50% !important;
-}
-.left-panel:not(.collapsed) .zone-3 {
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  display: flex !important; flex-direction: column !important;
-  overflow: hidden !important;
-  padding: 6px 8px 0 !important;
-}
-.left-panel:not(.collapsed) .explore-wrap {
-  flex: 1 1 auto !important; min-height: 0 !important; overflow: hidden !important;
-}
-.left-panel:not(.collapsed) #explore-list {
-  height: 100% !important; overflow-y: auto !important;
-  scroll-snap-type: y mandatory !important;
-}
-.left-panel:not(.collapsed) .explore-page {
-  height: 100% !important; max-height: 100% !important;
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  grid-template-rows: 1fr 1fr !important;
-  gap: 6px !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  scroll-snap-align: start !important;
-}
-.left-panel:not(.collapsed) .explore-card {
-  margin: 0 !important; padding: 0 !important;
-  height: 100% !important; width: 100% !important;
-  overflow: hidden !important;
-  display: block !important;
-  background: #111 !important;
-}
-.left-panel:not(.collapsed) .explore-card img {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  object-fit: cover !important;
-  object-position: center top !important;
-  display: block !important;
-  background: #111 !important;
-  border-radius: 8px !important;
-}
-.left-panel:not(.collapsed) .zone-4 {
-  flex: 0 0 150px !important; height: 150px !important; max-height: 150px !important;
-}
-.left-panel:not(.collapsed) .shortlist { height: 100px !important; max-height: 100px !important; }
-.left-panel:not(.collapsed) .shortlist-item {
-  width: 76px !important; height: 100px !important; flex: 0 0 76px !important;
-}
-.modal {
-  align-items: flex-start !important; justify-content: center !important;
-  padding-top: 12vh !important; z-index: 70 !important; pointer-events: auto !important;
-}

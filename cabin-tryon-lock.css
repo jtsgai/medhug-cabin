@@ -8,6 +8,16 @@
   max-height: 72vh !important;
   display: flex !important;
   flex-direction: column !important;
+  background: transparent !important;
+}
+#left-panel.left-panel:not(.collapsed) .zone,
+#left-panel.left-panel:not(.collapsed) .zone-1,
+#left-panel.left-panel:not(.collapsed) .zone-2,
+#left-panel.left-panel:not(.collapsed) .zone-3,
+#left-panel.left-panel:not(.collapsed) .zone-4,
+#left-panel.left-panel:not(.collapsed) .featured-slot,
+#left-panel.left-panel:not(.collapsed) .explore-card {
+  background: transparent !important;
 }
 #left-panel.left-panel:not(.collapsed) #zone-featured.zone-2 {
   flex: 0 0 25% !important;
@@ -29,6 +39,7 @@
   min-height: 0 !important;
   max-height: none !important;
   overflow: hidden !important;
+  background: transparent !important;
 }
 #left-panel.left-panel:not(.collapsed) #featured-slot.featured-slot img {
   width: 100% !important;
@@ -39,6 +50,7 @@
   object-position: center top !important;
   display: block !important;
   border-radius: 12px !important;
+  background: transparent !important;
 }
 #left-panel.left-panel:not(.collapsed) .explore-page .explore-card img,
 #left-panel.left-panel:not(.collapsed) #explore-list .explore-card img {
@@ -48,4 +60,11 @@
   max-height: none !important;
   object-fit: cover !important;
   object-position: center top !important;
+  background: transparent !important;
+}
+.right-panel,
+#video-output,
+.cabin-stage,
+.cabin {
+  background: transparent !important;
 }

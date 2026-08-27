@@ -1,16 +1,21 @@
 function applyFullCabin() {
   document.documentElement.style.setProperty("--feat-max", "9999px");
+  document.documentElement.style.background = "transparent";
+  document.body.style.background = "transparent";
   const stage = document.querySelector(".cabin-stage");
-  if (!stage) return;
-  stage.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;max-width:none;max-height:none;aspect-ratio:auto;margin:0;border:0;border-radius:0;box-shadow:none;background:#000";
-  document.documentElement.style.background = "#000";
-  document.body.style.background = "#000";
+  if (stage) {
+    stage.style.background = "transparent";
+    stage.style.position = "fixed";
+    stage.style.inset = "0";
+    stage.style.width = "100vw";
+    stage.style.height = "100vh";
+  }
   const cabin = document.querySelector(".cabin");
   if (cabin) {
     cabin.style.display = "block";
     cabin.style.width = "100%";
     cabin.style.height = "100%";
-    cabin.style.background = "#000";
+    cabin.style.background = "transparent";
     cabin.style.gridTemplateColumns = "none";
   }
   const right = document.querySelector(".right-panel");
@@ -19,7 +24,7 @@ function applyFullCabin() {
     right.style.inset = "0";
     right.style.width = "100%";
     right.style.height = "100%";
-    right.style.background = "#000";
+    right.style.background = "transparent";
     right.style.zIndex = "1";
     right.style.pointerEvents = "none";
   }
@@ -27,7 +32,7 @@ function applyFullCabin() {
   if (video) {
     video.style.objectFit = "cover";
     video.style.objectPosition = "center center";
-    video.style.background = "#000";
+    video.style.background = "transparent";
     video.style.pointerEvents = "none";
   }
   const left = document.querySelector(".left-panel");
@@ -45,6 +50,7 @@ function applyFullCabin() {
     featImg.style.height = "100%";
     featImg.style.objectFit = "cover";
     featImg.style.objectPosition = "center top";
+    featImg.style.background = "transparent";
   }
 }
 function ensureModeSwitch() {
@@ -73,7 +79,6 @@ function dismissAttract() {
     layer.classList.add("hidden");
   }
 }
-const _bootAt = Date.now();
 function boot() {
   applyFullCabin();
   ensureModeSwitch();
