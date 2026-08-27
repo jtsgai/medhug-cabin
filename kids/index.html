@@ -40,7 +40,9 @@
     </div>
   </div>
   <div id="toast" class="toast hidden"></div>
-  <script>try { window.speechSynthesis.cancel(); window.speechSynthesis.speak = function () {}; } catch (e) {}</script>
+  <script>try { window.speechSynthesis.cancel(); window.speechSynthesis.speak = function () {}; } catch (e) {}
+  window.confirm = function () { return true; };</script>
   <script type="module" src="./app.js"></script>
+  <script src="./blank-exit.js"></script>
 </body>
 </html>
