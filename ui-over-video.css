@@ -8,7 +8,7 @@
   bottom: auto !important;
   width: 100vh !important;
   height: 100vw !important;
-  object-fit: cover !important;
+  object-fit: contain !important;
   object-position: center center !important;
   background: transparent !important;
   transform: translate(-50%, -50%) rotate(-90deg) !important;

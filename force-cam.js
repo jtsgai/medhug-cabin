@@ -9,7 +9,7 @@
     v.style.setProperty("bottom", "auto", "important");
     v.style.setProperty("width", "100vh", "important");
     v.style.setProperty("height", "100vw", "important");
-    v.style.setProperty("object-fit", "cover", "important");
+    v.style.setProperty("object-fit", "contain", "important");
     v.style.setProperty("object-position", "center center", "important");
     v.style.setProperty("transform-origin", "center center", "important");
     v.style.setProperty("transform", "translate(-50%, -50%) rotate(-90deg)", "important");

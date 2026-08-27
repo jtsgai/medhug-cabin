@@ -1,17 +1,11 @@
 (function () {
-  try { localStorage.setItem("jt_cam_rot", "-90"); } catch (_) {}
-  const MODES = [
-    { width: 1920, height: 1080 },
-    { width: 1280, height: 720 },
-    { width: 1080, height: 1920 }
-  ];
   function fitVideo(video) {
     video.style.position = "fixed";
     video.style.left = "50%";
     video.style.top = "50%";
     video.style.width = "100vh";
     video.style.height = "100vw";
-    video.style.objectFit = "cover";
+    video.style.objectFit = "contain";
     video.style.objectPosition = "center center";
     video.style.transformOrigin = "center center";
     video.style.transform = "translate(-50%, -50%) rotate(-90deg)";
@@ -39,7 +33,8 @@
     fitVideo(video);
     const deviceId = await bestDeviceId();
     let stream = null;
-    for (const mode of MODES) {
+    const modes = [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }];
+    for (const mode of modes) {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: false,
