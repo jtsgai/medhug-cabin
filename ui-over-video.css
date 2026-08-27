@@ -1,8 +1,11 @@
 #video-output, .holo-video {
   z-index: 0 !important;
   pointer-events: none !important;
-  object-fit: contain !important;
-  object-position: center bottom !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: cover !important;
+  object-position: center 28% !important;
   background: transparent !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }

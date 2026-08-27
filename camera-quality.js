@@ -30,10 +30,9 @@
     video.style.inset = "0";
     video.style.width = "100vw";
     video.style.height = "100vh";
-    video.style.objectFit = "contain";
-    video.style.objectPosition = "center bottom";
+    video.style.objectFit = "cover";
+    video.style.objectPosition = "center 28%";
     video.style.background = "transparent";
-    video.style.imageRendering = "auto";
   }
 
   async function openHighRes() {
@@ -50,12 +49,11 @@
             deviceId: deviceId ? { exact: deviceId } : undefined,
             width: { ideal: mode.width },
             height: { ideal: mode.height },
-            aspectRatio: { ideal: mode.height / mode.width },
             frameRate: { ideal: 30, max: 30 }
           }
         });
         const set = stream.getVideoTracks()[0].getSettings?.() || {};
-        if ((set.height || 0) >= 720) break;
+        if ((set.width || 0) >= 720) break;
         stream.getTracks().forEach((t) => t.stop());
         stream = null;
       } catch (_) {
