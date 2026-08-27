@@ -3,6 +3,26 @@
   window.__jtRawStream = null;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
+  async function pickCam() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter((d) => d.kind === "videoinput");
+      if (!cams.length) return undefined;
+      const obs = cams.find((d) => /obs|virtual\s*cam/i.test(d.label || ""));
+      if (obs) return obs.deviceId;
+      const scored = cams.map((d) => {
+        const n = (d.label || "").toLowerCase();
+        let s = 0;
+        if (/usb|logitech|brio|studio|4k|1080|hd|c920|c922|c930/i.test(n)) s += 5;
+        if (/integrated|ir |infrared|face/i.test(n)) s -= 4;
+        return { id: d.deviceId, s };
+      }).sort((a, b) => b.s - a.s);
+      return scored[0].id;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
   function portraitize(stream) {
     window.__jtRawStream = stream;
     const inv = document.createElement("video");
@@ -27,18 +47,42 @@
     return c.captureStream(30);
   }
 
-  navigator.mediaDevices.getUserMedia = function () {
+  function wrap(stream) {
+    window.__jtRawStream = stream;
+    const track = stream.getVideoTracks()[0];
+    const set = (track && track.getSettings && track.getSettings()) || {};
+    const w = set.width || 0;
+    const h = set.height || 0;
+    if (h >= w && h >= 720) return stream;
+    return portraitize(stream);
+  }
+
+  navigator.mediaDevices.getUserMedia = async function () {
     if (!window.__jtAllowCam) {
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
     }
-    return orig({
-      audio: false,
-      video: {
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 30, max: 30 }
-      }
-    }).then(portraitize);
+    const id = await pickCam();
+    const video = {
+      width: { ideal: 1080 },
+      height: { ideal: 1920 },
+      frameRate: { ideal: 30, max: 30 }
+    };
+    if (id) video.deviceId = { ideal: id };
+    let stream;
+    try {
+      stream = await orig({ audio: false, video });
+    } catch (_) {
+      stream = await orig({
+        audio: false,
+        video: {
+          deviceId: id ? { ideal: id } : undefined,
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30, max: 30 }
+        }
+      });
+    }
+    return wrap(stream);
   };
 
   function on() { window.__jtAllowCam = true; }
