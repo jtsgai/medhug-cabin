@@ -22,32 +22,67 @@ html, body {
   width: 100% !important; height: 100% !important;
   object-fit: cover !important; object-position: center center !important; background: #000 !important;
 }
-.left-panel {
-  position: absolute !important; left: 8px !important; top: 2% !important;
-  width: 260px !important; max-width: 260px !important; z-index: 8 !important;
+.left-panel:not(.collapsed) {
+  position: absolute !important;
+  left: 2% !important; top: 8% !important;
+  width: 30vw !important; max-width: 420px !important;
+  height: 58vh !important; max-height: 58vh !important;
+  z-index: 8 !important;
   background: transparent !important; border: 0 !important;
-  transform: scale(1.5); transform-origin: top left;
+  transform: none !important;
+  display: flex !important; flex-direction: column !important;
+  overflow: hidden !important;
 }
 .left-panel.collapsed {
-  left: 8px !important; top: 12% !important; width: 72px !important;
-  transform: scale(1.25); transform-origin: top left;
-  background: transparent !important;
+  left: 0 !important; top: 12% !important; width: 72px !important;
+  transform: none !important; background: transparent !important;
+}
+.left-panel:not(.collapsed) .zone-3 {
+  flex: 1 1 auto !important; min-height: 0 !important;
+}
+.left-panel:not(.collapsed) .explore-list,
+.left-panel:not(.collapsed) #explore-list {
+  display: block !important;
+}
+.left-panel:not(.collapsed) .explore-page {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  grid-template-rows: 1fr 1fr !important;
+}
+.left-panel:not(.collapsed) .zone-4 {
+  flex: 0 0 auto !important;
+  position: relative !important;
+  bottom: auto !important;
+  margin-top: 8px !important;
 }
 .zone, .explore-card, .cat-tab { background: transparent !important; }
-#jt-mode-switch {
-  position: fixed; top: 14px; right: 16px; z-index: 50;
-  color: rgba(255,255,255,0.7); text-decoration: none;
-  font-size: 13px; letter-spacing: 0.1em;
-  border: 1px solid rgba(184,164,138,0.45);
-  padding: 8px 12px; background: transparent;
+.jt-mode-dock,
+#jt-mode-switch, #jt-fx-switch {
+  position: fixed !important;
+  top: auto !important;
+  z-index: 50 !important;
+}
+.jt-mode-dock {
+  top: 12% !important; right: 22px !important;
+  display: flex !important; flex-direction: column !important; gap: 10px !important;
+}
+#jt-mode-switch, #jt-fx-switch {
+  color: rgba(255,255,255,0.82) !important;
+  text-decoration: none !important;
+  font-size: 14px !important;
+  letter-spacing: 0.16em !important;
+  border: 1px solid rgba(248,245,240,0.28) !important;
+  padding: 12px 16px !important;
+  border-radius: 999px !important;
+  background: rgba(0,0,0,0.28) !important;
+  backdrop-filter: blur(10px);
 }
 .attract-layer {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
   background: #000 !important; z-index: 20 !important;
 }
-.attract-layer video,
-#attract-video {
+.attract-layer video, #attract-video {
   position: absolute !important; inset: 0 !important;
   width: 100% !important; height: 100% !important;
   object-fit: cover !important; object-position: center center !important;

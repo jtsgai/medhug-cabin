@@ -20,21 +20,34 @@ function applyFullCabin() {
   }
   const left = document.querySelector(".left-panel");
   if (left && !left.classList.contains("collapsed")) {
-    left.style.position = "absolute"; left.style.left = "8px"; left.style.top = "2%";
-    left.style.width = "260px"; left.style.background = "transparent"; left.style.zIndex = "8";
-    left.style.transform = "scale(1.5)"; left.style.transformOrigin = "top left";
+    left.style.position = "absolute";
+    left.style.left = "2%"; left.style.top = "8%";
+    left.style.width = "30vw"; left.style.maxWidth = "420px";
+    left.style.height = "58vh"; left.style.maxHeight = "58vh";
+    left.style.background = "transparent"; left.style.zIndex = "8";
+    left.style.transform = "none";
   }
 }
 function ensureModeSwitch() {
   const old = document.getElementById("jt-home-switch"); if (old) old.remove();
+  let dock = document.getElementById("jt-mode-dock");
+  if (!dock) {
+    dock = document.createElement("div");
+    dock.id = "jt-mode-dock";
+    dock.className = "jt-mode-dock";
+    document.body.appendChild(dock);
+  }
   if (!document.getElementById("jt-mode-switch")) {
     const a = document.createElement("a"); a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
-    document.body.appendChild(a);
+    dock.appendChild(a);
+  } else if (document.getElementById("jt-mode-switch").parentElement !== dock) {
+    dock.appendChild(document.getElementById("jt-mode-switch"));
   }
   if (!document.getElementById("jt-fx-switch")) {
     const a = document.createElement("a"); a.id = "jt-fx-switch"; a.href = "./fx/"; a.textContent = "FX";
-    a.style.cssText = "position:fixed;top:14px;right:86px;z-index:50;color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;letter-spacing:0.1em;border:1px solid rgba(184,164,138,0.45);padding:8px 12px;background:transparent";
-    document.body.appendChild(a);
+    dock.appendChild(a);
+  } else if (document.getElementById("jt-fx-switch").parentElement !== dock) {
+    dock.appendChild(document.getElementById("jt-fx-switch"));
   }
 }
 function dismissAttract() {
@@ -54,7 +67,6 @@ function boot() {
     if (Date.now() - _bootAt < 3000) dismissAttract();
     else clearInterval(t);
   }, 150);
-  setInterval(applyFullCabin, 800);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
 else boot();
