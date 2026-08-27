@@ -1,0 +1,124 @@
+{
+  "characters": [
+    {
+      "id": "cutea",
+      "name": "Cutea",
+      "name_zh": "Cutea",
+      "ref": "Cutea.png",
+      "display": "Cutea.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 可爱的卡通猫咪，黑色齐刘海，红色T恤金星徽章. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Cutea，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Cutea. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "filo",
+      "name": "Filo",
+      "name_zh": "Filo",
+      "ref": "Filo.png",
+      "display": "Filo.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 橙色卡通狐狸，黄色T恤，彩虹尾巴. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Filo，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Filo. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "slomo",
+      "name": "Slomo",
+      "name_zh": "Slomo",
+      "ref": "Slomo.png",
+      "display": "Slomo.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 戴眼镜穿西装的树懒. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Slomo，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Slomo. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "drchronos",
+      "name": "DrChronos",
+      "name_zh": "DrChronos",
+      "ref": "DrChronos.png",
+      "display": "DrChronos.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 鹰头科学家，白大褂机械手臂，手持飞鸟. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 DrChronos，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm DrChronos. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "drbulby",
+      "name": "DrBulby",
+      "name_zh": "DrBulby",
+      "ref": "DrBulby.png",
+      "display": "DrBulby.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 灯泡头金色小机器人. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 DrBulby，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm DrBulby. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "z3l4",
+      "name": "Z3L4",
+      "name_zh": "Z3L4",
+      "ref": "Z3L4.png",
+      "display": "Z3L4.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 蓝色星空质感的小外星人. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Z3L4，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Z3L4. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "rela",
+      "name": "Rela",
+      "name_zh": "Rela",
+      "ref": "Rela.png",
+      "display": "Rela.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 红发小女孩，蓝裙子，魔法棒和笔记本. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Rela，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Rela. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "aisha",
+      "name": "Aisha",
+      "name_zh": "Aisha",
+      "ref": "Aisha.png",
+      "display": "Aisha.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 探险风格女孩，草帽，手持地图和小章鱼. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Aisha，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Aisha. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "beepo",
+      "name": "Beepo",
+      "name_zh": "Beepo",
+      "ref": "Beepo.png",
+      "display": "Beepo.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 白色圆润小机器人. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Beepo，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Beepo. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "danica",
+      "name": "Danica",
+      "name_zh": "Danica",
+      "ref": "Danica.png",
+      "display": "Danica.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 彩虹发色艺术家女孩，手持画笔. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Danica，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Danica. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "timo",
+      "name": "Timo",
+      "name_zh": "Timo",
+      "ref": "Timo.png",
+      "display": "Timo.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 戴护目镜的小男孩，手持工具. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Timo，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Timo. Welcome to Red Fun Planet!"
+    },
+    {
+      "id": "halo",
+      "name": "Halo",
+      "name_zh": "Halo",
+      "ref": "Halo.png",
+      "display": "Halo.png",
+      "prompt": "Substitute the character in the video with the character in the reference image: 红色火焰小精灵. Match the reference character identity, colors, and signature features closely while following the user's real-time motion and facial expression.",
+      "welcome_zh": "你好呀！我是 Halo，欢迎来到 Red Fun Planet！",
+      "welcome_en": "Hi! I'm Halo. Welcome to Red Fun Planet!"
+    }
+  ]
+}
