@@ -1,0 +1,40 @@
+#left-panel.left-panel:not(.collapsed) #explore-list {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255,255,255,0.45) transparent !important;
+}
+#left-panel.left-panel:not(.collapsed) #explore-list::-webkit-scrollbar {
+  width: 7px !important;
+  display: block !important;
+}
+#left-panel.left-panel:not(.collapsed) #explore-list::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+#left-panel.left-panel:not(.collapsed) #explore-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.42) !important;
+  border-radius: 8px !important;
+}
+#left-panel .explore-scroll-hint {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: 8px !important;
+  transform: translateX(-50%) !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: rgba(0,0,0,0.35) !important;
+  color: #fff !important;
+  font-size: 22px !important;
+  line-height: 34px !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  z-index: 6 !important;
+  animation: jt-bounce 1.2s ease-in-out infinite !important;
+  text-shadow: 0 1px 4px #000 !important;
+}
+#left-panel .explore-scroll-hint.hidden {
+  opacity: 0 !important;
+}
+@keyframes jt-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(6px); }
+}
