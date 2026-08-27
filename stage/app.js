@@ -4,23 +4,22 @@ const canvas = document.querySelector("#stage");
 const hint = document.querySelector("#hint");
 
 const SPECS = [
-  { id: "cutea", name: "Cutea", img: "../kids/assets/Cutea.png", home: { x: 0, z: 0.15 }, greet: { x: 0, z: 0.7 }, scale: 1.7 },
-  { id: "filo", name: "Filo", img: "../kids/assets/Filo.png", home: { x: 1.35, z: -0.2 }, greet: { x: 0.2, z: 0.65 }, scale: 1.45 },
-  { id: "halo", name: "Halo", img: "../kids/assets/Halo.png", home: { x: -1.35, z: -0.15 }, greet: { x: -0.2, z: 0.65 }, scale: 1.35 }
+  { id: "cutea", name: "Cutea", img: "../kids/assets/Cutea.png", home: { x: 0, z: 0.55 }, greet: { x: 0, z: 1.15 }, scale: 1.95 },
+  { id: "halo", name: "Halo", img: "../kids/assets/Halo.png", home: { x: -1.05, z: -0.35 }, greet: { x: -0.15, z: 1.05 }, scale: 1.55 },
+  { id: "filo", name: "Filo", img: "../kids/assets/Filo.png", home: { x: 1.05, z: -0.3 }, greet: { x: 0.15, z: 1.05 }, scale: 1.58 }
 ];
 
 const scene = new THREE.Scene();
 scene.background = null;
 
-const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 80);
-camera.position.set(0, 1.45, 8.4);
-camera.lookAt(0, 0.85, 0);
+const camera = new THREE.PerspectiveCamera(24, 1, 0.1, 80);
+camera.position.set(0, 1.62, 8.8);
+camera.lookAt(0, 0.78, 0);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-
-scene.add(new THREE.AmbientLight(0xffffff, 1.15));
+scene.add(new THREE.AmbientLight(0xffffff, 1.2));
 
 const actors = [];
 let selected = "cutea";
@@ -46,33 +45,24 @@ resize();
 function makeCharacter(spec, texture) {
   texture.colorSpace = THREE.SRGBColorSpace;
   const img = texture.image;
-  const aspect = (img && img.width && img.height) ? img.width / img.height : 0.72;
+  const aspect = img?.width && img?.height ? img.width / img.height : 0.72;
   const h = spec.scale;
   const w = h * aspect;
   const mat = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    alphaTest: 0.12,
-    side: THREE.DoubleSide,
-    depthWrite: false
+    map: texture, transparent: true, alphaTest: 0.12,
+    side: THREE.DoubleSide, depthWrite: false
   });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat);
   mesh.position.y = h / 2;
-
   const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(w * 0.28, 24),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false })
+    new THREE.CircleGeometry(w * 0.26, 28),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.26, depthWrite: false })
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.01;
-
+  shadow.position.y = 0.02;
   const root = new THREE.Group();
-  root.add(mesh);
-  root.add(shadow);
-  root.userData.spec = spec;
-  root.userData.body = mesh;
-  root.userData.shadow = shadow;
-  root.userData.baseH = h;
+  root.add(mesh); root.add(shadow);
+  root.userData = { spec, body: mesh, shadow, baseH: h };
   return root;
 }
 
@@ -108,16 +98,13 @@ async function detectPerson() {
     if (!v.videoWidth) return presence;
     snap.getContext("2d").drawImage(v, 0, 0, 160, 90);
     return (await det.detect(snap)).length > 0;
-  } catch (_) {
-    return presence;
-  }
+  } catch (_) { return presence; }
 }
 
 async function startPresenceCam() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: false,
-      video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } }
+      audio: false, video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } }
     });
     const video = document.createElement("video");
     video.playsInline = true; video.muted = true; video.srcObject = stream;
@@ -142,17 +129,14 @@ function goKids(id) {
   if (going) return;
   going = true;
   hint.textContent = `${SPECS.find((s) => s.id === id).name} will perform`;
-  setTimeout(() => { location.href = `../kids/?char=${id}`; }, 1200);
+  setTimeout(() => { location.href = `../kids/?char=${id}`; }, 1100);
 }
 
 canvas.addEventListener("pointerdown", (ev) => {
   const hit = pickActor(ev);
   if (!hit) return;
   const id = hit.userData.spec.id;
-  if (selected === id && state === "greet") {
-    goKids(id);
-    return;
-  }
+  if (selected === id && state === "greet") { goKids(id); return; }
   selected = id;
   state = "greet";
   hint.textContent = `${hit.userData.spec.name} — tap again`;
@@ -162,44 +146,35 @@ function tick() {
   requestAnimationFrame(tick);
   const t = clock.elapsedTime;
   const now = performance.now();
-
   detectPerson().then((seen) => {
     if (going) return;
     if (seen) {
       absentSince = 0;
       if (!presence) presentSince = now;
       presence = true;
-      if (state === "idle" && now - presentSince > 2200) {
-        state = "greet";
-        selected = "cutea";
+      if (state === "idle" && now - presentSince > 2000) {
+        state = "greet"; selected = "cutea";
         hint.textContent = "Cutea sees you";
       }
     } else {
       if (!absentSince) absentSince = now;
       if (now - absentSince > 5000) {
-        presence = false;
-        presentSince = 0;
-        state = "idle";
-        selected = "cutea";
+        presence = false; presentSince = 0; state = "idle"; selected = "cutea";
         hint.textContent = "Friends on stage";
       }
     }
   });
-
   for (const actor of actors) {
     const spec = actor.userData.spec;
     const on = spec.id === selected && state === "greet";
     const tgt = on ? spec.greet : spec.home;
     actor.position.x += (tgt.x - actor.position.x) * 0.06;
     actor.position.z += (tgt.z - actor.position.z) * 0.06;
-
-    const bounce = Math.sin(t * (on ? 5.2 : 2.6) + spec.scale) * (on ? 0.08 : 0.045);
-    const sway = Math.sin(t * (on ? 3.4 : 1.5)) * (on ? 0.08 : 0.04);
+    const bounce = Math.sin(t * (on ? 5.0 : 2.4) + spec.scale) * (on ? 0.07 : 0.04);
+    const sway = Math.sin(t * (on ? 3.2 : 1.4)) * (on ? 0.07 : 0.035);
     actor.userData.body.position.y = actor.userData.baseH / 2 + bounce;
     actor.userData.body.rotation.z = sway;
-    actor.userData.body.rotation.y = on ? Math.sin(t * 2.2) * 0.12 : Math.sin(t * 0.8) * 0.06;
-    const s = 1 + (on ? 0.04 : 0) + bounce * 0.15;
-    actor.userData.shadow.scale.setScalar(s);
+    actor.userData.shadow.scale.setScalar(1 + bounce * 0.2);
     actor.userData.shadow.material.opacity = on ? 0.34 : 0.22;
   }
   renderer.render(scene, camera);
