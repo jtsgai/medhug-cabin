@@ -9,9 +9,10 @@
   <link rel="stylesheet" href="./cabin-tryon-lock.css" />
   <link rel="stylesheet" href="./tryon-scroll.css" />
   <link rel="stylesheet" href="./shared-dock.css" />
-  <link rel="stylesheet" href="./ui-over-video.css?v=cam3" />
+  <link rel="stylesheet" href="./ui-over-video.css?v=cam4" />
 </head>
 <body>
+  <video id="video-output" autoplay playsinline muted></video>
   <div id="error-banner" class="error-banner"></div>
   <div id="toast" class="toast hidden"></div>
   <nav class="jt-dock" id="jt-dock">
@@ -76,7 +77,6 @@
           <div class="cam-off-mark">JT</div>
         </div>
         <button id="btn-save" class="btn-save hidden" data-i18n="add_shortlist">加入备选</button>
-        <video id="video-output" autoplay playsinline muted></video>
         <div id="api-credit-hint" class="api-credit-hint hidden" aria-hidden="true">
           <span class="api-credit-ring"></span>
           <span class="api-credit-core"></span>
@@ -113,7 +113,7 @@
   <script type="module" src="./app.js"></script>
   <script type="module" src="./cabin-aspect-runtime.js"></script>
   <script src="./skip-attract.js"></script>
-  <script src="./camera-quality.js?v=cam3"></script>
-  <script src="./force-cam.js?v=cam3"></script>
+  <script src="./camera-quality.js?v=cam4"></script>
+  <script src="./force-cam.js?v=cam4"></script>
 </body>
 </html>
