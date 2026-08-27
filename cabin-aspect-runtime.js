@@ -14,12 +14,6 @@ function applyFullCabin() {
     right.style.position = "absolute"; right.style.inset = "0";
     right.style.width = "100%"; right.style.height = "100%"; right.style.background = "#000"; right.style.zIndex = "1";
   }
-  const attract = document.querySelector("#attract-video");
-  if (attract) {
-    attract.style.objectFit = "cover"; attract.style.objectPosition = "center center";
-    attract.style.width = "100%"; attract.style.height = "100%";
-    attract.style.position = "absolute"; attract.style.inset = "0"; attract.style.background = "#000";
-  }
   const video = document.querySelector("#video-output");
   if (video) {
     video.style.objectFit = "cover"; video.style.objectPosition = "center center"; video.style.background = "#000";
@@ -37,16 +31,23 @@ function ensureModeSwitch() {
   const a = document.createElement("a"); a.id = "jt-mode-switch"; a.href = "./kids/"; a.textContent = "KIDS";
   document.body.appendChild(a);
 }
-function kickAttractToMain() {
+function dismissAttract() {
   const layer = document.querySelector("#attract-layer");
-  if (layer && !layer.classList.contains("hidden")) layer.click();
+  if (!layer) return;
+  if (!layer.classList.contains("hidden")) {
+    layer.click();
+    layer.classList.add("hidden");
+  }
 }
+const _bootAt = Date.now();
 function boot() {
   applyFullCabin();
   ensureModeSwitch();
-  kickAttractToMain();
-  setTimeout(kickAttractToMain, 80);
-  setTimeout(kickAttractToMain, 400);
+  dismissAttract();
+  const t = setInterval(() => {
+    if (Date.now() - _bootAt < 3000) dismissAttract();
+    else clearInterval(t);
+  }, 150);
   setInterval(applyFullCabin, 800);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
