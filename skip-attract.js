@@ -1,5 +1,9 @@
 (function () {
-  const until = Date.now() + 12000;
+  let lastAct = Date.now();
+  const mark = () => { lastAct = Date.now(); };
+  ["pointerdown", "touchstart", "keydown", "click"].forEach((ev) => {
+    document.addEventListener(ev, mark, { passive: true });
+  });
   const hide = () => {
     const layer = document.getElementById("attract-layer");
     const video = document.getElementById("attract-video");
@@ -8,12 +12,11 @@
       try { layer.click(); } catch (e) {}
     }
     if (video) {
-      try { video.pause(); video.removeAttribute("src"); video.load(); } catch (e) {}
+      try { video.pause(); } catch (e) {}
     }
   };
   hide();
-  const t = setInterval(() => {
-    hide();
-    if (Date.now() > until) clearInterval(t);
-  }, 200);
+  setInterval(() => {
+    if (Date.now() - lastAct < 90000) hide();
+  }, 250);
 })();
