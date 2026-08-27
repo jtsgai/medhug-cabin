@@ -1,0 +1,14 @@
+#video-output, .holo-video {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+#left-panel, .left-panel {
+  z-index: 30 !important;
+}
+.jt-dock {
+  z-index: 90 !important;
+}
+.cabin-stage, .cabin {
+  position: relative;
+  z-index: 10;
+}
