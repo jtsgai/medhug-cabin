@@ -1,9 +1,14 @@
-html, body { background: #000; margin: 0; height: 100%; overflow: hidden; }
+html, body {
+  background: transparent !important;
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
 .holo-video, #video-output {
   position: fixed !important; inset: 0 !important;
   width: 100vw !important; height: 100vh !important;
   object-fit: cover !important; object-position: center center !important;
-  background: #000 !important; z-index: 1 !important;
+  background: transparent !important; z-index: 1 !important;
   pointer-events: none !important;
 }
 .cabin {
@@ -21,25 +26,28 @@ html, body { background: #000; margin: 0; height: 100%; overflow: hidden; }
   z-index: 6;
   transform: none !important;
   pointer-events: none !important;
+  background: transparent !important;
 }
-.logo-text { height: 64px !important; max-width: 70% !important; }
+.logo-text { height: 64px !important; max-width: 70% !important; background: transparent !important; }
 .headline { font-size: 32px !important; }
 .stage {
   position: absolute !important; inset: 0 !important;
   display: grid !important;
   grid-template-columns: 22vw 1fr 22vw !important;
   pointer-events: none !important;
+  background: transparent !important;
 }
 .col {
   justify-content: center !important;
   gap: 18px !important;
   pointer-events: auto !important;
-  perspective: 900px;
+  background: transparent !important;
 }
 .char-card {
   transform-style: preserve-3d;
   animation: card3d 6.5s ease-in-out infinite;
   pointer-events: auto !important;
+  background: transparent !important;
 }
 .char-card:nth-child(2n) { animation-delay: -2.2s; }
 .char-card:nth-child(3n) { animation-delay: -4.1s; }
@@ -50,9 +58,11 @@ html, body { background: #000; margin: 0; height: 100%; overflow: hidden; }
 .char-card img {
   width: 222px !important; height: 222px !important;
   filter: drop-shadow(10px 14px 16px rgba(0,0,0,0.45));
+  background: transparent !important;
 }
 .stage-center, .empty-state, .logo-hit, .btn-stop {
   pointer-events: auto !important;
+  background: transparent !important;
 }
 .char-card, .char-card img, .logo-3d, .logo-text {
   background: transparent !important;
