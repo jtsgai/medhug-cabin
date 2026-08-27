@@ -1,3 +1,4 @@
+body > #video-output,
 #video-output, .holo-video {
   z-index: 0 !important;
   pointer-events: none !important;
@@ -8,11 +9,18 @@
   bottom: auto !important;
   width: 100vh !important;
   height: 100vw !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: contain !important;
   object-position: center center !important;
   background: transparent !important;
   transform: translate(-50%, -50%) rotate(-90deg) !important;
   transform-origin: center center !important;
+}
+.cabin-stage, .cabin, .right-panel {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }
 .jt-dock { z-index: 90 !important; }
