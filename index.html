@@ -7,10 +7,17 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./cabin-aspect.css" />
   <link rel="stylesheet" href="./cabin-tryon-lock.css" />
+  <link rel="stylesheet" href="./shared-dock.css" />
 </head>
 <body>
   <div id="error-banner" class="error-banner"></div>
   <div id="toast" class="toast hidden"></div>
+  <nav class="jt-dock" id="jt-dock">
+    <a href="./index.html" class="is-here">TRY ON</a>
+    <a href="./kids/">KIDS</a>
+    <a href="./fx/">FX</a>
+    <a href="./stage/">STAGE</a>
+  </nav>
   <div class="cabin-stage">
     <div id="attract-layer" class="attract-layer hidden">
       <video id="attract-video" muted playsinline></video>
@@ -26,7 +33,7 @@
         <button type="button" id="btn-expand-strip" class="btn-expand-strip hidden" aria-label="expand"></button>
         <div class="zone zone-1">
           <div class="brand-row">
-            <span class="logo">JT</span>
+            <span class="logo">JT M&amp;C Pte Ltd</span>
             <div class="zone1-right">
               <button type="button" id="btn-lang" class="btn-lang">EN</button>
               <span id="status" class="status hidden"></span>
