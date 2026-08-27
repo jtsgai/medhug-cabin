@@ -4,14 +4,14 @@ const canvas = document.querySelector("#stage");
 const hint = document.querySelector("#hint");
 
 const SPECS = [
-  { id: "cutea", name: "Cutea", img: "../kids/assets/Cutea.png", home: { x: 0, z: 0.35 }, greet: { x: 0, z: 0.95 }, scale: 1.28 },
-  { id: "halo", name: "Halo", img: "../kids/assets/Halo.png", home: { x: -1.22, z: -0.55 }, greet: { x: -0.2, z: 0.85 }, scale: 1.02 },
-  { id: "filo", name: "Filo", img: "../kids/assets/Filo.png", home: { x: 1.22, z: -0.5 }, greet: { x: 0.2, z: 0.85 }, scale: 1.04 }
+  { id: "cutea", name: "Cutea", img: "../kids/assets/Cutea.png", home: { x: 0, z: 0.25 }, greet: { x: 0, z: 0.7 }, scale: 1.18 },
+  { id: "halo", name: "Halo", img: "../kids/assets/Halo.png", home: { x: -0.72, z: -0.45 }, greet: { x: -0.12, z: 0.62 }, scale: 0.92 },
+  { id: "filo", name: "Filo", img: "../kids/assets/Filo.png", home: { x: 0.72, z: -0.4 }, greet: { x: 0.12, z: 0.62 }, scale: 0.94 }
 ];
 
 const scene = new THREE.Scene();
 scene.background = null;
-const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 80);
+const camera = new THREE.PerspectiveCamera(34, 9 / 16, 0.1, 80);
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
 renderer.setClearColor(0x000000, 0);
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
@@ -25,12 +25,12 @@ const pointer = new THREE.Vector2();
 const loader = new THREE.TextureLoader();
 
 function frameCabin() {
-  const w = innerWidth, h = innerHeight;
-  const portrait = h >= w;
-  camera.aspect = w / h;
-  camera.fov = portrait ? 32 : 26;
-  camera.position.set(0, portrait ? 1.05 : 1.45, portrait ? 7.6 : 8.4);
-  camera.lookAt(0, portrait ? 0.42 : 0.7, 0);
+  const w = canvas.clientWidth || innerWidth;
+  const h = canvas.clientHeight || innerHeight;
+  camera.aspect = w / Math.max(h, 1);
+  camera.fov = 34;
+  camera.position.set(0, 1.35, 6.4);
+  camera.lookAt(0, 0.38, 0);
   camera.updateProjectionMatrix();
   renderer.setSize(w, h, false);
 }
@@ -42,9 +42,8 @@ function softShadowTexture() {
   c.width = 256; c.height = 256;
   const g = c.getContext("2d");
   const grd = g.createRadialGradient(128, 128, 6, 128, 128, 126);
-  grd.addColorStop(0, "rgba(0,0,0,0.22)");
-  grd.addColorStop(0.28, "rgba(0,0,0,0.1)");
-  grd.addColorStop(0.62, "rgba(0,0,0,0.03)");
+  grd.addColorStop(0, "rgba(0,0,0,0.2)");
+  grd.addColorStop(0.3, "rgba(0,0,0,0.08)");
   grd.addColorStop(1, "rgba(0,0,0,0)");
   g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
   return new THREE.CanvasTexture(c);
@@ -62,11 +61,11 @@ function makeCharacter(spec, texture) {
   mesh.position.y = h / 2;
   const shadow = new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1),
-    new THREE.MeshBasicMaterial({ map: SHADOW_TEX, transparent: true, depthWrite: false, opacity: 0.7 })
+    new THREE.MeshBasicMaterial({ map: SHADOW_TEX, transparent: true, depthWrite: false, opacity: 0.65 })
   );
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.set(0.02, 0.008, 0.06);
-  shadow.scale.set(w * 0.55, 1, w * 0.22);
+  shadow.position.set(0.02, 0.008, 0.05);
+  shadow.scale.set(w * 0.5, 1, w * 0.2);
   const root = new THREE.Group();
   root.add(shadow); root.add(mesh);
   root.userData = { spec, body: mesh, shadow, baseH: h, shadowW: w };
@@ -87,6 +86,7 @@ async function boot() {
       scene.add(root); actors.push(root);
     } catch (e) { console.warn("tex", spec.id, e); }
   }
+  frameCabin();
 }
 
 async function detectPerson() {
@@ -150,12 +150,11 @@ function tick() {
     const tgt = on ? spec.greet : spec.home;
     actor.position.x += (tgt.x - actor.position.x) * 0.06;
     actor.position.z += (tgt.z - actor.position.z) * 0.06;
-    const bounce = Math.sin(t * (on ? 4.6 : 2.2) + spec.scale) * (on ? 0.045 : 0.025);
+    const bounce = Math.sin(t * (on ? 4.6 : 2.2) + spec.scale) * (on ? 0.04 : 0.022);
     actor.userData.body.position.y = actor.userData.baseH / 2 + bounce;
-    actor.userData.body.rotation.z = Math.sin(t * (on ? 2.8 : 1.25)) * (on ? 0.045 : 0.022);
+    actor.userData.body.rotation.z = Math.sin(t * (on ? 2.8 : 1.25)) * (on ? 0.04 : 0.02);
     const s = 1 + bounce * 0.08;
-    actor.userData.shadow.scale.set(actor.userData.shadowW * 0.55 * s, 1, actor.userData.shadowW * 0.22 * s);
-    actor.userData.shadow.material.opacity = on ? 0.78 : 0.62;
+    actor.userData.shadow.scale.set(actor.userData.shadowW * 0.5 * s, 1, actor.userData.shadowW * 0.2 * s);
   }
   renderer.render(scene, camera);
 }
