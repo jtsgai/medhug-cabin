@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Kids L1 · Red Fun Planet</title>
+  <title>Kids L1</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./holo.css" />
 </head>
 <body>
   <div class="cabin">
@@ -15,29 +16,22 @@
       </div>
       <h1 class="headline" id="headline">Perform with your favorite character</h1>
     </header>
-
     <div class="stage">
-      <aside id="col-left" class="col col-left" aria-label="Left characters"></aside>
-
+      <aside id="col-left" class="col col-left"></aside>
       <section class="stage-center">
         <video id="video-output" autoplay playsinline muted></video>
-
         <div id="empty-state" class="empty-state">
-          <button type="button" id="btn-logo-start" class="logo-hit" aria-label="Start">
-            <img class="logo-3d pulse-always" src="./brand/logo_3d.png" alt="Red Fun Planet" />
+          <button type="button" id="btn-logo-start" class="logo-hit">
+            <img class="logo-3d pulse-always" src="./brand/logo_3d.png" alt="" />
           </button>
           <p class="empty-text" id="empty-text">Please choose your friend</p>
         </div>
-
         <div id="status" class="status hidden"></div>
-        <!-- 中下偏右：贴近右侧角色列内侧 -->
         <button type="button" id="btn-stop" class="btn-stop hidden">Exit</button>
       </section>
-
-      <aside id="col-right" class="col col-right" aria-label="Right characters"></aside>
+      <aside id="col-right" class="col col-right"></aside>
     </div>
   </div>
-
   <div id="toast" class="toast hidden"></div>
   <script type="module" src="./app.js"></script>
 </body>

@@ -1,0 +1,30 @@
+/* Kids hologram: video fills cabin, UI overlays, no white plates */
+html, body { background: #000; }
+.stage { position: relative; }
+.stage-center {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1;
+  background: #000 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+#video-output {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  background: #000 !important;
+}
+.topbar, .col, .col-left, .col-right, .empty-state {
+  position: relative;
+  z-index: 8;
+  background: transparent !important;
+}
+.char-card, .char-card img, .logo-3d, .logo-text {
+  background: transparent !important;
+  mix-blend-mode: normal !important;
+}
+.empty-state { background: transparent !important; }
