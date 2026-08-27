@@ -4,75 +4,58 @@ html, body { background: #000; margin: 0; height: 100%; overflow: hidden; }
   width: 100vw !important; height: 100vh !important;
   object-fit: cover !important; object-position: center center !important;
   background: #000 !important; z-index: 1 !important;
+  pointer-events: none !important;
 }
 .cabin {
   position: fixed !important; inset: 0 !important;
   width: 100vw !important; height: 100vh !important;
   background: transparent !important; z-index: 2;
   display: block !important;
-  grid-template-rows: none !important;
+  pointer-events: none !important;
 }
 .topbar {
   position: absolute !important;
   left: 0 !important; right: 0 !important;
-  top: 20vh !important;
+  top: 3% !important;
   height: auto !important;
-  z-index: 5;
+  z-index: 6;
   transform: none !important;
+  pointer-events: none !important;
 }
-.logo-text {
-  height: 64px !important;
-  max-width: 70% !important;
-}
-.headline {
-  font-size: 32px !important;
-}
+.logo-text { height: 64px !important; max-width: 70% !important; }
+.headline { font-size: 32px !important; }
 .stage {
-  position: absolute !important;
-  inset: 0 !important;
+  position: absolute !important; inset: 0 !important;
   display: grid !important;
   grid-template-columns: 22vw 1fr 22vw !important;
-  align-items: stretch !important;
+  pointer-events: none !important;
 }
 .col {
   justify-content: center !important;
   gap: 18px !important;
+  pointer-events: auto !important;
+  perspective: 900px;
+}
+.char-card {
+  transform-style: preserve-3d;
+  animation: card3d 6.5s ease-in-out infinite;
+  pointer-events: auto !important;
+}
+.char-card:nth-child(2n) { animation-delay: -2.2s; }
+.char-card:nth-child(3n) { animation-delay: -4.1s; }
+@keyframes card3d {
+  0%, 100% { transform: rotateY(-16deg) rotateX(4deg); }
+  50% { transform: rotateY(16deg) rotateX(-3deg); }
 }
 .char-card img {
-  width: 222px !important;
-  height: 222px !important;
+  width: 222px !important; height: 222px !important;
+  filter: drop-shadow(10px 14px 16px rgba(0,0,0,0.45));
 }
-.stage-center {
-  position: relative !important;
-  inset: auto !important;
-  z-index: 3;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: transparent !important;
-  border: 0 !important;
-}
-.empty-state {
-  position: relative !important;
-  inset: auto !important;
-  background: transparent !important;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-}
-.col, .col-left, .col-right, .topbar {
-  position: relative; z-index: 4; background: transparent !important;
+.stage-center, .empty-state, .logo-hit, .btn-stop {
+  pointer-events: auto !important;
 }
 .char-card, .char-card img, .logo-3d, .logo-text {
   background: transparent !important;
   mix-blend-mode: normal !important;
 }
-.btn-lang {
-  position: fixed !important;
-  top: 12% !important; right: 22px !important;
-  transform: none !important;
-  padding: 12px 16px !important;
-  font-size: 14px !important;
-  letter-spacing: 0.16em !important;
-  border-radius: 999px !important;
-}
+.btn-lang { display: none !important; }
