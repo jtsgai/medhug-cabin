@@ -1,4 +1,5 @@
 function applyFullCabin() {
+  document.documentElement.style.setProperty("--feat-max", "9999px");
   const stage = document.querySelector(".cabin-stage");
   if (!stage) return;
   stage.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;max-width:none;max-height:none;aspect-ratio:auto;margin:0;border:0;border-radius:0;box-shadow:none;background:#000";
@@ -31,17 +32,19 @@ function applyFullCabin() {
   }
   const left = document.querySelector(".left-panel");
   if (left && !left.classList.contains("collapsed")) {
-    left.style.removeProperty("width");
-    left.style.removeProperty("height");
-    left.style.removeProperty("top");
-    left.style.removeProperty("left");
-    left.style.removeProperty("max-width");
-    left.style.removeProperty("max-height");
-    left.style.removeProperty("transform");
+    ["width", "height", "top", "left", "max-width", "max-height", "transform"].forEach((p) => left.style.removeProperty(p));
     left.style.position = "absolute";
     left.style.background = "transparent";
     left.style.zIndex = "8";
     left.style.pointerEvents = "auto";
+  }
+  const featImg = document.querySelector("#featured-slot img");
+  if (featImg) {
+    featImg.style.maxHeight = "none";
+    featImg.style.width = "100%";
+    featImg.style.height = "100%";
+    featImg.style.objectFit = "cover";
+    featImg.style.objectPosition = "center top";
   }
 }
 function ensureModeSwitch() {
@@ -75,10 +78,7 @@ function boot() {
   applyFullCabin();
   ensureModeSwitch();
   dismissAttract();
-  const t = setInterval(() => {
-    if (Date.now() - _bootAt < 3000) dismissAttract();
-    else clearInterval(t);
-  }, 150);
+  setInterval(applyFullCabin, 1000);
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
 else boot();
