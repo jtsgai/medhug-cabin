@@ -2,13 +2,12 @@
   z-index: 0 !important;
   pointer-events: none !important;
 }
-#left-panel, .left-panel {
-  z-index: 30 !important;
-}
-.jt-dock {
-  z-index: 90 !important;
-}
-.cabin-stage, .cabin {
-  position: relative;
-  z-index: 10;
+#left-panel, .left-panel { z-index: 30 !important; }
+.jt-dock { z-index: 90 !important; }
+.cabin-stage, .cabin { position: relative; z-index: 10; }
+#left-panel.collapsed #cat-tabs,
+#left-panel.collapsed .cat-tab,
+#left-panel.collapsed .zone-3 > .zone-label,
+#left-panel.left-panel.collapsed #cat-tabs {
+  display: none !important;
 }

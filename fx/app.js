@@ -27,9 +27,16 @@ function setStatus(text, show = true) {
 function markActive(id) {
   document.querySelectorAll(".fx-btn").forEach((b) => b.classList.toggle("active", b.dataset.id === id));
 }
+function attachLocal() {
+  const v = $("#video-output");
+  if (!v || !localStream) return;
+  v.srcObject = localStream;
+  v.muted = true;
+  return v.play().catch(() => {});
+}
 async function startCamera() {
   if (localStream && localStream.active) {
-    $("#video-output").srcObject = localStream;
+    await attachLocal();
     return localStream;
   }
   if (localStream) {
@@ -40,10 +47,7 @@ async function startCamera() {
     audio: false,
     video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 1280 }, frameRate: { ideal: 30 } },
   });
-  const v = $("#video-output");
-  v.srcObject = localStream;
-  v.muted = true;
-  await v.play().catch(() => {});
+  await attachLocal();
   return localStream;
 }
 async function ensureSession() {
@@ -95,8 +99,12 @@ async function resetFx(show = true) {
   sessionActive = false;
   switching = false;
   setStatus("");
-  try { await startCamera(); } catch (_) {}
-  if (show) toast("Reset");
+  await new Promise((r) => setTimeout(r, 80));
+  try {
+    if (localStream && localStream.active) await attachLocal();
+    else await startCamera();
+  } catch (_) {}
+  if (show) toast("Effect off");
 }
 function startPresence() {
   stopPresence();
@@ -144,6 +152,7 @@ async function init() {
   effects = (await res.json()).effects || [];
   renderDock();
   $("#btn-reset").onclick = () => resetFx(true);
+  $("#btn-reset").textContent = "OFF";
   try { await startCamera(); } catch (e) { toast("Cannot open camera"); }
   window.addEventListener("beforeunload", () => { try { realtimeClient?.disconnect(); } catch (_) {} });
 }
