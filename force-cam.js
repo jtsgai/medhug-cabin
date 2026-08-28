@@ -1,65 +1,40 @@
 (function () {
-  let canvas, ctx, started = false;
-  function ensureCanvas() {
-    canvas = document.getElementById("video-sharp");
-    if (!canvas) {
-      canvas = document.createElement("canvas");
-      canvas.id = "video-sharp";
-      document.body.insertBefore(canvas, document.body.firstChild);
-    }
-    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:transparent;";
-    if (!ctx) ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+  function clearCanvas() {
+    const c = document.getElementById("video-sharp");
+    if (!c) return;
+    const x = c.getContext("2d");
+    if (x) x.clearRect(0, 0, c.width, c.height);
+    c.remove();
   }
-  function sizeCanvas() {
-    if (!canvas) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.round(window.innerWidth * dpr));
-    const h = Math.max(1, Math.round(window.innerHeight * dpr));
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
-    }
-    if (ctx) {
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-    }
-  }
-  function hideTag(v) {
-    v.style.setProperty("opacity", "0", "important");
-    v.style.setProperty("position", "fixed", "important");
-    v.style.setProperty("width", "8px", "important");
-    v.style.setProperty("height", "8px", "important");
-    v.style.setProperty("z-index", "-1", "important");
-    v.style.setProperty("transform", "none", "important");
-  }
-  function draw(video) {
-    if (!ctx || !canvas) {
-      requestAnimationFrame(() => draw(video));
-      return;
-    }
-    if (video.readyState >= 2 && video.videoWidth) {
-      const w = canvas.width, h = canvas.height;
-      const vw = video.videoWidth, vh = video.videoHeight;
-      ctx.clearRect(0, 0, w, h);
-      const scale = Math.max(w / vw, h / vh);
-      const dw = vw * scale, dh = vh * scale;
-      ctx.drawImage(video, (w - dw) / 2, (h - dh) / 2, dw, dh);
-    }
-    requestAnimationFrame(() => draw(video));
+  function live(v) {
+    return !!(v && v.srcObject && v.readyState >= 2 && v.videoWidth);
   }
   function apply() {
     const v = document.getElementById("video-output");
     if (!v) return;
     if (v.parentElement !== document.body) document.body.insertBefore(v, document.body.firstChild);
-    hideTag(v);
-    ensureCanvas();
-    sizeCanvas();
-    if (!started) {
-      started = true;
-      draw(v);
+    if (!live(v)) {
+      v.style.setProperty("opacity", "0", "important");
+      v.style.setProperty("visibility", "hidden", "important");
+      clearCanvas();
+      return;
     }
+    v.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "width:100vw",
+      "height:100vh",
+      "z-index:0",
+      "object-fit:cover",
+      "object-position:center center",
+      "background:transparent",
+      "opacity:1",
+      "visibility:visible",
+      "pointer-events:none",
+      "transform:none"
+    ].join(";");
+    clearCanvas();
   }
-  window.addEventListener("resize", sizeCanvas);
   apply();
-  setInterval(apply, 400);
+  setInterval(apply, 250);
 })();
