@@ -1,54 +1,71 @@
 (function () {
-  function place(btn) {
-    if (!btn) return;
-    btn.classList.remove("hidden");
-    btn.style.setProperty("position", "fixed", "important");
-    btn.style.setProperty("right", "20px", "important");
-    btn.style.setProperty("bottom", "28px", "important");
-    btn.style.setProperty("z-index", "9999", "important");
-    btn.style.setProperty("pointer-events", "auto", "important");
-    btn.style.setProperty("display", "block", "important");
+  function fab() { return document.getElementById("btn-cam-toggle"); }
+  function btn() { return document.getElementById("btn-cam-switch"); }
+  function video() { return document.getElementById("video-output"); }
+  function offStage() { return document.getElementById("camera-off-stage"); }
+  function live() {
+    const v = video();
+    const s = v && v.srcObject;
+    if (!s) return false;
+    try {
+      return s.getVideoTracks().some((t) => t.readyState === "live");
+    } catch (_) {
+      return false;
+    }
+  }
+  function hideFab() {
+    const f = fab();
+    if (!f) return;
+    f.classList.add("hidden");
+    f.style.setProperty("display", "none", "important");
+  }
+  function paint() {
+    const b = btn();
+    if (!b) return;
+    const on = live();
+    b.textContent = on ? "CAM ON" : "CAM OFF";
+    b.style.opacity = on ? "1" : "0.45";
+  }
+  async function flip(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const v = video();
+    if (live()) {
+      if (typeof window.jtCamOff === "function") window.jtCamOff();
+      if (v && v.srcObject) {
+        try { v.srcObject.getTracks().forEach((t) => t.stop()); } catch (_) {}
+        v.srcObject = null;
+      }
+      offStage()?.classList.remove("hidden");
+    } else {
+      if (typeof window.jtCamOn === "function") window.jtCamOn();
+      try {
+        const s = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { width: { ideal: 1080 }, height: { ideal: 1920 }, frameRate: { ideal: 30 } }
+        });
+        if (v) {
+          v.srcObject = s;
+          v.muted = true;
+          await v.play().catch(() => {});
+        }
+        offStage()?.classList.add("hidden");
+      } catch (err) {
+        console.warn("[JT] CAM", err);
+      }
+    }
+    paint();
   }
   function bind() {
-    const bar = document.getElementById("btn-cam-switch");
-    const fab = document.getElementById("btn-cam-toggle");
-    place(fab);
-    function flip(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-      if (typeof window.toggleCamera === "function") {
-        window.toggleCamera();
-        return;
-      }
-      if (fab && !e?.currentTarget?.id?.includes("cam-toggle")) fab.click();
-      else if (window.jtCamOff && window.jtCamOn) {
-        const v = document.getElementById("video-output");
-        const on = !!(v && v.srcObject && v.srcObject.active);
-        if (on) window.jtCamOff();
-        else {
-          window.jtCamOn();
-          window.jtCamOff && navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-            .then((s) => { if (v) { v.srcObject = s; v.style.visibility = "visible"; v.style.opacity = "1"; } })
-            .catch(() => {});
-        }
-      }
+    hideFab();
+    const b = btn();
+    if (b && !b._jtCamBound) {
+      b._jtCamBound = true;
+      b.addEventListener("click", flip, true);
     }
-    if (bar && !bar._bound) {
-      bar._bound = true;
-      bar.addEventListener("click", flip, true);
-    }
-    if (fab && !fab._bound) {
-      fab._bound = true;
-      fab.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (typeof window.toggleCamera === "function") {
-          e.preventDefault();
-          window.toggleCamera();
-        }
-      }, true);
-    }
+    paint();
   }
   bind();
   setInterval(bind, 1000);
