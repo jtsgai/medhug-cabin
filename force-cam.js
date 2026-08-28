@@ -1,63 +1,76 @@
 (function () {
-  function hide(v) {
-    v.style.setProperty("opacity", "0", "important");
-    v.style.setProperty("visibility", "hidden", "important");
-  }
-  function base(v) {
-    const s = v.style;
-    s.setProperty("background", "transparent", "important");
-    s.setProperty("opacity", "1", "important");
-    s.setProperty("visibility", "visible", "important");
-    s.setProperty("pointer-events", "none", "important");
-    s.setProperty("z-index", "0", "important");
-    s.setProperty("mix-blend-mode", "screen", "important");
-  }
-  function fillLocal(v) {
-    base(v);
-    const s = v.style;
-    s.setProperty("position", "fixed", "important");
-    s.setProperty("inset", "0", "important");
-    s.setProperty("left", "0", "important");
-    s.setProperty("top", "0", "important");
-    s.setProperty("width", "100vw", "important");
-    s.setProperty("height", "100vh", "important");
-    s.setProperty("max-width", "none", "important");
-    s.setProperty("max-height", "none", "important");
-    s.setProperty("object-fit", "cover", "important");
-    s.setProperty("object-position", "center center", "important");
-    s.setProperty("transform", "none", "important");
-  }
-  function fitDecart(v) {
-    base(v);
-    const s = v.style;
-    s.setProperty("position", "fixed", "important");
-    s.setProperty("inset", "auto", "important");
-    s.setProperty("left", "50%", "important");
-    s.setProperty("top", "50%", "important");
-    s.setProperty("width", "1280px", "important");
-    s.setProperty("height", "720px", "important");
-    s.setProperty("max-width", "92vw", "important");
-    s.setProperty("max-height", "36vh", "important");
-    s.setProperty("object-fit", "contain", "important");
-    s.setProperty("object-position", "center center", "important");
-    s.setProperty("transform", "translate(-50%, -50%)", "important");
-  }
-  function live(v) {
-    return !!(v && v.srcObject && v.readyState >= 2 && v.videoWidth);
-  }
-  function apply() {
-    const v = document.getElementById("video-output");
-    if (!v) return;
-    if (v.parentElement !== document.body) {
-      document.body.insertBefore(v, document.body.firstChild);
+  let canvas, ctx;
+  function ensure() {
+    canvas = document.getElementById("video-key");
+    if (!canvas) {
+      canvas = document.createElement("canvas");
+      canvas.id = "video-key";
+      document.body.insertBefore(canvas, document.body.firstChild);
     }
-    if (!live(v)) {
-      hide(v);
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:0;pointer-events:none;background:transparent;";
+    if (!ctx) ctx = canvas.getContext("2d", { alpha: true, willReadFrequently: true });
+  }
+  function hideVideo(v) {
+    v.style.setProperty("opacity", "0", "important");
+    v.style.setProperty("position", "fixed", "important");
+    v.style.setProperty("width", "8px", "important");
+    v.style.setProperty("height", "8px", "important");
+    v.style.setProperty("z-index", "-1", "important");
+  }
+  function keyFrame(video) {
+    const vw = video.videoWidth, vh = video.videoHeight;
+    const landscape = vw > vh;
+    const dw = landscape ? 640 : 360;
+    const dh = Math.round(dw * vh / vw);
+    if (canvas.width !== dw || canvas.height !== dh) {
+      canvas.width = dw;
+      canvas.height = dh;
+    }
+    ctx.clearRect(0, 0, dw, dh);
+    ctx.drawImage(video, 0, 0, dw, dh);
+    const img = ctx.getImageData(0, 0, dw, dh);
+    const p = img.data;
+    for (let i = 0; i < p.length; i += 4) {
+      const y = p[i] * 0.3 + p[i + 1] * 0.59 + p[i + 2] * 0.11;
+      if (y < 18) {
+        p[i + 3] = 0;
+      } else if (y < 42) {
+        p[i + 3] = Math.round(((y - 18) / 24) * 255);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    if (landscape) {
+      canvas.style.setProperty("inset", "auto", "important");
+      canvas.style.setProperty("left", "50%", "important");
+      canvas.style.setProperty("top", "50%", "important");
+      canvas.style.setProperty("width", "1280px", "important");
+      canvas.style.setProperty("height", "720px", "important");
+      canvas.style.setProperty("max-width", "92vw", "important");
+      canvas.style.setProperty("max-height", "36vh", "important");
+      canvas.style.setProperty("transform", "translate(-50%, -50%)", "important");
+      canvas.style.setProperty("object-fit", "contain", "important");
+    } else {
+      canvas.style.setProperty("inset", "0", "important");
+      canvas.style.setProperty("left", "0", "important");
+      canvas.style.setProperty("top", "0", "important");
+      canvas.style.setProperty("width", "100vw", "important");
+      canvas.style.setProperty("height", "100vh", "important");
+      canvas.style.setProperty("max-width", "none", "important");
+      canvas.style.setProperty("max-height", "none", "important");
+      canvas.style.setProperty("transform", "none", "important");
+    }
+  }
+  function tick() {
+    const v = document.getElementById("video-output");
+    ensure();
+    if (!v || !v.srcObject || v.readyState < 2 || !v.videoWidth) {
+      if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      requestAnimationFrame(tick);
       return;
     }
-    if (v.videoWidth > v.videoHeight) fitDecart(v);
-    else fillLocal(v);
+    hideVideo(v);
+    keyFrame(v);
+    requestAnimationFrame(tick);
   }
-  apply();
-  setInterval(apply, 250);
+  tick();
 })();
