@@ -7,8 +7,8 @@
       canvas.id = "video-sharp";
       document.body.insertBefore(canvas, document.body.firstChild);
     }
-    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:#000;";
-    if (!ctx) ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:transparent;";
+    if (!ctx) ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   }
   function sizeCanvas() {
     if (!canvas) return;
@@ -40,12 +40,11 @@
     if (video.readyState >= 2 && video.videoWidth) {
       const w = canvas.width, h = canvas.height;
       const vw = video.videoWidth, vh = video.videoHeight;
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, w, h);
+      ctx.clearRect(0, 0, w, h);
       ctx.save();
       ctx.translate(w / 2, h / 2);
       if (vw > vh) {
-        ctx.rotate(Math.PI / 2);
+        ctx.rotate(-Math.PI / 2);
         const scale = Math.min(w / vh, h / vw);
         ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
       } else {
