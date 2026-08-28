@@ -3,24 +3,23 @@ body > #video-output,
   z-index: 0 !important;
   pointer-events: none !important;
   position: fixed !important;
-  left: 50% !important;
-  top: 50% !important;
-  right: auto !important;
-  bottom: auto !important;
-  width: 100vh !important;
-  height: 100vw !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   max-width: none !important;
   max-height: none !important;
   object-fit: contain !important;
   object-position: center center !important;
   background: transparent !important;
-  transform: translate(-50%, -50%) rotate(-90deg) !important;
-  transform-origin: center center !important;
+  transform: none !important;
 }
-.cabin-stage, .cabin, .right-panel {
+.cabin-stage, .cabin, .right-panel, .stage, .stage-center, .empty-state {
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
+}
+#video-sharp {
+  background: transparent !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }
 .jt-dock { z-index: 90 !important; }
