@@ -1,12 +1,9 @@
 (function () {
-  /* LOCKED: display the <video> directly. No canvas, no CSS rotate.
-     Local OBS and Decart frames are already upright. Cover-fill the cabin.
-     Hide the layer when the stream stops. */
   function hide(v) {
     v.style.setProperty("opacity", "0", "important");
     v.style.setProperty("visibility", "hidden", "important");
   }
-  function fill(v) {
+  function fillLocal(v) {
     const s = v.style;
     s.setProperty("position", "fixed", "important");
     s.setProperty("inset", "0", "important");
@@ -25,6 +22,25 @@
     s.setProperty("transform", "none", "important");
     s.setProperty("z-index", "0", "important");
   }
+  function fitDecart(v) {
+    const s = v.style;
+    s.setProperty("position", "fixed", "important");
+    s.setProperty("inset", "auto", "important");
+    s.setProperty("left", "50%", "important");
+    s.setProperty("top", "50%", "important");
+    s.setProperty("width", "1280px", "important");
+    s.setProperty("height", "720px", "important");
+    s.setProperty("max-width", "92vw", "important");
+    s.setProperty("max-height", "36vh", "important");
+    s.setProperty("object-fit", "contain", "important");
+    s.setProperty("object-position", "center center", "important");
+    s.setProperty("background", "transparent", "important");
+    s.setProperty("opacity", "1", "important");
+    s.setProperty("visibility", "visible", "important");
+    s.setProperty("pointer-events", "none", "important");
+    s.setProperty("transform", "translate(-50%, -50%)", "important");
+    s.setProperty("z-index", "0", "important");
+  }
   function live(v) {
     return !!(v && v.srcObject && v.readyState >= 2 && v.videoWidth);
   }
@@ -34,8 +50,12 @@
     if (v.parentElement !== document.body) {
       document.body.insertBefore(v, document.body.firstChild);
     }
-    if (!live(v)) hide(v);
-    else fill(v);
+    if (!live(v)) {
+      hide(v);
+      return;
+    }
+    if (v.videoWidth > v.videoHeight) fitDecart(v);
+    else fillLocal(v);
   }
   apply();
   setInterval(apply, 250);
