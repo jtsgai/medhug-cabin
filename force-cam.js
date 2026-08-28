@@ -42,9 +42,17 @@
       const vw = video.videoWidth, vh = video.videoHeight;
       ctx.fillStyle = "#000";
       ctx.fillRect(0, 0, w, h);
-      const scale = Math.min(w / vw, h / vh);
-      const dw = vw * scale, dh = vh * scale;
-      ctx.drawImage(video, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      ctx.save();
+      ctx.translate(w / 2, h / 2);
+      if (vw > vh) {
+        ctx.rotate(Math.PI / 2);
+        const scale = Math.min(w / vh, h / vw);
+        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+      } else {
+        const scale = Math.min(w / vw, h / vh);
+        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
+      }
+      ctx.restore();
     }
     requestAnimationFrame(() => draw(video));
   }
