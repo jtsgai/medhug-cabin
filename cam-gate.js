@@ -1,5 +1,5 @@
 (function () {
-  window.__jtAllowCam = false;
+  window.__jtAllowCam = true;
   window.__jtRawStream = null;
   window.__jtFromObs = false;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
@@ -11,6 +11,8 @@
       if (!cams.length) return { id: undefined, obs: false };
       const obs = cams.find((d) => /obs|virtual\s*cam/i.test(d.label || ""));
       if (obs) return { id: obs.deviceId, obs: true };
+      const nbc = cams.find((d) => /nvidia\s*broadcast/i.test(d.label || ""));
+      if (nbc) return { id: nbc.deviceId, obs: true };
       const scored = cams.map((d) => {
         const n = (d.label || "").toLowerCase();
         let s = 0;
@@ -30,19 +32,12 @@
     }
     const picked = await pickCam();
     window.__jtFromObs = !!picked.obs;
-    const video = picked.obs
-      ? {
-          deviceId: picked.id ? { exact: picked.id } : undefined,
-          width: { ideal: 1080 },
-          height: { ideal: 1920 },
-          frameRate: { ideal: 30, max: 30 }
-        }
-      : {
-          deviceId: picked.id ? { ideal: picked.id } : undefined,
-          width: { ideal: 1080 },
-          height: { ideal: 1920 },
-          frameRate: { ideal: 30, max: 30 }
-        };
+    const video = {
+      deviceId: picked.id ? { exact: picked.id } : undefined,
+      width: { ideal: 1080 },
+      height: { ideal: 1920 },
+      frameRate: { ideal: 30, max: 30 }
+    };
     const stream = await orig({ audio: false, video });
     window.__jtRawStream = stream;
     return stream;
