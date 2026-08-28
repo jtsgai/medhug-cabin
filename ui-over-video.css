@@ -1,36 +1,37 @@
 html, body {
-  background: #000 !important;
+  background: transparent !important;
 }
 body > #video-output,
-#video-output,
-.holo-video {
+#video-output {
   z-index: 0 !important;
   pointer-events: none !important;
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
   object-fit: cover !important;
-  object-position: center center !important;
-  background: #000 !important;
+  background: transparent !important;
   transform: none !important;
 }
-.cabin-stage, .cabin, .right-panel, .stage, .stage-center, .empty-state {
+.cabin-stage, .cabin, .right-panel {
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
 }
+#camera-off-stage { display: none !important; }
 #btn-cam-toggle {
-  display: none !important;
+  display: block !important;
+  position: fixed !important;
+  right: 22px !important;
+  bottom: 28px !important;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }
 .jt-dock { z-index: 90 !important; }
 .cabin-stage, .cabin { position: relative; z-index: 10; }
 #left-panel.collapsed #cat-tabs,
 #left-panel.collapsed .cat-tab,
-#left-panel.collapsed .zone-3 > .zone-label,
-#left-panel.left-panel.collapsed #cat-tabs {
+#left-panel.collapsed .zone-3 > .zone-label {
   display: none !important;
 }

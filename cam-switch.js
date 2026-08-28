@@ -1,72 +1,59 @@
 (function () {
-  function fab() { return document.getElementById("btn-cam-toggle"); }
-  function btn() { return document.getElementById("btn-cam-switch"); }
   function video() { return document.getElementById("video-output"); }
-  function offStage() { return document.getElementById("camera-off-stage"); }
+  function fab() { return document.getElementById("btn-cam-toggle"); }
   function live() {
     const v = video();
     const s = v && v.srcObject;
     if (!s) return false;
-    try {
-      return s.getVideoTracks().some((t) => t.readyState === "live");
-    } catch (_) {
-      return false;
-    }
-  }
-  function hideFab() {
-    const f = fab();
-    if (!f) return;
-    f.classList.add("hidden");
-    f.style.setProperty("display", "none", "important");
+    try { return s.getVideoTracks().some((t) => t.readyState === "live"); }
+    catch (_) { return false; }
   }
   function paint() {
-    const b = btn();
+    const b = fab();
     if (!b) return;
-    const on = live();
-    b.textContent = on ? "CAM ON" : "CAM OFF";
-    b.style.opacity = on ? "1" : "0.45";
+    b.classList.remove("hidden");
+    b.style.setProperty("display", "block", "important");
+    b.style.setProperty("position", "fixed", "important");
+    b.style.setProperty("right", "22px", "important");
+    b.style.setProperty("bottom", "28px", "important");
+    b.style.setProperty("z-index", "9999", "important");
+    b.style.setProperty("pointer-events", "auto", "important");
+    b.classList.toggle("is-off", !live());
   }
   async function flip(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const v = video();
+    e.preventDefault();
+    e.stopPropagation();
     if (live()) {
-      if (typeof window.jtCamOff === "function") window.jtCamOff();
-      if (v && v.srcObject) {
-        try { v.srcObject.getTracks().forEach((t) => t.stop()); } catch (_) {}
-        v.srcObject = null;
+      if (window.jtCamOff) window.jtCamOff();
+      return paint();
+    }
+    if (window.jtCamOn) window.jtCamOn();
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { width: { ideal: 1080 }, height: { ideal: 1920 }, frameRate: { ideal: 30 } }
+      });
+      const v = video();
+      if (v) {
+        v.srcObject = s;
+        v.muted = true;
+        await v.play().catch(() => {});
       }
-      offStage()?.classList.remove("hidden");
-    } else {
-      if (typeof window.jtCamOn === "function") window.jtCamOn();
-      try {
-        const s = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { width: { ideal: 1080 }, height: { ideal: 1920 }, frameRate: { ideal: 30 } }
-        });
-        if (v) {
-          v.srcObject = s;
-          v.muted = true;
-          await v.play().catch(() => {});
-        }
-        offStage()?.classList.add("hidden");
-      } catch (err) {
-        console.warn("[JT] CAM", err);
-      }
+    } catch (err) {
+      console.warn("[JT] CAM", err);
     }
     paint();
   }
   function bind() {
-    hideFab();
-    const b = btn();
-    if (b && !b._jtCamBound) {
-      b._jtCamBound = true;
+    const b = fab();
+    if (b && !b._bound) {
+      b._bound = true;
       b.addEventListener("click", flip, true);
     }
+    const bar = document.getElementById("btn-cam-switch");
+    if (bar) bar.style.display = "none";
     paint();
   }
   bind();
-  setInterval(bind, 1000);
+  setInterval(paint, 600);
 })();

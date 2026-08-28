@@ -1,5 +1,5 @@
 (function () {
-  window.__jtAllowCam = true;
+  window.__jtAllowCam = false;
   window.__jtRawStream = null;
   window.__jtFromObs = false;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
@@ -11,8 +11,6 @@
       if (!cams.length) return { id: undefined, obs: false };
       const obs = cams.find((d) => /obs|virtual\s*cam/i.test(d.label || ""));
       if (obs) return { id: obs.deviceId, obs: true };
-      const nbc = cams.find((d) => /nvidia\s*broadcast/i.test(d.label || ""));
-      if (nbc) return { id: nbc.deviceId, obs: true };
       const scored = cams.map((d) => {
         const n = (d.label || "").toLowerCase();
         let s = 0;
@@ -32,13 +30,15 @@
     }
     const picked = await pickCam();
     window.__jtFromObs = !!picked.obs;
-    const video = {
-      deviceId: picked.id ? { exact: picked.id } : undefined,
-      width: { ideal: 1080 },
-      height: { ideal: 1920 },
-      frameRate: { ideal: 30, max: 30 }
-    };
-    const stream = await orig({ audio: false, video });
+    const stream = await orig({
+      audio: false,
+      video: {
+        deviceId: picked.id ? { exact: picked.id } : undefined,
+        width: { ideal: 1080 },
+        height: { ideal: 1920 },
+        frameRate: { ideal: 30, max: 30 }
+      }
+    });
     window.__jtRawStream = stream;
     return stream;
   };
@@ -57,28 +57,13 @@
       try { s.getTracks().forEach((t) => t.stop()); } catch (_) {}
       v.srcObject = null;
     });
-  }
-  async function ensurePreview() {
-    on();
-    const v = document.getElementById("video-output");
-    if (!v) return;
-    const s = v.srcObject;
-    const ok = s && s.getVideoTracks && s.getVideoTracks().some((t) => t.readyState === "live");
-    if (ok && v.videoHeight && v.videoHeight >= v.videoWidth) return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
-      v.srcObject = stream;
-      v.muted = true;
-      await v.play().catch(() => {});
-    } catch (_) {}
+    document.getElementById("camera-off-stage")?.classList.add("hidden");
   }
   document.addEventListener("click", (e) => {
-    if (e.target.closest("#btn-cam-switch") && /OFF/i.test(e.target.textContent || "")) return;
     if (e.target.closest("#btn-modal-try, #btn-logo-start, .logo-hit, .fx-btn, #btn-cam-toggle, #btn-cam-switch")) on();
+    if (e.target.closest(".left-panel.collapsed .explore-card")) on();
     if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) {
-      on();
-      setTimeout(ensurePreview, 200);
-      setTimeout(ensurePreview, 800);
+      off();
     }
   }, true);
   window.jtCamOn = on;
