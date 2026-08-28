@@ -41,17 +41,9 @@
       const w = canvas.width, h = canvas.height;
       const vw = video.videoWidth, vh = video.videoHeight;
       ctx.clearRect(0, 0, w, h);
-      ctx.save();
-      ctx.translate(w / 2, h / 2);
-      if (vw > vh) {
-        ctx.rotate(-Math.PI / 2);
-        const scale = Math.min(w / vh, h / vw);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      } else {
-        const scale = Math.min(w / vw, h / vh);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      }
-      ctx.restore();
+      const scale = Math.max(w / vw, h / vh);
+      const dw = vw * scale, dh = vh * scale;
+      ctx.drawImage(video, (w - dw) / 2, (h - dh) / 2, dw, dh);
     }
     requestAnimationFrame(() => draw(video));
   }
