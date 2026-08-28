@@ -1,11 +1,6 @@
-/* LOCKED camera display
-   - Cabin is portrait. Never rotate the video in CSS.
-   - OBS already stands the person up. Decart output is also upright in 16:9.
-   - object-fit:cover fills the 86" panel. contain makes a landscape strip — do not use.
-   - Background always transparent.
-*/
+/* Page ground is black. UI panels stay transparent. Camera cover-fills. */
 html, body {
-  background: transparent !important;
+  background: #000 !important;
 }
 body > #video-output,
 #video-output,
@@ -24,7 +19,7 @@ body > #video-output,
   max-height: none !important;
   object-fit: cover !important;
   object-position: center center !important;
-  background: transparent !important;
+  background: #000 !important;
   transform: none !important;
   transform-origin: center center !important;
 }
@@ -35,7 +30,6 @@ body > #video-output,
 }
 #video-sharp {
   display: none !important;
-  background: transparent !important;
 }
 #left-panel, .left-panel { z-index: 30 !important; }
 .jt-dock { z-index: 90 !important; }

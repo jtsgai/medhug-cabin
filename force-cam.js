@@ -15,9 +15,9 @@
     s.setProperty("height", "100vh", "important");
     s.setProperty("max-width", "none", "important");
     s.setProperty("max-height", "none", "important");
-    s.setProperty("object-fit", "contain", "important");
+    s.setProperty("object-fit", "cover", "important");
     s.setProperty("object-position", "center center", "important");
-    s.setProperty("background", "transparent", "important");
+    s.setProperty("background", "#000", "important");
     s.setProperty("opacity", "1", "important");
     s.setProperty("visibility", "visible", "important");
     s.setProperty("pointer-events", "none", "important");
@@ -54,6 +54,8 @@
     if (v.parentElement !== document.body) {
       document.body.insertBefore(v, document.body.firstChild);
     }
+    document.documentElement.style.background = "#000";
+    document.body.style.background = "#000";
     if (!live(v)) {
       hide(v);
       return;
