@@ -3,7 +3,17 @@
     v.style.setProperty("opacity", "0", "important");
     v.style.setProperty("visibility", "hidden", "important");
   }
+  function base(v) {
+    const s = v.style;
+    s.setProperty("background", "transparent", "important");
+    s.setProperty("opacity", "1", "important");
+    s.setProperty("visibility", "visible", "important");
+    s.setProperty("pointer-events", "none", "important");
+    s.setProperty("z-index", "0", "important");
+    s.setProperty("mix-blend-mode", "screen", "important");
+  }
   function fillLocal(v) {
+    base(v);
     const s = v.style;
     s.setProperty("position", "fixed", "important");
     s.setProperty("inset", "0", "important");
@@ -15,14 +25,10 @@
     s.setProperty("max-height", "none", "important");
     s.setProperty("object-fit", "cover", "important");
     s.setProperty("object-position", "center center", "important");
-    s.setProperty("background", "transparent", "important");
-    s.setProperty("opacity", "1", "important");
-    s.setProperty("visibility", "visible", "important");
-    s.setProperty("pointer-events", "none", "important");
     s.setProperty("transform", "none", "important");
-    s.setProperty("z-index", "0", "important");
   }
   function fitDecart(v) {
+    base(v);
     const s = v.style;
     s.setProperty("position", "fixed", "important");
     s.setProperty("inset", "auto", "important");
@@ -34,12 +40,7 @@
     s.setProperty("max-height", "36vh", "important");
     s.setProperty("object-fit", "contain", "important");
     s.setProperty("object-position", "center center", "important");
-    s.setProperty("background", "transparent", "important");
-    s.setProperty("opacity", "1", "important");
-    s.setProperty("visibility", "visible", "important");
-    s.setProperty("pointer-events", "none", "important");
     s.setProperty("transform", "translate(-50%, -50%)", "important");
-    s.setProperty("z-index", "0", "important");
   }
   function live(v) {
     return !!(v && v.srcObject && v.readyState >= 2 && v.videoWidth);
