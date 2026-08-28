@@ -11,7 +11,6 @@
     s.setProperty("width", "100vw", "important");
     s.setProperty("height", "100vh", "important");
     s.setProperty("object-fit", "cover", "important");
-    s.setProperty("object-position", "center center", "important");
     s.setProperty("background", "transparent", "important");
     s.setProperty("opacity", "1", "important");
     s.setProperty("visibility", "visible", "important");
@@ -21,14 +20,16 @@
   }
   function fitDecart(v) {
     const s = v.style;
+    const w = v.videoWidth || 1280;
+    const h = v.videoHeight || 720;
     s.setProperty("position", "fixed", "important");
     s.setProperty("inset", "auto", "important");
     s.setProperty("left", "50%", "important");
     s.setProperty("top", "50%", "important");
-    s.setProperty("width", "1280px", "important");
-    s.setProperty("height", "720px", "important");
+    s.setProperty("width", w + "px", "important");
+    s.setProperty("height", h + "px", "important");
     s.setProperty("max-width", "92vw", "important");
-    s.setProperty("max-height", "36vh", "important");
+    s.setProperty("max-height", "42vh", "important");
     s.setProperty("object-fit", "contain", "important");
     s.setProperty("transform", "translate(-50%, -50%)", "important");
     s.setProperty("background", "transparent", "important");
