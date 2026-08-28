@@ -58,10 +58,28 @@
       v.srcObject = null;
     });
   }
+  async function ensurePreview() {
+    on();
+    const v = document.getElementById("video-output");
+    if (!v) return;
+    const s = v.srcObject;
+    const ok = s && s.getVideoTracks && s.getVideoTracks().some((t) => t.readyState === "live");
+    if (ok && v.videoHeight && v.videoHeight >= v.videoWidth) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      v.srcObject = stream;
+      v.muted = true;
+      await v.play().catch(() => {});
+    } catch (_) {}
+  }
   document.addEventListener("click", (e) => {
-    if (e.target.closest("#btn-modal-try, #btn-logo-start, .logo-hit, .fx-btn, #btn-cam-toggle")) on();
-    if (e.target.closest(".left-panel.collapsed .explore-card")) on();
-    if (e.target.closest("#btn-end, #btn-end-close, #btn-session-done, #btn-change, #btn-return-dot, #btn-expand-strip, #btn-stop, #btn-reset")) off();
+    if (e.target.closest("#btn-cam-switch") && /OFF/i.test(e.target.textContent || "")) return;
+    if (e.target.closest("#btn-modal-try, #btn-logo-start, .logo-hit, .fx-btn, #btn-cam-toggle, #btn-cam-switch")) on();
+    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) {
+      on();
+      setTimeout(ensurePreview, 200);
+      setTimeout(ensurePreview, 800);
+    }
   }, true);
   window.jtCamOn = on;
   window.jtCamOff = off;
