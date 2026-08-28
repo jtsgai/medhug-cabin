@@ -4,7 +4,10 @@ const code = (await fetch(APP_SRC).then((r) => {
   if (!r.ok) throw new Error("cannot load app core");
   return r.text();
 }))
-  .replace('mirror:"auto",onRemoteStream', 'mirror:"auto",resolution:"1080p",onRemoteStream')
+  .replace(
+    "n.realtime.connect(localStream,{",
+    "n.realtime.connect((window.__jtVtonIn||localStream),{"
+  )
   .replaceAll('from"./config.js"', `from"${origin}config.js"`)
   .replaceAll('from"./i18n.js"', `from"${origin}i18n.js"`);
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));

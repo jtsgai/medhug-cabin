@@ -34,18 +34,23 @@
       audio: false,
       video: {
         deviceId: picked.id ? { exact: picked.id } : undefined,
-        width: { ideal: 1080 },
-        height: { ideal: 1920 },
+        width: { ideal: 720 },
+        height: { ideal: 1280 },
+        aspectRatio: { ideal: 9 / 16 },
         frameRate: { ideal: 30, max: 30 }
       }
     });
     window.__jtRawStream = stream;
+    if (typeof window.jtPortraitIn === "function") {
+      try { await window.jtPortraitIn(stream); } catch (_) {}
+    }
     return stream;
   };
 
   function on() { window.__jtAllowCam = true; }
   function off() {
     window.__jtAllowCam = false;
+    window.__jtVtonIn = null;
     if (window.__jtRawStream) {
       try { window.__jtRawStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
       window.__jtRawStream = null;
@@ -62,9 +67,7 @@
   document.addEventListener("click", (e) => {
     if (e.target.closest("#btn-modal-try, #btn-logo-start, .logo-hit, .fx-btn, #btn-cam-toggle, #btn-cam-switch")) on();
     if (e.target.closest(".left-panel.collapsed .explore-card")) on();
-    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) {
-      off();
-    }
+    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) off();
   }, true);
   window.jtCamOn = on;
   window.jtCamOff = off;
