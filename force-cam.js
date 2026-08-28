@@ -7,8 +7,8 @@
       canvas.id = "video-sharp";
       document.body.insertBefore(canvas, document.body.firstChild);
     }
-    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:transparent;";
-    if (!ctx) ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+    canvas.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:1;pointer-events:none;background:#000;";
+    if (!ctx) ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
   }
   function sizeCanvas() {
     if (!canvas) return;
@@ -30,6 +30,7 @@
     v.style.setProperty("width", "8px", "important");
     v.style.setProperty("height", "8px", "important");
     v.style.setProperty("z-index", "-1", "important");
+    v.style.setProperty("transform", "none", "important");
   }
   function draw(video) {
     if (!ctx || !canvas) {
@@ -39,18 +40,11 @@
     if (video.readyState >= 2 && video.videoWidth) {
       const w = canvas.width, h = canvas.height;
       const vw = video.videoWidth, vh = video.videoHeight;
-      ctx.clearRect(0, 0, w, h);
-      ctx.save();
-      ctx.translate(w / 2, h / 2);
-      if (vh >= vw) {
-        const scale = Math.min(w / vw, h / vh);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      } else {
-        ctx.rotate(-Math.PI / 2);
-        const scale = Math.min(w / vh, h / vw);
-        ctx.drawImage(video, -vw * scale / 2, -vh * scale / 2, vw * scale, vh * scale);
-      }
-      ctx.restore();
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, w, h);
+      const scale = Math.min(w / vw, h / vh);
+      const dw = vw * scale, dh = vh * scale;
+      ctx.drawImage(video, (w - dw) / 2, (h - dh) / 2, dw, dh);
     }
     requestAnimationFrame(() => draw(video));
   }
