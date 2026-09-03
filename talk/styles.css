@@ -20,7 +20,7 @@ html, body {
 .avatar-frame {
   position: absolute;
   left: 50%;
-  top: 46%;
+  top: 34%;
   width: min(52vh, 46vw);
   height: min(92vh, 82vw);
   transform: translate(-50%, -50%);
@@ -31,7 +31,7 @@ html, body {
 .avatar-video {
   position: absolute;
   left: 50%;
-  top: 46%;
+  top: 34%;
   width: min(52vh, 46vw);
   height: min(92vh, 82vw);
   transform: translate(-50%, -50%);
