@@ -12,14 +12,25 @@ html, body {
   inset: 0;
   background: #000;
 }
-.avatar-frame,
+.avatar-frame {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: min(52vh, 46vw);
+  height: min(92vh, 82vw);
+  transform: translate(-50%, -50%);
+  border: 0;
+  background: transparent;
+}
 .avatar-video {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  left: 50%;
+  top: 46%;
+  width: min(52vh, 46vw);
+  height: min(92vh, 82vw);
+  transform: translate(-50%, -50%);
   border: 0;
-  background: #000;
+  background: transparent;
   object-fit: contain;
 }
 .hidden { display: none !important; }
