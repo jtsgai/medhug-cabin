@@ -1,4 +1,4 @@
-import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js";
+import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903c";
 
 const idle = document.getElementById("idle");
 const frame = document.getElementById("avatar-frame");
