@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JT Talk</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="../shared-dock.css" />
+</head>
+<body>
+  <div id="stage" class="stage">
+    <iframe id="avatar-frame" class="avatar-frame hidden" allow="microphone; camera; autoplay; clipboard-write" title="LiveAvatar"></iframe>
+    <video id="avatar-video" class="avatar-video hidden" autoplay playsinline></video>
+    <div id="idle" class="idle">
+      <p class="brand">JT CABIN</p>
+      <h1>TALK</h1>
+      <p class="sub">实时数字人 · LiveAvatar</p>
+      <button type="button" id="btn-start" class="btn-start">开始对话 · Start</button>
+      <p id="setup-hint" class="hint hidden"></p>
+    </div>
+  </div>
+  <nav class="jt-dock">
+    <a href="../index.html">TRY ON</a>
+    <a href="../kids/">KIDS</a>
+    <a href="../fx/">FX</a>
+    <a href="../stage/">STAGE</a>
+    <a href="./" class="is-here">TALK</a>
+  </nav>
+  <button type="button" id="btn-end" class="btn-end hidden">结束 · End</button>
+  <div id="status" class="status hidden"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
