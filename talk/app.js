@@ -1,4 +1,4 @@
-import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903e";
+import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903f";
 
 const idle = document.getElementById("idle");
 const frame = document.getElementById("avatar-frame");
@@ -13,6 +13,7 @@ let timer = null;
 let tick = null;
 let active = false;
 let endsAt = 0;
+let localMic = null;
 
 function setStatus(text) {
   if (!text) {
@@ -48,6 +49,10 @@ function showIdle() {
   video.classList.add("hidden");
   video.srcObject = null;
   setStatus("");
+  if (localMic) {
+    localMic.getTracks().forEach((t) => t.stop());
+    localMic = null;
+  }
 }
 
 function showTalking() {
@@ -57,32 +62,36 @@ function showTalking() {
   btnEnd.classList.remove("hidden");
 }
 
+function isCameraMic(label) {
+  const s = (label || "").toLowerCase();
+  return /camera|webcam|hd camera|integrated/.test(s);
+}
+
+async function armCabinMic() {
+  localMic = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const mics = devices.filter((d) => d.kind === "audioinput");
+  const cabin = mics.find((d) => !isCameraMic(d.label));
+  const using = cabin || mics[0];
+  if (cabin && localMic.getAudioTracks()[0]) {
+    try {
+      localMic.getTracks().forEach((t) => t.stop());
+      localMic = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: { ideal: cabin.deviceId } },
+        video: false,
+      });
+    } catch (e) {}
+  }
+  const name = (using && using.label) || "microphone";
+  if (isCameraMic(name)) {
+    setStatus("当前可能是摄像头麦 · 请改系统默认输入");
+  }
+}
+
 async function startEmbed(url) {
   frame.src = url;
   frame.classList.remove("hidden");
   showTalking();
-  setStatus("对话中 · " + Math.round((SESSION_MS || 30000) / 1000) + "s");
-}
-
-async function startSdk(tokenUrl) {
-  const res = await fetch(tokenUrl, { method: "POST" });
-  if (!res.ok) throw new Error("token " + res.status);
-  const data = await res.json();
-  const token = data.sessionToken || data.session_token || data.token;
-  if (!token) throw new Error("no session token");
-
-  const mod = await import("https://esm.sh/@heygen/liveavatar-web-sdk");
-  const LiveAvatarSession = mod.LiveAvatarSession || mod.default;
-  session = new LiveAvatarSession(token, { voiceChat: true });
-  await session.start();
-
-  const media = session.mediaStream || session.stream || session.videoStream;
-  if (media) {
-    video.srcObject = media;
-    video.classList.remove("hidden");
-  }
-  showTalking();
-  setStatus("对话中 · Talking");
 }
 
 async function start() {
@@ -90,10 +99,20 @@ async function start() {
   clearTimeout(timer);
   clearInterval(tick);
   try {
+    await armCabinMic();
+  } catch (err) {
+    setupHint.textContent = "请允许麦克风，并在系统声音设置里选船体麦。";
+    setupHint.classList.remove("hidden");
+    return;
+  }
+  try {
     if (LIVEAVATAR_EMBED_URL) {
       await startEmbed(LIVEAVATAR_EMBED_URL);
     } else if (LIVEAVATAR_TOKEN_URL) {
-      await startSdk(LIVEAVATAR_TOKEN_URL);
+      setupHint.textContent = "当前简易版请用嵌入链接。";
+      setupHint.classList.remove("hidden");
+      showIdle();
+      return;
     } else {
       setupHint.textContent = "先在 talk/config.js 填入 LIVEAVATAR_EMBED_URL。";
       setupHint.classList.remove("hidden");
@@ -103,6 +122,7 @@ async function start() {
     endsAt = Date.now() + ms;
     startCountdown();
     timer = setTimeout(stop, ms);
+    setTimeout(() => frame.focus(), 400);
   } catch (err) {
     console.error(err);
     setupHint.textContent = "无法启动实时数字人：" + (err.message || err);
