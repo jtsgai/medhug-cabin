@@ -7,6 +7,11 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
   overflow: hidden;
 }
+.ck-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
 .stage {
   position: fixed;
   inset: 0;
@@ -21,6 +26,7 @@ html, body {
   transform: translate(-50%, -50%);
   border: 0;
   background: transparent;
+  filter: url(#ck-green);
 }
 .avatar-video {
   position: absolute;
