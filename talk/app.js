@@ -1,4 +1,4 @@
-import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903c";
+import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903e";
 
 const idle = document.getElementById("idle");
 const frame = document.getElementById("avatar-frame");
@@ -39,6 +39,7 @@ function startCountdown() {
 
 function showIdle() {
   active = false;
+  document.body.classList.remove("is-talking");
   idle.classList.remove("hidden");
   btnEnd.classList.add("hidden");
   frame.classList.add("hidden");
@@ -51,6 +52,7 @@ function showIdle() {
 
 function showTalking() {
   active = true;
+  document.body.classList.add("is-talking");
   idle.classList.add("hidden");
   btnEnd.classList.remove("hidden");
 }
@@ -125,8 +127,3 @@ btnStart.addEventListener("click", start);
 btnEnd.addEventListener("click", stop);
 window.addEventListener("pagehide", stop);
 window.addEventListener("beforeunload", stop);
-
-if (!LIVEAVATAR_EMBED_URL && !LIVEAVATAR_TOKEN_URL) {
-  setupHint.textContent = "未配置 LiveAvatar。请在 talk/config.js 填入嵌入链接。";
-  setupHint.classList.remove("hidden");
-}
