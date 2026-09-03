@@ -6,22 +6,28 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <title>JT Talk</title>
-  <link rel="stylesheet" href="./styles.css?v=20260903g" />
-  <link rel="stylesheet" href="../shared-dock.css?v=20260903g" />
+  <link rel="stylesheet" href="./styles.css?v=20260903h" />
+  <link rel="stylesheet" href="../shared-dock.css?v=20260903h" />
 </head>
 <body>
   <svg class="ck-svg" aria-hidden="true" width="0" height="0">
     <filter id="ck-green" color-interpolation-filters="sRGB">
-      <feColorMatrix type="matrix" values="
+      <feColorMatrix in="SourceGraphic" type="matrix" values="
         1 0 0 0 0
         0 1 0 0 0
         0 0 1 0 0
-        0.8 -1.6 0.8 1 0" />
+        1.3 -1.7 1.3 0 0.12" result="mask" />
+      <feComponentTransfer in="mask" result="cut">
+        <feFuncA type="discrete" tableValues="0 0 0 0 0 1 1 1 1 1" />
+      </feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="cut" operator="in" />
     </filter>
   </svg>
   <div id="stage" class="stage">
-    <iframe id="avatar-frame" class="avatar-frame hidden" allow="microphone; camera; autoplay; clipboard-write" title="LiveAvatar"></iframe>
-    <video id="avatar-video" class="avatar-video hidden" autoplay playsinline></video>
+    <div class="avatar-wrap">
+      <iframe id="avatar-frame" class="avatar-frame hidden" allow="microphone; camera; autoplay; clipboard-write" title="LiveAvatar"></iframe>
+      <video id="avatar-video" class="avatar-video hidden" autoplay playsinline></video>
+    </div>
     <div id="idle" class="idle">
       <p class="brand">JT CABIN</p>
       <h1>TALK</h1>
@@ -38,6 +44,6 @@
   </nav>
   <button type="button" id="btn-end" class="btn-end hidden">结束 · End</button>
   <div id="status" class="status hidden"></div>
-  <script type="module" src="./app.js?v=20260903g"></script>
+  <script type="module" src="./app.js?v=20260903h"></script>
 </body>
 </html>
