@@ -34,6 +34,9 @@ html, body {
   object-fit: contain;
 }
 .hidden { display: none !important; }
+body.is-talking .jt-dock {
+  display: none !important;
+}
 .idle {
   position: absolute;
   inset: 0;
