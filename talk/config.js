@@ -2,5 +2,5 @@
 export const LIVEAVATAR_EMBED_URL =
   "https://embed.liveavatar.com/v1/3efcc958-aac8-4af2-802f-d4f4638c7210?orientation=vertical";
 export const LIVEAVATAR_TOKEN_URL = "";
-// Hard cap for this demo: 30 seconds, then the page tears down the iframe.
-export const SESSION_MS = 30 * 1000;
+// Cabin cap. Free LiveAvatar plan also maxes a session at 2 minutes.
+export const SESSION_MS = 2 * 60 * 1000;
