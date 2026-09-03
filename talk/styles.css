@@ -20,7 +20,7 @@ html, body {
 .avatar-wrap {
   position: absolute;
   left: 50%;
-  top: 34%;
+  top: 24%;
   width: min(52vh, 46vw);
   height: min(92vh, 82vw);
   transform: translate(-50%, -50%);
