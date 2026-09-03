@@ -10,7 +10,9 @@ const setupHint = document.getElementById("setup-hint");
 
 let session = null;
 let timer = null;
+let tick = null;
 let active = false;
+let endsAt = 0;
 
 function setStatus(text) {
   if (!text) {
@@ -22,11 +24,25 @@ function setStatus(text) {
   statusEl.classList.remove("hidden");
 }
 
+function remainingSec() {
+  return Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
+}
+
+function startCountdown() {
+  clearInterval(tick);
+  tick = setInterval(() => {
+    const s = remainingSec();
+    setStatus("对话中 · " + s + "s");
+    if (s <= 0) stop();
+  }, 250);
+}
+
 function showIdle() {
   active = false;
   idle.classList.remove("hidden");
   btnEnd.classList.add("hidden");
   frame.classList.add("hidden");
+  frame.removeAttribute("src");
   frame.src = "about:blank";
   video.classList.add("hidden");
   video.srcObject = null;
@@ -43,7 +59,7 @@ async function startEmbed(url) {
   frame.src = url;
   frame.classList.remove("hidden");
   showTalking();
-  setStatus("对话中 · Talking");
+  setStatus("对话中 · " + Math.round((SESSION_MS || 30000) / 1000) + "s");
 }
 
 async function startSdk(tokenUrl) {
@@ -70,17 +86,21 @@ async function startSdk(tokenUrl) {
 async function start() {
   if (active) return;
   clearTimeout(timer);
+  clearInterval(tick);
   try {
     if (LIVEAVATAR_EMBED_URL) {
       await startEmbed(LIVEAVATAR_EMBED_URL);
     } else if (LIVEAVATAR_TOKEN_URL) {
       await startSdk(LIVEAVATAR_TOKEN_URL);
     } else {
-      setupHint.textContent = "先在 talk/config.js 填入 LIVEAVATAR_EMBED_URL（从 app.liveavatar.com 复制嵌入链接）。";
+      setupHint.textContent = "先在 talk/config.js 填入 LIVEAVATAR_EMBED_URL。";
       setupHint.classList.remove("hidden");
       return;
     }
-    timer = setTimeout(stop, SESSION_MS || 5 * 60 * 1000);
+    const ms = SESSION_MS || 30 * 1000;
+    endsAt = Date.now() + ms;
+    startCountdown();
+    timer = setTimeout(stop, ms);
   } catch (err) {
     console.error(err);
     setupHint.textContent = "无法启动实时数字人：" + (err.message || err);
@@ -91,7 +111,9 @@ async function start() {
 
 async function stop() {
   clearTimeout(timer);
+  clearInterval(tick);
   timer = null;
+  tick = null;
   try {
     if (session && session.stop) await session.stop();
   } catch (e) {}
@@ -102,8 +124,9 @@ async function stop() {
 btnStart.addEventListener("click", start);
 btnEnd.addEventListener("click", stop);
 window.addEventListener("pagehide", stop);
+window.addEventListener("beforeunload", stop);
 
 if (!LIVEAVATAR_EMBED_URL && !LIVEAVATAR_TOKEN_URL) {
-  setupHint.textContent = "未配置 LiveAvatar。可先点开始查看提示，或在 talk/config.js 填入嵌入链接。";
+  setupHint.textContent = "未配置 LiveAvatar。请在 talk/config.js 填入嵌入链接。";
   setupHint.classList.remove("hidden");
 }
