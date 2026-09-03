@@ -1,4 +1,4 @@
-import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903j";
+import { LIVEAVATAR_EMBED_URL, LIVEAVATAR_TOKEN_URL, SESSION_MS } from "./config.js?v=20260903k";
 
 const idle = document.getElementById("idle");
 const frame = document.getElementById("avatar-frame");
@@ -113,7 +113,7 @@ async function start() {
       setupHint.classList.remove("hidden");
       return;
     }
-    const ms = SESSION_MS || 2 * 60 * 1000;
+    const ms = SESSION_MS || 60 * 1000;
     endsAt = Date.now() + ms;
     startCountdown();
     timer = setTimeout(stop, ms);
