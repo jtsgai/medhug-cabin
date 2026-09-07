@@ -20,9 +20,9 @@ html, body {
 .avatar-wrap {
   position: absolute;
   left: 50%;
-  top: 24%;
-  width: min(52vh, 46vw);
-  height: min(92vh, 82vw);
+  top: 36%;
+  width: min(86vw, 92vh);
+  height: min(52vw, 48vh);
   transform: translate(-50%, -50%);
   filter: url(#ck-green);
   background: transparent;
@@ -37,6 +37,27 @@ html, body {
   background: transparent;
   object-fit: contain;
 }
+.desk {
+  display: none;
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: 58%;
+  height: 10px;
+  pointer-events: none;
+  z-index: 4;
+}
+.desk-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(196,165,116,0.55) 18%, rgba(244,237,227,0.7) 50%, rgba(196,165,116,0.55) 82%, transparent);
+}
+.desk-shade {
+  height: 8px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.35), transparent);
+}
+body.is-talking .desk {
+  display: block;
+}
 .hidden { display: none !important; }
 body.is-talking .jt-dock {
   display: none !important;
@@ -48,7 +69,7 @@ body.is-talking .jt-dock {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 18vh;
+  padding-top: 16vh;
   gap: 18px;
   background: #000;
 }
@@ -82,7 +103,7 @@ body.is-talking .jt-dock {
 .btn-end {
   position: fixed;
   right: 22px;
-  bottom: 8%;
+  top: 6%;
   z-index: 92;
   background: rgba(0,0,0,0.45);
   backdrop-filter: blur(10px);
@@ -97,7 +118,7 @@ body.is-talking .jt-dock {
 .status {
   position: fixed;
   left: 22px;
-  bottom: 8%;
+  top: 6%;
   z-index: 92;
   padding: 8px 14px;
   border-radius: 999px;
