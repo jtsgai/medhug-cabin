@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <title>JT Talk Live</title>
+  <link rel="stylesheet" href="./styles.css?v=20260912a" />
+  <link rel="stylesheet" href="../shared-dock.css?v=20260912a" />
+</head>
+<body>
+  <div id="stage" class="stage">
+    <div class="desk" aria-hidden="true"><div class="desk-line"></div></div>
+    <div id="idle" class="idle">
+      <p class="brand">JT CABIN</p>
+      <h1>TALK LIVE</h1>
+      <p class="tag">LITE · GPT-Live 试验页</p>
+      <button type="button" id="btn-start" class="btn-start">开始试验 · Start</button>
+      <p id="setup-hint" class="hint">此页不替换 /talk/。GPT-Live Key 到之后接中转服务。</p>
+    </div>
+  </div>
+  <nav class="jt-dock">
+    <a href="../index.html">TRY ON</a>
+    <a href="../kids/">KIDS</a>
+    <a href="../fx/">FX</a>
+    <a href="../talk/">TALK</a>
+    <a href="./" class="is-here">LIVE</a>
+  </nav>
+  <button type="button" id="btn-end" class="btn-end hidden">结束 · End</button>
+  <div id="status" class="status hidden"></div>
+  <script type="module" src="./app.js?v=20260912a"></script>
+</body>
+</html>
