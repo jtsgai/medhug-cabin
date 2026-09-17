@@ -9,5 +9,17 @@ const code = (await fetch(APP_SRC).then((r) => {
     "n.realtime.connect((window.__jtVtonIn||localStream),{"
   )
   .replaceAll('from"./config.js"', `from"${origin}config.js"`)
-  .replaceAll('from"./i18n.js"', `from"${origin}i18n.js"`);
+  .replaceAll('from"./i18n.js"', `from"${origin}i18n.js"`)
+  .replace(
+    'function disconnectApi(){',
+    'function disconnectApi(){window.UsageClient?.stop("tryon");'
+  )
+  .replace(
+    'if(!DECART_API_KEY||"YOUR_API_KEY_HERE"===DECART_API_KEY)return showApiCreditHint(!0),void setStatusKey("status_camera");setStatusKey("status_connecting");try{',
+    'if(!DECART_API_KEY||"YOUR_API_KEY_HERE"===DECART_API_KEY)return showApiCreditHint(!0),void setStatusKey("status_camera");window.UsageClient?.start("tryon");setStatusKey("status_connecting");try{'
+  )
+  .replace(
+    'function endSession(){',
+    'function endSession(){window.UsageClient?.stop("tryon");'
+  );
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));

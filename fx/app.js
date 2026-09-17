@@ -75,6 +75,7 @@ async function applyEffect(id) {
   if (!fx || switching) return;
   switching = true;
   try {
+    window.UsageClient?.start("fx");
     await ensureSession();
     currentId = id;
     markActive(id);
@@ -89,6 +90,7 @@ async function applyEffect(id) {
   }
 }
 async function resetFx(show = true) {
+  window.UsageClient?.stop("fx");
   stopPresence();
   currentId = null;
   markActive(null);

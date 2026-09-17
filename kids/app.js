@@ -322,6 +322,7 @@ async function startTransform() {
   }
 
   setStatus(t("connecting"));
+  window.UsageClient?.start("kids");
   let timeoutId;
   try {
     const model = models.realtime("lucy-latest");
@@ -379,6 +380,7 @@ async function requestStop() {
 }
 
 async function stopTransform(showToast = true) {
+  window.UsageClient?.stop("kids");
   stopPresenceWatch();
   try {
     window.speechSynthesis?.cancel();

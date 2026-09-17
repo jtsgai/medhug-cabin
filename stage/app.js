@@ -77,6 +77,7 @@ function loadTex(url) {
 }
 
 async function boot() {
+  window.UsageClient?.start("stage");
   hint.textContent = "Friends on stage";
   for (const spec of SPECS) {
     try {
