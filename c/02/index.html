@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HaloCabin</title>
+  <script>
+    (function () {
+      var parts = location.pathname.replace(/\/+$/, "").split("/");
+      var id = parts[parts.length - 1] || "";
+      var cabin = /^\d{2}$/.test(id) ? "cabin_" + id : id;
+      if (!cabin || cabin === "c") cabin = "unknown";
+      document.cookie = "hc_cabin=" + encodeURIComponent(cabin) +
+        "; Domain=.medhug.ai; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
+      try { localStorage.setItem("hc_cabin", cabin); } catch (e) {}
+      location.replace("/");
+    })();
+  </script>
+</head>
+<body>
+  <p>HaloCabin</p>
+</body>
+</html>
