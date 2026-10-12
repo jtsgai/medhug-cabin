@@ -1,5 +1,6 @@
 # secrets
 config.js
+config.local.js
 
 # OS / editor
 .DS_Store
