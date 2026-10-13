@@ -37,5 +37,20 @@
   <script src="../camera-quality.js?v=cam18"></script>
   <script src="../force-cam.js?v=cam18"></script>
   <script src="../cam-exit.js?v=cam18"></script>
+  <script>
+    async function refreshUsed() {
+      const el = document.getElementById("used-minutes");
+      if (!el) return;
+      try {
+        const r = await fetch("https://live.medhug.ai/api/cabin-owner", { credentials: "include" });
+        if (!r.ok) return el.classList.add("hidden");
+        const d = await r.json();
+        el.textContent = "Used " + (d.used_minutes ?? d.tryon_minutes ?? 0) + " min";
+        el.classList.remove("hidden");
+      } catch { el.classList.add("hidden"); }
+    }
+    refreshUsed();
+    setInterval(refreshUsed, 20000);
+  </script>
 </body>
 </html>
