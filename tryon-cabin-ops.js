@@ -34,7 +34,8 @@
       const r = await fetch("https://live.medhug.ai/api/cabin-owner", { credentials: "include" });
       if (!r.ok) return stats.classList.add("hidden");
       const d = await r.json();
-      stats.textContent = `\u6362\u8863\u5df2\u7528 ${d.tryon_minutes || 0} \u5206\u949f\n\u5df2\u5145\u503c S$${Number(d.topped_up || 0).toFixed(0)}\n\u5269\u4f59 S$${Number(d.remaining || 0).toFixed(0)}`;
+      const minutes = d.used_minutes ?? d.tryon_minutes ?? 0;
+      stats.textContent = `\u5df2\u7528 ${minutes} \u5206\u949f\n\u5269\u4f59 S$${Number(d.remaining || 0).toFixed(0)}`;
       stats.classList.remove("hidden");
     } catch {
       stats.classList.add("hidden");
