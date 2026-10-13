@@ -26,7 +26,7 @@
 </head>
 <body>
   <div class="brand">
-    <img src="./assets/jt-logo.png" alt="JT" onerror="this.src='./assets/logo.png'" />
+    <img src="https://live.medhug.ai/jt-logo.png" alt="JT" />
     <span>JT M&C Pte Ltd</span>
   </div>
   <form class="box" id="f">
@@ -40,8 +40,10 @@
     <div class="err" id="err"></div>
   </form>
   <script>
-    var cabin = "cabin_01";
+    var params = new URLSearchParams(location.search);
+    var cabin = params.get("cabin") === "cabin_02" ? "cabin_02" : "cabin_01";
     document.querySelectorAll(".cabin-btn").forEach(function (btn) {
+      btn.classList.toggle("is-on", btn.dataset.cabin === cabin);
       btn.addEventListener("click", function () {
         cabin = btn.dataset.cabin;
         document.querySelectorAll(".cabin-btn").forEach(function (b) { b.classList.toggle("is-on", b === btn); });
