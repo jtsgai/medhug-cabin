@@ -1,20 +1,30 @@
 const video = document.querySelector("#halo");
 const caption = document.querySelector("#caption");
 const used = document.querySelector("#used-minutes");
+const IDLE = "./halo/halo-idle.mp4";
+const WAVE = "./halo/halo-wave.mp4";
+let mode = "idle";
 let billing = false;
 let presentSince = 0;
 let absentSince = 0;
 let cam = null;
 
+function play(next) {
+  if (mode === next && video.src.endsWith(next.slice(1))) return;
+  mode = next;
+  video.src = next;
+  video.loop = true;
+  video.play().catch(() => {});
+  caption.textContent = next === WAVE ? "Halo sees you" : "Halo";
+}
+
 function setBilling(on) {
   if (on && !billing) {
     window.UsageClient?.start("stage");
     billing = true;
-    caption.textContent = "Halo is on stage";
   } else if (!on && billing) {
     window.UsageClient?.stop("stage");
     billing = false;
-    caption.textContent = "Halo";
   }
 }
 
@@ -53,14 +63,20 @@ async function watch() {
     if (person) {
       absentSince = 0;
       if (!presentSince) presentSince = now;
-      if (!billing && now - presentSince > 1200) setBilling(true);
+      if (now - presentSince > 800) {
+        play(WAVE);
+        setBilling(true);
+      }
     } else {
       presentSince = 0;
       if (!absentSince) absentSince = now;
-      if (billing && now - absentSince > 8000) setBilling(false);
+      if (now - absentSince > 5000) {
+        play(IDLE);
+        setBilling(false);
+      }
     }
-  }, 500);
+  }, 400);
 }
+play(IDLE);
 watch();
-video.play().catch(() => {});
 window.addEventListener("pagehide", () => setBilling(false));
