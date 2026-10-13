@@ -20,13 +20,14 @@
   end.type = "button";
   end.id = "btn-dock-end";
   end.className = "jt-dock-end hidden";
-  end.textContent = "\u7ed3\u675f\u8bd5\u7a7f";
+  end.textContent = "End";
   end.addEventListener("click", () => document.getElementById("btn-end")?.click());
   dock?.appendChild(end);
 
   const hint = document.createElement("div");
   hint.id = "tryon-hint";
   hint.className = "tryon-hint";
+  hint.textContent = "Tap a look, then Try on";
   document.body.appendChild(hint);
 
   const stats = document.createElement("div");
@@ -34,17 +35,13 @@
   stats.className = "owner-stats hidden";
   document.body.appendChild(stats);
 
-  function isEnglish() {
-    return (document.documentElement.lang || "").toLowerCase().startsWith("en");
-  }
-
   async function refreshOwner() {
     try {
       const r = await fetch("https://live.medhug.ai/api/cabin-owner", { credentials: "include" });
       if (!r.ok) return stats.classList.add("hidden");
       const d = await r.json();
       const minutes = d.used_minutes ?? d.tryon_minutes ?? 0;
-      stats.textContent = `\u5df2\u7528 ${minutes} \u5206\u949f`;
+      stats.textContent = `Used ${minutes} min`;
       stats.classList.remove("hidden");
     } catch {
       stats.classList.add("hidden");
@@ -67,8 +64,8 @@
   setInterval(async () => {
     const live = document.getElementById("btn-end") && !document.getElementById("btn-end").classList.contains("hidden");
     end.classList.toggle("hidden", !live);
-    end.textContent = isEnglish() ? "End" : "\u7ed3\u675f\u8bd5\u7a7f";
-    hint.textContent = isEnglish() ? "Tap a look, then Try on" : "\u70b9\u4e00\u4ef6\u8863\u670d\uff0c\u518d\u70b9\u8bd5\u7a7f";
+    end.textContent = "End";
+    hint.textContent = "Tap a look, then Try on";
     hint.classList.toggle("hidden", live);
     dock?.classList.toggle("locked", Boolean(live));
     if (live && !liveSince) liveSince = Date.now();
