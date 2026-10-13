@@ -235,7 +235,8 @@ html, body {
 .btn-stop {
   position: absolute;
   right: 8px;
-  bottom: 16%;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 5;
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 999px;
@@ -248,7 +249,7 @@ html, body {
   backdrop-filter: blur(8px);
 }
 .btn-stop.hidden { display: none; }
-.btn-stop:active { transform: scale(0.98); }
+.btn-stop:active { transform: translateY(-50%) scale(0.98); }
 
 .toast {
   position: fixed;
