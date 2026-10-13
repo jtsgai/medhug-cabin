@@ -22,7 +22,6 @@ localStorage.setItem("kids_l1_lang", "en");
 function t(key) {
   return (STR[lang] && STR[lang][key]) || (STR.en[key] || key);
 }
-
 function toast(msg) {
   const el = $("#toast");
   el.textContent = msg;
@@ -30,18 +29,15 @@ function toast(msg) {
   clearTimeout(toast._t);
   toast._t = setTimeout(() => el.classList.add("hidden"), 3200);
 }
-
 function setStatus(text, show = true) {
   const el = $("#status");
   if (!el) return;
   el.textContent = text || "";
   el.classList.toggle("hidden", !show || !text);
 }
-
 function getChar(id) {
   return characters.find((c) => c.id === id);
 }
-
 async function getDecartToken() {
   const response = await fetch("https://live.medhug.ai/api/decart-token", {
     method: "POST",
@@ -53,7 +49,6 @@ async function getDecartToken() {
   decartToken = data.token;
   return decartToken;
 }
-
 function applyI18n() {
   document.documentElement.lang = "en";
   const hl = $("#headline");
@@ -64,7 +59,6 @@ function applyI18n() {
   if (btnStop) btnStop.textContent = t("exit");
   updateLogoState();
 }
-
 function speakWelcome(ch) {
   try {
     window.speechSynthesis.cancel();
@@ -73,15 +67,9 @@ function speakWelcome(ch) {
     u.lang = "en-US";
     u.rate = 0.95;
     window.speechSynthesis.speak(u);
-  } catch (e) {
-    console.warn("tts", e);
-  }
+  } catch (e) { console.warn("tts", e); }
 }
-
-function showEmpty(show) {
-  $("#empty-state")?.classList.toggle("hidden", !show);
-}
-
+function showEmpty(show) { $("#empty-state")?.classList.toggle("hidden", !show); }
 function applyLayoutFromStorage() {
   try {
     const raw = localStorage.getItem("kids_l1_layout_v1");
@@ -102,11 +90,8 @@ function applyLayoutFromStorage() {
       "--char-gap": (s.char_gap ?? 6) + "px",
     };
     for (const [k, v] of Object.entries(map)) root.style.setProperty(k, v);
-  } catch (e) {
-    console.warn("layout apply", e);
-  }
+  } catch (e) { console.warn("layout apply", e); }
 }
-
 function updateLogoState() {
   const btn = $("#btn-logo-start");
   document.getElementById("jt-dock")?.classList.toggle("locked", sessionActive);
@@ -123,19 +108,14 @@ function updateLogoState() {
     else tip.textContent = t("pickFriend");
   }
 }
-
 function makeCard(c) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "char-card" + (c.id === selectedId ? " active" : "");
-  btn.innerHTML = `
-    <div class="char-name">${c.name_zh || c.name}</div>
-    <img src="./assets/${c.display || c.ref}" alt="${c.name}" loading="lazy" />
-  `;
+  btn.innerHTML = `<div class="char-name">${c.name_zh || c.name}</div><img src="./assets/${c.display || c.ref}" alt="${c.name}" loading="lazy" />`;
   btn.onclick = () => onSelectCharacter(c.id);
   return btn;
 }
-
 function renderChars() {
   const left = $("#col-left");
   const right = $("#col-right");
@@ -147,17 +127,13 @@ function renderChars() {
   list.slice(0, mid).forEach((c) => left.appendChild(makeCard(c)));
   list.slice(mid).forEach((c) => right.appendChild(makeCard(c)));
 }
-
 async function onSelectCharacter(id) {
   if (id === selectedId && sessionActive) return;
   selectedId = id;
   renderChars();
   updateLogoState();
-  if (sessionActive && realtimeClient) {
-    await switchCharacterLive(id);
-  }
+  if (sessionActive && realtimeClient) await switchCharacterLive(id);
 }
-
 async function switchCharacterLive(id) {
   const ch = getChar(id);
   if (!ch || !realtimeClient || switching) return;
@@ -171,62 +147,24 @@ async function switchCharacterLive(id) {
   } catch (e) {
     console.warn(e);
     toast(`${t("switchFail")}: ${errText(e).slice(0, 40)}`);
-  } finally {
-    switching = false;
-  }
+  } finally { switching = false; }
 }
-
 async function detectPersonInFrame(videoEl) {
   if (!videoEl || videoEl.readyState < 2) return true;
   try {
     if (window.FaceDetector) {
-      const fd =
-        detectPersonInFrame._fd ||
-        (detectPersonInFrame._fd = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }));
+      const fd = detectPersonInFrame._fd || (detectPersonInFrame._fd = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }));
       const faces = await fd.detect(videoEl);
       if (faces && faces.length > 0) return true;
     }
   } catch (_) {}
-
-  try {
-    const w = 64,
-      h = 36;
-    const canvas = detectPersonInFrame._c || (detectPersonInFrame._c = document.createElement("canvas"));
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.drawImage(videoEl, 0, 0, w, h);
-    const data = ctx.getImageData(0, 0, w, h).data;
-    let sum = 0;
-    let diff = 0;
-    const prev = detectPersonInFrame._prev;
-    const gray = new Uint8Array(w * h);
-    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
-      const g = (data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11) | 0;
-      gray[p] = g;
-      sum += g;
-      if (prev) diff += Math.abs(g - prev[p]);
-    }
-    detectPersonInFrame._prev = gray;
-    const mean = sum / (w * h);
-    const motion = prev ? diff / (w * h) : 99;
-    if (motion < 3.2 && mean < 16) return false;
-    if (motion > 5.5) return true;
-    return mean > 20;
-  } catch (_) {
-    return true;
-  }
+  return true;
 }
-
 function stopPresenceWatch() {
   presenceRunning = false;
-  if (presenceTimer) {
-    clearInterval(presenceTimer);
-    presenceTimer = null;
-  }
+  if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; }
   absenceSince = null;
 }
-
 function startPresenceWatch() {
   stopPresenceWatch();
   presenceRunning = true;
@@ -235,16 +173,9 @@ function startPresenceWatch() {
   presenceTimer = setInterval(async () => {
     if (!sessionActive || !presenceRunning) return;
     let present = true;
-    try {
-      present = await detectPersonInFrame(video);
-    } catch (_) {
-      present = true;
-    }
+    try { present = await detectPersonInFrame(video); } catch (_) { present = true; }
     const now = Date.now();
-    if (present) {
-      absenceSince = null;
-      return;
-    }
+    if (present) { absenceSince = null; return; }
     if (absenceSince == null) absenceSince = now;
     const gone = now - absenceSince;
     if (gone >= ABSENCE_EXIT_MS) {
@@ -252,12 +183,10 @@ function startPresenceWatch() {
       await stopTransform(false);
       toast(t("autoEnd"));
     } else {
-      const left = Math.ceil((ABSENCE_EXIT_MS - gone) / 1000);
-      setStatus(`${t("autoEndStatus")} ${left}s`);
+      setStatus(`${t("autoEndStatus")} ${Math.ceil((ABSENCE_EXIT_MS - gone) / 1000)}s`);
     }
   }, 400);
 }
-
 async function startCamera() {
   if (localStream) {
     const tracks = localStream.getVideoTracks?.() || [];
@@ -265,19 +194,12 @@ async function startCamera() {
       $("#video-output").srcObject = localStream;
       return localStream;
     }
-    try {
-      localStream.getTracks().forEach((tr) => tr.stop());
-    } catch (_) {}
+    try { localStream.getTracks().forEach((tr) => tr.stop()); } catch (_) {}
     localStream = null;
   }
   localStream = await navigator.mediaDevices.getUserMedia({
     audio: false,
-    video: {
-      facingMode: "user",
-      width: { ideal: 720 },
-      height: { ideal: 1280 },
-      frameRate: { ideal: 30 },
-    },
+    video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 1280 }, frameRate: { ideal: 30 } },
   });
   const v = $("#video-output");
   v.srcObject = localStream;
@@ -285,55 +207,43 @@ async function startCamera() {
   await v.play().catch(() => {});
   return localStream;
 }
-
 async function urlToFile(path, name) {
   const res = await fetch(path);
   if (!res.ok) throw new Error("Cannot load " + path);
   const blob = await res.blob();
   return new File([blob], name, { type: blob.type || "image/png" });
 }
-
 function errText(e) {
   if (!e) return "Unknown error";
   if (typeof e === "string") return e;
   return e.message || e.code || String(e);
 }
-
 async function startTransform() {
   const ch = getChar(selectedId);
   if (!ch) return toast(t("pickFriend"));
   if (sessionActive) return;
-
-  try {
-    await getDecartToken();
-  } catch (e) {
+  try { await getDecartToken(); }
+  catch (e) {
     const msg = errText(e) === "no-credit" ? t("noCredit") : t("unavailable");
     toast(msg);
     setStatus(msg);
     return;
   }
-
   const logoBtn = $("#btn-logo-start");
   if (logoBtn) logoBtn.disabled = true;
-
   setStatus(t("connecting"));
-  try {
-    await startCamera();
-  } catch (e) {
-    console.warn(e);
+  try { await startCamera(); }
+  catch (e) {
     toast(`${t("startFailCam")}: ${errText(e).slice(0, 40)}`);
     showEmpty(true);
     updateLogoState();
     return;
   }
-
-  setStatus(t("connecting"));
   window.UsageClient?.start("kids");
   let timeoutId;
   try {
     const model = models.realtime("lucy-latest");
     const client = createDecartClient({ apiKey: decartToken });
-
     const connectPromise = client.realtime.connect(localStream, {
       model,
       mirror: "auto",
@@ -346,18 +256,12 @@ async function startTransform() {
       },
       onError: (err) => console.warn("[kids] realtime error", err),
     });
-
-    const timeoutPromise = new Promise((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error("Timeout")), 30000);
-    });
-
+    const timeoutPromise = new Promise((_, reject) => { timeoutId = setTimeout(() => reject(new Error("Timeout")), 30000); });
     realtimeClient = await Promise.race([connectPromise, timeoutPromise]);
     clearTimeout(timeoutId);
-
     setStatus(t("transforming"));
     const file = await urlToFile("./assets/" + ch.ref, ch.ref);
     await realtimeClient.set({ prompt: ch.prompt, image: file, enhance: true });
-
     sessionActive = true;
     startPresenceWatch();
     setStatus(`${t("performingWith")} ${ch.name}`);
@@ -366,31 +270,21 @@ async function startTransform() {
     speakWelcome(ch);
   } catch (e) {
     clearTimeout(timeoutId);
-    console.warn("[kids] transform failed", e);
     toast(`${t("transformFail")}: ${errText(e).slice(0, 50)}`);
     await stopTransform(false);
-  } finally {
-    updateLogoState();
-  }
+  } finally { updateLogoState(); }
 }
-
 async function requestStop() {
   if (!sessionActive) return;
-  const ok = window.confirm(t("endConfirm"));
-  if (!ok) return;
+  if (!window.confirm(t("endConfirm"))) return;
   await stopTransform(true);
 }
-
 async function stopTransform(showToast = true) {
   window.UsageClient?.stop("kids");
   stopPresenceWatch();
-  try {
-    window.speechSynthesis?.cancel();
-  } catch (_) {}
+  try { window.speechSynthesis?.cancel(); } catch (_) {}
   if (realtimeClient) {
-    try {
-      realtimeClient.disconnect();
-    } catch (_) {}
+    try { realtimeClient.disconnect(); } catch (_) {}
     realtimeClient = null;
   }
   sessionActive = false;
@@ -399,20 +293,11 @@ async function stopTransform(showToast = true) {
   setStatus("", false);
   showEmpty(true);
   updateLogoState();
-  try {
-    await startCamera();
-  } catch (_) {}
+  try { await startCamera(); } catch (_) {}
   if (showToast) toast(t("ended"));
 }
-
 async function init() {
   applyI18n();
-  try {
-    await getDecartToken();
-    setStatus("", false);
-  } catch (e) {
-    setStatus(errText(e) === "no-credit" ? t("noCredit") : t("unavailable"));
-  }
   const res = await fetch("./characters.json");
   const data = await res.json();
   characters = data.characters || [];
@@ -425,24 +310,9 @@ async function init() {
   const btnLang = $("#btn-lang");
   if (btnLang) {
     btnLang.textContent = "TRY ON";
-    btnLang.onclick = () => {
-      window.location.href = "../index.html";
-    };
+    btnLang.onclick = () => { window.location.href = "../index.html"; };
   }
-  try {
-    await startCamera();
-  } catch (e) {
-    console.warn("camera", e);
-  }
-
-  window.addEventListener("beforeunload", () => {
-    try {
-      realtimeClient?.disconnect();
-    } catch (_) {}
-  });
+  try { await startCamera(); } catch (e) { console.warn("camera", e); }
+  window.addEventListener("beforeunload", () => { try { realtimeClient?.disconnect(); } catch (_) {} });
 }
-
-init().catch((e) => {
-  console.error(e);
-  toast(errText(e));
-});
+init().catch((e) => { console.error(e); toast(errText(e)); });
