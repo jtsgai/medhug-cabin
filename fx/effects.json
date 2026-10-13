@@ -30,5 +30,37 @@
       "label": "Water",
       "prompt": "Add clear water dripping down the person's hair and shoulders, looking wet. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
     }
+  ],
+  "halloween": [
+    {
+      "id": "pumpkin",
+      "emoji": "🎃",
+      "label": "Pumpkin",
+      "prompt": "Add a glowing carved jack-o-lantern pumpkin around the person's head like a Halloween helmet, with warm orange light. Keep the same face visible, identity, clothing, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "witch",
+      "emoji": "🧙",
+      "label": "Witch",
+      "prompt": "Add a tall black pointed witch hat and a small Halloween cape. Keep the same face, identity, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "ghost",
+      "emoji": "👻",
+      "label": "Ghost",
+      "prompt": "Add a soft white ghost sheet floating just behind the person, with two friendly black eyes. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "vampire",
+      "emoji": "🧛",
+      "label": "Vampire",
+      "prompt": "Add small vampire fangs and a black high-collar cape. Keep the same face, identity, body, pose, and background. Do not change anything else."
+    },
+    {
+      "id": "bat",
+      "emoji": "🦇",
+      "label": "Bat",
+      "prompt": "Add a few small cute black bats flying near the person's shoulders. Keep the same face, identity, clothing, body, pose, and background. Do not change anything else."
+    }
   ]
 }
