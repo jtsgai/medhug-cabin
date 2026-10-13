@@ -1,30 +1,21 @@
 const video = document.querySelector("#halo");
 const caption = document.querySelector("#caption");
 const used = document.querySelector("#used-minutes");
-const IDLE = "./halo/halo-idle.mp4?v=3";
-const WAVE = "./halo/halo-wave.mp4?v=3";
-let mode = "idle";
+const SHOW = "./halo/halo-halloween.mp4?v=1";
 let billing = false;
 let presentSince = 0;
 let absentSince = 0;
 let cam = null;
 
-function play(next) {
-  if (mode === next) return;
-  mode = next;
-  video.src = next;
-  video.loop = true;
-  video.play().catch(() => {});
-  caption.textContent = next === WAVE ? "Halo sees you" : "Halo";
-}
-
 function setBilling(on) {
   if (on && !billing) {
     window.UsageClient?.start("stage");
     billing = true;
+    caption.textContent = "Happy Halloween";
   } else if (!on && billing) {
     window.UsageClient?.stop("stage");
     billing = false;
+    caption.textContent = "Halo";
   }
 }
 
@@ -63,20 +54,16 @@ async function watch() {
     if (person) {
       absentSince = 0;
       if (!presentSince) presentSince = now;
-      if (now - presentSince > 800) {
-        play(WAVE);
-        setBilling(true);
-      }
+      if (now - presentSince > 800) setBilling(true);
     } else {
       presentSince = 0;
       if (!absentSince) absentSince = now;
-      if (now - absentSince > 5000) {
-        play(IDLE);
-        setBilling(false);
-      }
+      if (now - absentSince > 5000) setBilling(false);
     }
   }, 400);
 }
-play(IDLE);
+video.src = SHOW;
+video.loop = true;
+video.play().catch(() => {});
 watch();
 window.addEventListener("pagehide", () => setBilling(false));
