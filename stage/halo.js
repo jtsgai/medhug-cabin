@@ -1,35 +1,22 @@
-const halo = document.querySelector("#halo");
+const video = document.querySelector("#halo");
 const caption = document.querySelector("#caption");
 const used = document.querySelector("#used-minutes");
-const frames = ["./halo/halo-idle.png", "./halo/halo-wave.png", "./halo/halo-run.png", "./halo/halo-wave.png"];
-let frame = 0;
-let live = false;
 let billing = false;
 let presentSince = 0;
 let absentSince = 0;
-let video = null;
+let cam = null;
 
-function setLive(on) {
-  live = on;
-  document.querySelector(".stage").classList.toggle("live", on);
-  caption.textContent = on ? "Halo is on stage" : "Halo";
+function setBilling(on) {
   if (on && !billing) {
     window.UsageClient?.start("stage");
     billing = true;
+    caption.textContent = "Halo is on stage";
   } else if (!on && billing) {
     window.UsageClient?.stop("stage");
     billing = false;
+    caption.textContent = "Halo";
   }
 }
-
-setInterval(() => {
-  if (!live) {
-    halo.src = frames[0];
-    return;
-  }
-  frame = (frame + 1) % frames.length;
-  halo.src = frames[frame];
-}, 700);
 
 async function refreshUsed() {
   try {
@@ -43,12 +30,12 @@ refreshUsed();
 setInterval(refreshUsed, 20000);
 
 async function seen() {
-  if (!window.FaceDetector || !video || !video.videoWidth) return false;
+  if (!window.FaceDetector || !cam || !cam.videoWidth) return false;
   try {
     const det = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 });
     const snap = document.createElement("canvas");
     snap.width = 160; snap.height = 90;
-    snap.getContext("2d").drawImage(video, 0, 0, 160, 90);
+    snap.getContext("2d").drawImage(cam, 0, 0, 160, 90);
     return (await det.detect(snap)).length > 0;
   } catch (_) { return false; }
 }
@@ -56,9 +43,9 @@ async function seen() {
 async function watch() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user", width: { ideal: 320 }, height: { ideal: 240 } } });
-    video = document.createElement("video");
-    video.playsInline = true; video.muted = true; video.srcObject = stream;
-    await video.play().catch(() => {});
+    cam = document.createElement("video");
+    cam.playsInline = true; cam.muted = true; cam.srcObject = stream;
+    await cam.play().catch(() => {});
   } catch (_) {}
   setInterval(async () => {
     const now = performance.now();
@@ -66,13 +53,14 @@ async function watch() {
     if (person) {
       absentSince = 0;
       if (!presentSince) presentSince = now;
-      if (!live && now - presentSince > 1200) setLive(true);
+      if (!billing && now - presentSince > 1200) setBilling(true);
     } else {
       presentSince = 0;
       if (!absentSince) absentSince = now;
-      if (live && now - absentSince > 8000) setLive(false);
+      if (billing && now - absentSince > 8000) setBilling(false);
     }
   }, 500);
 }
 watch();
-window.addEventListener("pagehide", () => { if (billing) window.UsageClient?.stop("stage"); });
+video.play().catch(() => {});
+window.addEventListener("pagehide", () => setBilling(false));
