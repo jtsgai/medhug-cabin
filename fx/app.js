@@ -24,6 +24,9 @@ function setStatus(text, show = true) {
   el.textContent = text || "";
   el.classList.toggle("hidden", !show || !text);
 }
+function setOffVisible(show) {
+  $("#btn-reset")?.classList.toggle("hidden", !show);
+}
 function markActive(id) {
   document.querySelectorAll(".fx-btn").forEach((b) => b.classList.toggle("active", b.dataset.id === id));
 }
@@ -39,7 +42,7 @@ async function getDecartToken() {
     method: "POST",
     credentials: "include",
   });
-  if (!response.ok) throw new Error(response.status === 402 ? "Not available right now" : "Not available right now");
+  if (!response.ok) throw new Error("Not available right now");
   const data = await response.json();
   if (!data.token) throw new Error("Not available right now");
   decartToken = data.token;
@@ -79,6 +82,7 @@ async function ensureSession() {
     },
   });
   sessionActive = true;
+  setOffVisible(true);
   startPresence();
 }
 async function applyEffect(id) {
@@ -105,6 +109,7 @@ async function resetFx(show = true) {
   stopPresence();
   currentId = null;
   markActive(null);
+  setOffVisible(false);
   if (realtimeClient) {
     try { realtimeClient.disconnect(); } catch (_) {}
     realtimeClient = null;
@@ -167,6 +172,7 @@ async function init() {
   effects = left.concat(right);
   renderButtons($("#fx-row"), left);
   renderButtons($("#fx-halloween"), right);
+  setOffVisible(false);
   $("#btn-reset").onclick = () => resetFx(true);
   $("#btn-reset").textContent = "OFF";
   try { await startCamera(); } catch (e) { toast("Cannot open camera"); }
