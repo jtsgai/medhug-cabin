@@ -1,5 +1,4 @@
 import { createDecartClient, models } from "https://esm.sh/@decartai/sdk";
-import { DECART_API_KEY } from "./config.js";
 
 const $ = (s) => document.querySelector(s);
 let effects = [];
@@ -10,6 +9,7 @@ let sessionActive = false;
 let switching = false;
 let presenceTimer = null;
 let absenceSince = null;
+let decartToken = "";
 const ABSENCE_MS = 5000;
 
 function toast(msg) {
@@ -34,6 +34,17 @@ function attachLocal() {
   v.muted = true;
   return v.play().catch(() => {});
 }
+async function getDecartToken() {
+  const response = await fetch("https://live.medhug.ai/api/decart-token", {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error(response.status === 402 ? "Not available right now" : "Not available right now");
+  const data = await response.json();
+  if (!data.token) throw new Error("Not available right now");
+  decartToken = data.token;
+  return decartToken;
+}
 async function startCamera() {
   if (localStream && localStream.active) {
     await attachLocal();
@@ -52,11 +63,11 @@ async function startCamera() {
 }
 async function ensureSession() {
   if (sessionActive && realtimeClient) return;
-  if (!DECART_API_KEY || DECART_API_KEY === "YOUR_API_KEY_HERE") throw new Error("Missing API key");
+  await getDecartToken();
   await startCamera();
   setStatus("Connecting…");
   const model = models.realtime("lucy-latest");
-  const client = createDecartClient({ apiKey: DECART_API_KEY });
+  const client = createDecartClient({ apiKey: decartToken });
   realtimeClient = await client.realtime.connect(localStream, {
     model,
     mirror: "auto",
@@ -135,10 +146,9 @@ function stopPresence() {
   presenceTimer = null;
   absenceSince = null;
 }
-function renderDock() {
-  const row = $("#fx-row");
+function renderButtons(row, list) {
   row.innerHTML = "";
-  effects.forEach((fx) => {
+  list.forEach((fx) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "fx-btn";
@@ -151,8 +161,12 @@ function renderDock() {
 }
 async function init() {
   const res = await fetch("./effects.json");
-  effects = (await res.json()).effects || [];
-  renderDock();
+  const data = await res.json();
+  const left = data.effects || [];
+  const right = data.halloween || [];
+  effects = left.concat(right);
+  renderButtons($("#fx-row"), left);
+  renderButtons($("#fx-halloween"), right);
   $("#btn-reset").onclick = () => resetFx(true);
   $("#btn-reset").textContent = "OFF";
   try { await startCamera(); } catch (e) { toast("Cannot open camera"); }
