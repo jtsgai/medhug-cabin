@@ -4,7 +4,8 @@ const used = document.querySelector("#used-minutes");
 const SHOWS = [
   "./halo/halo-halloween.mp4?v=2",
   "./halo/halo-ghost.mp4?v=1",
-  "./halo/halo-bat.mp4?v=1"
+  "./halo/halo-bat.mp4?v=1",
+  "./halo/halo-cape.mp4?v=1"
 ];
 let billing = false;
 let presentSince = 0;
