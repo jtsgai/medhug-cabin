@@ -1,0 +1,47 @@
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+}
+.stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.halo {
+  width: min(62vw, 720px);
+  height: auto;
+  object-fit: contain;
+  transform-origin: center bottom;
+  filter: drop-shadow(0 28px 24px rgba(0,0,0,.28));
+  animation: float 2.8s ease-in-out infinite;
+}
+.stage.live .halo { animation: perform 1.1s ease-in-out infinite; }
+.caption {
+  position: fixed;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: #ff7a18;
+  font: 800 28px/1.2 -apple-system, system-ui, sans-serif;
+  text-shadow: 0 2px 4px #000, 0 0 8px #000;
+}
+.used-minutes {
+  position: fixed;
+  top: 12px;
+  right: 18px;
+  color: #222;
+  font: 700 16px/1 -apple-system, system-ui, sans-serif;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-18px) scale(1.02); }
+}
+@keyframes perform {
+  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+  50% { transform: translateY(-34px) rotate(2deg) scale(1.06); }
+}
