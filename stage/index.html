@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>JT Stage 3D</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=stage2" />
   <link rel="stylesheet" href="../shared-dock.css" />
 </head>
 <body>
@@ -22,8 +22,25 @@
     <a href="./" class="is-here">STAGE</a>
     <a href="../talk/">TALK</a>
   </nav>
-  <p id="hint" class="hint">Friends on stage</p>
+  <p id="hint" class="hint hidden"></p>
+  <button type="button" id="btn-play" class="play hidden">Play</button>
+  <div id="used-minutes" class="used-minutes hidden"></div>
   <script src="../usage-client.js"></script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=stage2"></script>
+  <script>
+    async function refreshUsed() {
+      const el = document.getElementById("used-minutes");
+      if (!el) return;
+      try {
+        const r = await fetch("https://live.medhug.ai/api/cabin-owner", { credentials: "include" });
+        if (!r.ok) return el.classList.add("hidden");
+        const d = await r.json();
+        el.textContent = "Used " + (d.used_minutes ?? d.tryon_minutes ?? 0) + " min";
+        el.classList.remove("hidden");
+      } catch { el.classList.add("hidden"); }
+    }
+    refreshUsed();
+    setInterval(refreshUsed, 20000);
+  </script>
 </body>
 </html>
