@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Kids L1</title>
-  <link rel="stylesheet" href="./styles.css?v=kids4" />
+  <link rel="stylesheet" href="./styles.css?v=kids5" />
   <link rel="stylesheet" href="./holo.css" />
   <link rel="stylesheet" href="../shared-dock.css" />
   <link rel="stylesheet" href="../ui-over-video.css?v=cam18" />
@@ -40,6 +40,7 @@
       <aside id="col-right" class="col col-right"></aside>
     </div>
   </div>
+  <div id="used-minutes" class="used-minutes hidden"></div>
   <div id="toast" class="toast hidden"></div>
   <script>try { window.speechSynthesis.cancel(); window.speechSynthesis.speak = function () {}; } catch (e) {}
   window.confirm = function () { return true; };</script>
@@ -50,5 +51,20 @@
   <script src="../camera-quality.js?v=cam18"></script>
   <script src="../force-cam.js?v=cam18"></script>
   <script src="../cam-exit.js?v=cam18"></script>
+  <script>
+    async function refreshUsed() {
+      const el = document.getElementById("used-minutes");
+      if (!el) return;
+      try {
+        const r = await fetch("https://live.medhug.ai/api/cabin-owner", { credentials: "include" });
+        if (!r.ok) return el.classList.add("hidden");
+        const d = await r.json();
+        el.textContent = "Used " + (d.used_minutes ?? d.tryon_minutes ?? 0) + " min";
+        el.classList.remove("hidden");
+      } catch { el.classList.add("hidden"); }
+    }
+    refreshUsed();
+    setInterval(refreshUsed, 20000);
+  </script>
 </body>
 </html>
