@@ -1,8 +1,8 @@
 const video = document.querySelector("#halo");
 const caption = document.querySelector("#caption");
 const used = document.querySelector("#used-minutes");
-const IDLE = "./halo/halo-idle.mp4";
-const WAVE = "./halo/halo-wave.mp4";
+const IDLE = "./halo/halo-idle.mp4?v=3";
+const WAVE = "./halo/halo-wave.mp4?v=3";
 let mode = "idle";
 let billing = false;
 let presentSince = 0;
@@ -10,7 +10,7 @@ let absentSince = 0;
 let cam = null;
 
 function play(next) {
-  if (mode === next && video.src.endsWith(next.slice(1))) return;
+  if (mode === next) return;
   mode = next;
   video.src = next;
   video.loop = true;
