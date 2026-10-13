@@ -19,7 +19,7 @@ html, body { margin: 0; width: 100%; height: 100%; background: transparent; over
 }
 .dock-halloween {
   left: auto;
-  right: 150px;
+  right: 28px;
 }
 .fx-row { display: flex; flex-direction: column; gap: 14px; padding: 14px; border: 1px solid rgba(255,255,255,0.18); background: transparent; }
 .dock-halloween .fx-row { border-color: rgba(255,140,40,0.45); }
