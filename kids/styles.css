@@ -16,7 +16,6 @@ html, body {
   overflow: hidden;
 }
 
-/* 全息舱：铺满 2160×3840 / 9:16，纯黑=透明 */
 .cabin {
   position: fixed;
   inset: 0;
@@ -37,7 +36,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 0 40px 0 6px; /* 右侧给语言按钮留空 */
+  padding: 0 40px 0 6px;
   transform: translateY(var(--topbar-oy, 0px));
   position: relative;
   overflow: visible;
@@ -87,7 +86,6 @@ html, body {
 }
 
 .stage {
-
   min-height: 0;
   display: grid;
   grid-template-columns: var(--side-w, 112px) 1fr var(--side-w, 112px);
@@ -279,4 +277,9 @@ html, body {
   letter-spacing: 0.08em;
   border: 1px solid rgba(255,255,255,0.18);
   padding: 6px 10px;
+}
+
+.jt-dock.locked a:not(.is-here) {
+  opacity: 0.28;
+  pointer-events: none;
 }
