@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JT HoloCabin</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: transparent; color: #222;
+      font-family: -apple-system, "PingFang SC", sans-serif; }
+    .brand { position: fixed; top: 18px; left: 18px; display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 54px; height: auto; }
+    .brand span { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+    .box { min-height: 100%; display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; padding-top: 22vh; gap: 16px; }
+    h1 { margin: 0; font-size: 22px; }
+    .cabins { display: flex; gap: 16px; }
+    .cabin-btn { width: 140px; height: 64px; border-radius: 16px; border: 2px solid #ddd;
+      background: #fff; font-size: 18px; font-weight: 700; cursor: pointer; }
+    .cabin-btn.is-on { border-color: #222; background: #222; color: #fff; }
+    input { width: 220px; height: 48px; border-radius: 12px; border: 1px solid #ddd;
+      font-size: 18px; padding: 0 14px; text-align: center; }
+    button.enter { width: 220px; height: 52px; border: 0; border-radius: 999px;
+      background: #222; color: #fff; font-size: 18px; font-weight: 700; }
+    .err { min-height: 1.2em; color: #c62828; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="brand">
+    <img src="./assets/jt-logo.png" alt="JT" onerror="this.src='./assets/logo.png'" />
+    <span>JT M&C Pte Ltd</span>
+  </div>
+  <form class="box" id="f">
+    <h1>Enter cabin</h1>
+    <div class="cabins" id="cabins">
+      <button type="button" class="cabin-btn is-on" data-cabin="cabin_01">Cabin 01</button>
+      <button type="button" class="cabin-btn" data-cabin="cabin_02">Cabin 02</button>
+    </div>
+    <input id="pin" type="password" inputmode="numeric" maxlength="16" placeholder="PIN" autofocus />
+    <button class="enter" type="submit">Enter</button>
+    <div class="err" id="err"></div>
+  </form>
+  <script>
+    var cabin = "cabin_01";
+    document.querySelectorAll(".cabin-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        cabin = btn.dataset.cabin;
+        document.querySelectorAll(".cabin-btn").forEach(function (b) { b.classList.toggle("is-on", b === btn); });
+      });
+    });
+    document.getElementById("f").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var err = document.getElementById("err");
+      err.textContent = "";
+      var pin = document.getElementById("pin").value.trim();
+      try {
+        var r = await fetch("https://live.medhug.ai/api/cabin-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ cabin: cabin, pin: pin })
+        });
+        var j = {};
+        try { j = await r.json(); } catch (e2) {}
+        if (!r.ok) { err.textContent = j.error === "pin_incorrect" ? "Incorrect PIN" : "Unable to enter"; return; }
+        document.cookie = "hc_cabin=" + encodeURIComponent(cabin) + "; Domain=.medhug.ai; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
+        try { localStorage.setItem("hc_cabin", cabin); } catch (e3) {}
+        location.replace("/index.html");
+      } catch (e4) { err.textContent = "Network error"; }
+    });
+  </script>
+</body>
+</html>
