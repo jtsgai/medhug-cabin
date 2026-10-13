@@ -1,11 +1,22 @@
 const video = document.querySelector("#halo");
 const caption = document.querySelector("#caption");
 const used = document.querySelector("#used-minutes");
-const SHOW = "./halo/halo-halloween.mp4?v=1";
+const SHOWS = [
+  "./halo/halo-halloween.mp4?v=2",
+  "./halo/halo-ghost.mp4?v=1",
+  "./halo/halo-bat.mp4?v=1"
+];
 let billing = false;
 let presentSince = 0;
 let absentSince = 0;
 let cam = null;
+
+function nextShow() {
+  const pick = SHOWS[Math.floor(Math.random() * SHOWS.length)];
+  video.src = pick;
+  video.loop = false;
+  video.play().catch(() => {});
+}
 
 function setBilling(on) {
   if (on && !billing) {
@@ -62,8 +73,7 @@ async function watch() {
     }
   }, 400);
 }
-video.src = SHOW;
-video.loop = true;
-video.play().catch(() => {});
+video.addEventListener("ended", nextShow);
+nextShow();
 watch();
 window.addEventListener("pagehide", () => setBilling(false));
