@@ -16,8 +16,8 @@ let absenceSince = null;
 const ABSENCE_EXIT_MS = 5000;
 let presenceRunning = false;
 
-let lang = localStorage.getItem("kids_l1_lang") || "en";
-if (lang !== "en" && lang !== "zh") lang = "en";
+let lang = "en";
+localStorage.setItem("kids_l1_lang", "en");
 
 function t(key) {
   return (STR[lang] && STR[lang][key]) || (STR.en[key] || key);
@@ -55,7 +55,7 @@ async function getDecartToken() {
 }
 
 function applyI18n() {
-  document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+  document.documentElement.lang = "en";
   const hl = $("#headline");
   if (hl) hl.textContent = t("headline");
   const btnLang = $("#btn-lang");
@@ -68,12 +68,9 @@ function applyI18n() {
 function speakWelcome(ch) {
   try {
     window.speechSynthesis.cancel();
-    const text =
-      lang === "zh"
-        ? ch.welcome_zh || ch.welcome_en
-        : ch.welcome_en || ch.welcome_zh || `Hi, I'm ${ch.name}`;
+    const text = ch.welcome_en || ch.welcome_zh || `Hi, I'm ${ch.name}`;
     const u = new SpeechSynthesisUtterance(text || `Hi, I'm ${ch.name}`);
-    u.lang = lang === "zh" ? "zh-CN" : "en-US";
+    u.lang = "en-US";
     u.rate = 0.95;
     window.speechSynthesis.speak(u);
   } catch (e) {
@@ -112,6 +109,7 @@ function applyLayoutFromStorage() {
 
 function updateLogoState() {
   const btn = $("#btn-logo-start");
+  document.getElementById("jt-dock")?.classList.toggle("locked", sessionActive);
   if (!btn) return;
   const ready = !!selectedId && !sessionActive;
   btn.disabled = !ready;
@@ -168,11 +166,7 @@ async function switchCharacterLive(id) {
   try {
     const file = await urlToFile("./assets/" + ch.ref, ch.ref);
     await realtimeClient.set({ prompt: ch.prompt, image: file, enhance: true });
-    setStatus(
-      lang === "zh"
-        ? `和 ${ch.name_zh || ch.name} ${t("performingWith")}`
-        : `${t("performingWith")} ${ch.name}`
-    );
+    setStatus(`${t("performingWith")} ${ch.name}`);
     speakWelcome(ch);
   } catch (e) {
     console.warn(e);
@@ -366,11 +360,7 @@ async function startTransform() {
 
     sessionActive = true;
     startPresenceWatch();
-    setStatus(
-      lang === "zh"
-        ? `和 ${ch.name_zh || ch.name} ${t("performingWith")}`
-        : `${t("performingWith")} ${ch.name}`
-    );
+    setStatus(`${t("performingWith")} ${ch.name}`);
     $("#btn-stop").classList.remove("hidden");
     updateLogoState();
     speakWelcome(ch);
@@ -413,12 +403,6 @@ async function stopTransform(showToast = true) {
     await startCamera();
   } catch (_) {}
   if (showToast) toast(t("ended"));
-}
-
-function toggleLang() {
-  lang = lang === "en" ? "zh" : "en";
-  localStorage.setItem("kids_l1_lang", lang);
-  applyI18n();
 }
 
 async function init() {
