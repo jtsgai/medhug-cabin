@@ -1,5 +1,4 @@
 import { createDecartClient, models } from "https://esm.sh/@decartai/sdk";
-import { DECART_API_KEY } from "./config.js";
 import { STR } from "./i18n.js";
 
 const $ = (s) => document.querySelector(s);
@@ -10,13 +9,13 @@ let localStream = null;
 let realtimeClient = null;
 let sessionActive = false;
 let switching = false;
+let decartToken = "";
 
 let presenceTimer = null;
 let absenceSince = null;
 const ABSENCE_EXIT_MS = 5000;
 let presenceRunning = false;
 
-// 默认英文
 let lang = localStorage.getItem("kids_l1_lang") || "en";
 if (lang !== "en" && lang !== "zh") lang = "en";
 
@@ -41,6 +40,18 @@ function setStatus(text, show = true) {
 
 function getChar(id) {
   return characters.find((c) => c.id === id);
+}
+
+async function getDecartToken() {
+  const response = await fetch("https://live.medhug.ai/api/decart-token", {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error(response.status === 402 ? "no-credit" : "no-token");
+  const data = await response.json();
+  if (!data.token) throw new Error("no-token");
+  decartToken = data.token;
+  return decartToken;
 }
 
 function applyI18n() {
@@ -103,9 +114,7 @@ function updateLogoState() {
   const btn = $("#btn-logo-start");
   if (!btn) return;
   const ready = !!selectedId && !sessionActive;
-  // 未开始前可点 Logo 的条件：已选角色
   btn.disabled = !ready;
-  // 心跳：空状态时始终跳动（CSS .pulse-always）；选中后再加强 .pulse
   btn.classList.toggle("pulse", !sessionActive);
   const logoImg = btn.querySelector(".logo-3d");
   if (logoImg) logoImg.classList.add("pulse-always");
@@ -301,9 +310,12 @@ async function startTransform() {
   if (!ch) return toast(t("pickFriend"));
   if (sessionActive) return;
 
-  if (!DECART_API_KEY || DECART_API_KEY === "YOUR_API_KEY_HERE") {
-    toast(t("missingKey"));
-    setStatus(t("missingKey"));
+  try {
+    await getDecartToken();
+  } catch (e) {
+    const msg = errText(e) === "no-credit" ? t("noCredit") : t("unavailable");
+    toast(msg);
+    setStatus(msg);
     return;
   }
 
@@ -326,7 +338,7 @@ async function startTransform() {
   let timeoutId;
   try {
     const model = models.realtime("lucy-latest");
-    const client = createDecartClient({ apiKey: DECART_API_KEY });
+    const client = createDecartClient({ apiKey: decartToken });
 
     const connectPromise = client.realtime.connect(localStream, {
       model,
@@ -411,8 +423,11 @@ function toggleLang() {
 
 async function init() {
   applyI18n();
-  if (!DECART_API_KEY || DECART_API_KEY === "YOUR_API_KEY_HERE") {
-    setStatus(t("missingKey"));
+  try {
+    await getDecartToken();
+    setStatus("", false);
+  } catch (e) {
+    setStatus(errText(e) === "no-credit" ? t("noCredit") : t("unavailable"));
   }
   const res = await fetch("./characters.json");
   const data = await res.json();
