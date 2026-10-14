@@ -5,7 +5,10 @@ const SHOWS = [
   "./halo/halo-halloween.mp4?v=2",
   "./halo/halo-ghost.mp4?v=1",
   "./halo/halo-bat.mp4?v=1",
-  "./halo/halo-cape.mp4?v=1"
+  "./halo/halo-cape.mp4?v=1",
+  "./halo/filo-ghost.mp4?v=1",
+  "./halo/filo-pumpkin.mp4?v=1",
+  "./halo/filo-bat.mp4?v=1"
 ];
 let billing = false;
 let presentSince = 0;
@@ -27,7 +30,7 @@ function setBilling(on) {
   } else if (!on && billing) {
     window.UsageClient?.stop("stage");
     billing = false;
-    caption.textContent = "Halo";
+    caption.textContent = "Stage";
   }
 }
 
