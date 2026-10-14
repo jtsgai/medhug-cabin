@@ -86,19 +86,18 @@
   .logo-text { max-height: 26px !important; max-width: 48vw !important; }
   .btn-stop { right: 8px !important; top: auto !important; bottom: 8px !important; transform: none !important; }
 
-  /* KIDS: one intentionally scrollable character strip. Keep every choice
-     reachable instead of clipping the right-hand column on narrow phones. */
+  /* KIDS: keep both character rows visible on a phone. */
   body.kids-page .stage {
     grid-template-columns: 1fr !important;
-    grid-template-rows: 96px minmax(0, 1fr) !important;
+    grid-template-rows: 74px 74px minmax(0, 1fr) !important;
   }
-  body.kids-page .col-left {
+  body.kids-page .col-left,
+  body.kids-page .col-right {
     grid-column: 1 !important;
-    grid-row: 1 !important;
     width: 100% !important;
-    height: 96px !important;
-    max-height: 96px !important;
-    padding: 4px 12px 8px !important;
+    height: 74px !important;
+    max-height: 74px !important;
+    padding: 3px 8px 5px !important;
     display: flex !important;
     flex-direction: row !important;
     justify-content: flex-start !important;
@@ -110,24 +109,25 @@
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
   }
-  body.kids-page .col-right { display: none !important; }
+  body.kids-page .col-left { grid-row: 1 !important; }
+  body.kids-page .col-right { grid-row: 2 !important; }
   body.kids-page .stage-center {
     grid-column: 1 !important;
-    grid-row: 2 !important;
+    grid-row: 3 !important;
     min-height: 0 !important;
   }
   body.kids-page .char-card {
-    flex: 0 0 62px !important;
-    width: 62px !important;
+    flex: 0 0 54px !important;
+    width: 54px !important;
     scroll-snap-align: center;
   }
   body.kids-page .char-card img {
-    width: 46px !important;
-    height: 46px !important;
+    width: 40px !important;
+    height: 40px !important;
   }
   body.kids-page .char-name {
-    max-width: 58px !important;
-    font-size: 9px !important;
+    max-width: 50px !important;
+    font-size: 8px !important;
   }
 
   /* FX */
