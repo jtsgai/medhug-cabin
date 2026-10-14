@@ -1,0 +1,37 @@
+@media (max-width: 480px) {
+  html, body {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .jt-dock {
+    top: auto !important;
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    right: 8px !important;
+    left: 8px !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    gap: 4px !important;
+  }
+  .jt-dock a {
+    font-size: 10px !important;
+    letter-spacing: .04em !important;
+    padding: 8px 6px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  .cabin, .stage, .cabin-stage {
+    height: 100dvh !important;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+  }
+  .page-title, .headline {
+    font-size: 18px !important;
+  }
+  .page-logo, .logo-text {
+    max-height: 36px !important;
+    max-width: 60vw !important;
+  }
+  .used-minutes {
+    font-size: 12px !important;
+    top: calc(8px + env(safe-area-inset-top)) !important;
+  }
+}
