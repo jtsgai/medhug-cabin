@@ -2,36 +2,76 @@
   html, body {
     height: 100dvh !important;
     overflow: hidden !important;
+    background: #000 !important;
   }
+
+  /* Bottom nav */
   .jt-dock {
     top: auto !important;
-    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
-    right: 8px !important;
-    left: 8px !important;
+    bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+    left: 6px !important;
+    right: 6px !important;
     flex-direction: row !important;
     justify-content: space-between !important;
     gap: 4px !important;
+    z-index: 100 !important;
   }
   .jt-dock a {
     font-size: 10px !important;
-    letter-spacing: .04em !important;
-    padding: 8px 6px !important;
-    min-width: 0 !important;
+    letter-spacing: .02em !important;
+    padding: 8px 4px !important;
     flex: 1 !important;
+    min-width: 0 !important;
   }
-  .cabin, .stage, .cabin-stage {
+
+  /* KIDS: stack to one column, characters as a row */
+  .cabin {
     height: 100dvh !important;
-    padding-bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+    padding: calc(8px + env(safe-area-inset-top)) 8px calc(64px + env(safe-area-inset-bottom)) !important;
+    grid-template-rows: auto 1fr !important;
   }
-  .page-title, .headline {
-    font-size: 18px !important;
+  .stage {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto 1fr !important;
   }
-  .page-logo, .logo-text {
-    max-height: 36px !important;
-    max-width: 60vw !important;
+  .col-left, .col-right {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    max-height: 92px !important;
   }
+  .col-right { display: none !important; }
+  .char-card { flex: 0 0 auto !important; }
+  .char-card img { width: 56px !important; height: 56px !important; }
+  .headline { font-size: 15px !important; white-space: normal !important; text-align: center !important; }
+  .logo-text { max-height: 28px !important; max-width: 50vw !important; }
+  .btn-stop { right: 8px !important; top: auto !important; bottom: 8px !important; transform: none !important; }
+
+  /* FX */
+  .page-top { top: calc(8px + env(safe-area-inset-top)) !important; }
+  .page-title { font-size: 16px !important; }
+  .page-logo { max-height: 28px !important; }
+  .dock, .dock-halloween {
+    bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+  }
+  .fx-row { gap: 8px !important; }
+  .fx-reset { bottom: calc(120px + env(safe-area-inset-bottom)) !important; }
+
+  /* TRY ON */
+  .left-panel { width: 100% !important; max-width: 100% !important; }
+  .right-panel { display: none !important; }
+  .zone-label { font-size: 13px !important; }
+
+  /* STAGE */
+  .halo {
+    object-position: center 30% !important;
+    height: calc(100dvh - 70px) !important;
+  }
+  .caption { bottom: calc(72px + env(safe-area-inset-bottom)) !important; font-size: 18px !important; }
   .used-minutes {
     font-size: 12px !important;
     top: calc(8px + env(safe-area-inset-top)) !important;
+    right: 10px !important;
   }
 }
