@@ -2,10 +2,8 @@
   html, body {
     height: 100dvh !important;
     overflow: hidden !important;
-    background: #000 !important;
   }
 
-  /* Bottom nav */
   .jt-dock {
     top: auto !important;
     bottom: calc(6px + env(safe-area-inset-bottom)) !important;
@@ -24,54 +22,84 @@
     min-width: 0 !important;
   }
 
-  /* KIDS: stack to one column, characters as a row */
+  /* KIDS */
   .cabin {
     height: 100dvh !important;
-    padding: calc(8px + env(safe-area-inset-top)) 8px calc(64px + env(safe-area-inset-bottom)) !important;
+    padding: calc(8px + env(safe-area-inset-top)) 8px calc(60px + env(safe-area-inset-bottom)) !important;
     grid-template-rows: auto 1fr !important;
   }
   .stage {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto 1fr !important;
   }
-  .col-left, .col-right {
+  .col-left {
     flex-direction: row !important;
     overflow-x: auto !important;
     justify-content: flex-start !important;
     gap: 8px !important;
-    max-height: 92px !important;
+    max-height: 88px !important;
   }
   .col-right { display: none !important; }
   .char-card { flex: 0 0 auto !important; }
-  .char-card img { width: 56px !important; height: 56px !important; }
-  .headline { font-size: 15px !important; white-space: normal !important; text-align: center !important; }
-  .logo-text { max-height: 28px !important; max-width: 50vw !important; }
+  .char-card img { width: 52px !important; height: 52px !important; }
+  .headline { font-size: 14px !important; white-space: normal !important; text-align: center !important; }
+  .logo-text { max-height: 26px !important; max-width: 48vw !important; }
   .btn-stop { right: 8px !important; top: auto !important; bottom: 8px !important; transform: none !important; }
 
-  /* FX */
-  .page-top { top: calc(8px + env(safe-area-inset-top)) !important; }
-  .page-title { font-size: 16px !important; }
-  .page-logo { max-height: 28px !important; }
-  .dock, .dock-halloween {
-    bottom: calc(64px + env(safe-area-inset-bottom)) !important;
+  /* FX: side docks become bottom rows, buttons shrink */
+  .page-top { top: calc(6px + env(safe-area-inset-top)) !important; }
+  .page-title { font-size: 15px !important; margin: 2px 0 0 !important; }
+  .page-logo { height: 28px !important; }
+  .dock {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    top: auto !important;
+    bottom: calc(58px + env(safe-area-inset-bottom)) !important;
+    transform: none !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 6px !important;
   }
-  .fx-row { gap: 8px !important; }
-  .fx-reset { bottom: calc(120px + env(safe-area-inset-bottom)) !important; }
-
-  /* TRY ON */
-  .left-panel { width: 100% !important; max-width: 100% !important; }
-  .right-panel { display: none !important; }
-  .zone-label { font-size: 13px !important; }
+  .dock-halloween {
+    bottom: calc(150px + env(safe-area-inset-bottom)) !important;
+    left: 8px !important;
+    right: 8px !important;
+  }
+  .fx-row {
+    flex-direction: row !important;
+    gap: 6px !important;
+    padding: 6px !important;
+    overflow-x: auto !important;
+  }
+  .fx-btn {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 26px !important;
+    flex: 0 0 auto !important;
+  }
+  .fx-reset {
+    left: auto !important;
+    right: 8px !important;
+    top: auto !important;
+    bottom: calc(210px + env(safe-area-inset-bottom)) !important;
+    width: 72px !important;
+    height: 36px !important;
+    font-size: 12px !important;
+  }
 
   /* STAGE */
   .halo {
-    object-position: center 30% !important;
-    height: calc(100dvh - 70px) !important;
+    object-position: center 28% !important;
+    height: calc(100dvh - 64px) !important;
   }
-  .caption { bottom: calc(72px + env(safe-area-inset-bottom)) !important; font-size: 18px !important; }
+  .caption {
+    bottom: calc(68px + env(safe-area-inset-bottom)) !important;
+    font-size: 16px !important;
+  }
   .used-minutes {
-    font-size: 12px !important;
-    top: calc(8px + env(safe-area-inset-top)) !important;
-    right: 10px !important;
+    font-size: 11px !important;
+    top: calc(6px + env(safe-area-inset-top)) !important;
+    right: 8px !important;
   }
 }
