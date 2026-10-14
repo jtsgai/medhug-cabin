@@ -10,12 +10,16 @@ const SHOWS = [
   "./halo/filo-pumpkin.mp4?v=1",
   "./halo/filo-bat.mp4?v=1"
 ];
+let last = -1;
 
 function nextShow() {
-  const pick = SHOWS[Math.floor(Math.random() * SHOWS.length)];
-  video.src = pick;
+  let i = Math.floor(Math.random() * SHOWS.length);
+  if (SHOWS.length > 1 && i === last) i = (i + 1) % SHOWS.length;
+  last = i;
+  video.src = SHOWS[i];
   video.loop = false;
   video.play().catch(() => {});
+  if (caption) caption.textContent = "Stage";
 }
 
 async function refreshUsed() {
@@ -30,4 +34,5 @@ refreshUsed();
 setInterval(refreshUsed, 20000);
 
 video.addEventListener("ended", nextShow);
+video.addEventListener("error", () => setTimeout(nextShow, 800));
 nextShow();
