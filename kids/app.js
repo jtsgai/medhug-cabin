@@ -123,6 +123,10 @@ function renderChars() {
   left.innerHTML = "";
   right.innerHTML = "";
   const list = characters.slice(0, 16);
+  if (window.matchMedia("(max-width: 480px)").matches) {
+    list.forEach((c) => left.appendChild(makeCard(c)));
+    return;
+  }
   const mid = Math.ceil(list.length / 2);
   list.slice(0, mid).forEach((c) => left.appendChild(makeCard(c)));
   list.slice(mid).forEach((c) => right.appendChild(makeCard(c)));

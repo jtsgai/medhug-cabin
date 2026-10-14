@@ -86,3 +86,52 @@
   text-align: right;
 }
 .owner-stats.hidden { display: none; }
+
+/* Phone: controls must remain readable when the camera preview is bright. */
+@media (max-width: 480px) {
+  body.tryon-page #left-panel.left-panel:not(.collapsed) {
+    position: absolute !important;
+    top: calc(54px + env(safe-area-inset-top)) !important;
+    left: 10px !important;
+    width: min(132px, 38vw) !important;
+    height: calc(100dvh - 126px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    border: 1px solid rgba(18, 28, 40, 0.16) !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.86) !important;
+    box-shadow: 0 8px 24px rgba(18, 28, 40, 0.14) !important;
+    backdrop-filter: blur(10px);
+  }
+  body.tryon-page #left-panel .logo,
+  body.tryon-page #left-panel .zone-label {
+    color: #172534 !important;
+    text-shadow: none !important;
+  }
+  body.tryon-page #left-panel .zone-label {
+    letter-spacing: 0.05em !important;
+    font-size: 12px !important;
+  }
+  body.tryon-page #left-panel .btn-lang {
+    color: #172534 !important;
+    border-color: rgba(23, 37, 52, 0.24) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    text-shadow: none !important;
+  }
+  body.tryon-page .tryon-hint {
+    top: 42% !important;
+    max-width: min(72vw, 280px) !important;
+    padding: 10px 14px !important;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    background: rgba(23, 37, 52, 0.76) !important;
+    box-shadow: 0 8px 22px rgba(18, 28, 40, 0.2);
+    font-size: 18px !important;
+    text-shadow: none !important;
+  }
+  body.tryon-page .owner-stats {
+    color: #172534 !important;
+    text-shadow: none !important;
+    background: rgba(255, 255, 255, 0.84);
+    border-radius: 999px;
+    padding: 4px 8px;
+  }
+}

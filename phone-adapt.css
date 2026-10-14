@@ -86,6 +86,50 @@
   .logo-text { max-height: 26px !important; max-width: 48vw !important; }
   .btn-stop { right: 8px !important; top: auto !important; bottom: 8px !important; transform: none !important; }
 
+  /* KIDS: one intentionally scrollable character strip. Keep every choice
+     reachable instead of clipping the right-hand column on narrow phones. */
+  body.kids-page .stage {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 96px minmax(0, 1fr) !important;
+  }
+  body.kids-page .col-left {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    height: 96px !important;
+    max-height: 96px !important;
+    padding: 4px 12px 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.kids-page .col-right { display: none !important; }
+  body.kids-page .stage-center {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    min-height: 0 !important;
+  }
+  body.kids-page .char-card {
+    flex: 0 0 62px !important;
+    width: 62px !important;
+    scroll-snap-align: center;
+  }
+  body.kids-page .char-card img {
+    width: 46px !important;
+    height: 46px !important;
+  }
+  body.kids-page .char-name {
+    max-width: 58px !important;
+    font-size: 9px !important;
+  }
+
   /* FX */
   .page-top { top: calc(6px + env(safe-area-inset-top)) !important; }
   .page-title { font-size: 15px !important; margin: 2px 0 0 !important; }
