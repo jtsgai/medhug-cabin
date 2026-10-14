@@ -22,6 +22,46 @@
     min-width: 0 !important;
   }
 
+  /* TRY ON: full width left panel, hide right */
+  .left-panel, #left-panel, .cabin > aside {
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative !important;
+    left: auto !important;
+  }
+  .right-panel, .cabin > section.right-panel {
+    display: none !important;
+  }
+  .cabin, .cabin-stage {
+    display: block !important;
+    width: 100% !important;
+  }
+  .zone-2, #zone-featured {
+    max-width: 100% !important;
+  }
+  #featured-slot, .featured-slot {
+    width: 100% !important;
+    max-width: 280px !important;
+  }
+  .cat-tabs, #cat-tabs {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  .explore-list, #explore-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .attract-hint, #attract-hint, [data-i18n="placeholder"] {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: min(80vw, 260px) !important;
+    text-align: center !important;
+    z-index: 5 !important;
+  }
+
   /* KIDS */
   .cabin {
     height: 100dvh !important;
@@ -46,7 +86,7 @@
   .logo-text { max-height: 26px !important; max-width: 48vw !important; }
   .btn-stop { right: 8px !important; top: auto !important; bottom: 8px !important; transform: none !important; }
 
-  /* FX: side docks become bottom rows, buttons shrink */
+  /* FX */
   .page-top { top: calc(6px + env(safe-area-inset-top)) !important; }
   .page-title { font-size: 15px !important; margin: 2px 0 0 !important; }
   .page-logo { height: 28px !important; }
@@ -62,7 +102,7 @@
     gap: 6px !important;
   }
   .dock-halloween {
-    bottom: calc(150px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(140px + env(safe-area-inset-bottom)) !important;
     left: 8px !important;
     right: 8px !important;
   }
@@ -73,28 +113,30 @@
     overflow-x: auto !important;
   }
   .fx-btn {
-    width: 56px !important;
-    height: 56px !important;
-    font-size: 26px !important;
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 24px !important;
     flex: 0 0 auto !important;
   }
   .fx-reset {
     left: auto !important;
     right: 8px !important;
     top: auto !important;
-    bottom: calc(210px + env(safe-area-inset-bottom)) !important;
-    width: 72px !important;
-    height: 36px !important;
-    font-size: 12px !important;
+    bottom: calc(200px + env(safe-area-inset-bottom)) !important;
+    width: 68px !important;
+    height: 32px !important;
+    font-size: 11px !important;
   }
 
   /* STAGE */
   .halo {
-    object-position: center 28% !important;
-    height: calc(100dvh - 64px) !important;
+    object-fit: cover !important;
+    object-position: center 30% !important;
+    width: 100vw !important;
+    height: calc(100dvh - 60px) !important;
   }
   .caption {
-    bottom: calc(68px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(64px + env(safe-area-inset-bottom)) !important;
     font-size: 16px !important;
   }
   .used-minutes {
