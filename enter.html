@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>JT HoloCabin</title>
   <style>
-    html, body { margin: 0; height: 100%; background: transparent; color: #222;
+    html, body { margin: 0; height: 100%; background: #eef1f4; color: #1b2735;
       font-family: -apple-system, "PingFang SC", sans-serif; }
-    .brand { position: fixed; top: 18px; left: 18px; display: flex; align-items: center; gap: 10px; }
-    .brand img { width: 54px; height: auto; }
-    .brand span { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
+    .brand { position: fixed; top: calc(12px + env(safe-area-inset-top)); left: 16px; display: flex; align-items: center; gap: 10px; }
+    .brand img { width: 42px; height: auto; }
+    .brand span { font-size: 15px; font-weight: 700; }
     .box { min-height: 100%; display: flex; flex-direction: column; align-items: center;
-      justify-content: flex-start; padding-top: 22vh; gap: 16px; }
+      justify-content: flex-start; padding: calc(28vh + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); gap: 16px; box-sizing: border-box; }
     h1 { margin: 0; font-size: 22px; }
-    .cabins { display: flex; gap: 16px; }
-    .cabin-btn { width: 140px; height: 64px; border-radius: 16px; border: 2px solid #ddd;
-      background: #fff; font-size: 18px; font-weight: 700; cursor: pointer; }
+    .cabins { display: flex; gap: 12px; }
+    .cabin-btn { width: 140px; height: 56px; border-radius: 16px; border: 2px solid #ddd;
+      background: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
     .cabin-btn.is-on { border-color: #222; background: #222; color: #fff; }
-    input { width: 220px; height: 48px; border-radius: 12px; border: 1px solid #ddd;
-      font-size: 18px; padding: 0 14px; text-align: center; }
-    button.enter { width: 220px; height: 52px; border: 0; border-radius: 999px;
+    input { width: min(78vw, 280px); height: 48px; border-radius: 12px; border: 1px solid #ddd;
+      font-size: 16px; padding: 0 14px; text-align: center; }
+    button.enter { width: min(78vw, 280px); height: 52px; border: 0; border-radius: 999px;
       background: #222; color: #fff; font-size: 18px; font-weight: 700; }
     .err { min-height: 1.2em; color: #c62828; font-size: 14px; }
   </style>
@@ -49,6 +49,9 @@
         document.querySelectorAll(".cabin-btn").forEach(function (b) { b.classList.toggle("is-on", b === btn); });
       });
     });
+    function isPhone() {
+      return /iPhone|iPad|Android|Samsung/i.test(navigator.userAgent) || window.innerWidth <= 480;
+    }
     document.getElementById("f").addEventListener("submit", async function (e) {
       e.preventDefault();
       var err = document.getElementById("err");
@@ -66,7 +69,7 @@
         if (!r.ok) { err.textContent = j.error === "pin_incorrect" ? "Incorrect PIN" : "Unable to enter"; return; }
         document.cookie = "hc_cabin=" + encodeURIComponent(cabin) + "; Domain=.medhug.ai; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
         try { localStorage.setItem("hc_cabin", cabin); } catch (e3) {}
-        location.replace("/index.html");
+        location.replace(isPhone() ? "/home.html" : "/index.html");
       } catch (e4) { err.textContent = "Network error"; }
     });
   </script>
