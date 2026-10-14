@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>JT HoloCabin</title>
+  <style>
+    html, body {
+      margin: 0; width: 100%; height: 100%;
+      background: #eef1f4; color: #1b2735;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    }
+    .wrap {
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+      padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));
+      box-sizing: border-box;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .brand img { width: 40px; height: auto; }
+    .brand span { font-size: 15px; font-weight: 700; }
+    .choices { display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center; }
+    a.choice {
+      display: block; text-decoration: none; color: #1b2735;
+      text-align: center; padding: 16px 14px;
+      border: 1px solid rgba(28,43,60,.18);
+      background: #fff; border-radius: 16px;
+      font-size: 18px; font-weight: 700;
+    }
+    .sub { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: #536174; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <img src="https://live.medhug.ai/jt-logo.png" alt="JT" />
+      <span>JT M&C Pte Ltd</span>
+    </div>
+    <div class="choices">
+      <a class="choice" href="./index.html">TRY ON<span class="sub">Virtual try-on</span></a>
+      <a class="choice" href="./kids/">KIDS<span class="sub">Become a character</span></a>
+      <a class="choice" href="./fx/">FX<span class="sub">Effects</span></a>
+      <a class="choice" href="./stage/">STAGE<span class="sub">Holographic show</span></a>
+      <a class="choice" href="https://live.medhug.ai/?light=1&talkonly=1">TALK<span class="sub">Realtime digital human</span></a>
+    </div>
+  </div>
+</body>
+</html>
