@@ -2,7 +2,7 @@ html, body {
   margin: 0;
   width: 100%;
   height: 100%;
-  background: transparent !important;
+  background: #02030a !important;
   overflow: hidden;
 }
 .stage {
@@ -10,9 +10,66 @@ html, body {
   inset: 0;
   display: grid;
   place-items: center;
-  background: transparent !important;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(37, 63, 103, 0.28), transparent 35%),
+    linear-gradient(160deg, #07101d 0%, #02030a 62%, #000 100%);
+}
+.stage::before,
+.stage::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+}
+.stage::before {
+  z-index: -2;
+  opacity: 0.7;
+  background-image:
+    radial-gradient(circle, rgba(211, 232, 255, 0.8) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(211, 232, 255, 0.45) 0 1px, transparent 1.4px);
+  background-size: 83px 89px, 137px 151px;
+  background-position: 0 0, 31px 42px;
+  animation: drift-stars 38s linear infinite;
+}
+.stage::after {
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 88%, rgba(42, 93, 154, 0.26), transparent 48%);
+}
+.stage-atmosphere {
+  position: absolute;
+  z-index: 0;
+  inset: 18% 12% 12%;
+  border: 1px solid rgba(134, 190, 255, 0.15);
+  border-radius: 50%;
+  box-shadow: 0 0 90px rgba(76, 132, 208, 0.12), inset 0 0 70px rgba(97, 153, 230, 0.08);
+  pointer-events: none;
+}
+.stage[data-stage-theme="halloween"] {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 97, 0, 0.2), transparent 25%),
+    radial-gradient(circle at 14% 30%, rgba(114, 49, 163, 0.35), transparent 31%),
+    linear-gradient(160deg, #12071e 0%, #05040d 60%, #000 100%);
+}
+.stage[data-stage-theme="halloween"]::before {
+  opacity: 0.82;
+  background-image:
+    radial-gradient(circle, rgba(255, 201, 105, 0.9) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(178, 113, 255, 0.55) 0 1px, transparent 1.4px);
+}
+.stage[data-stage-theme="halloween"]::after {
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(255, 105, 24, 0.22), transparent 44%),
+    radial-gradient(ellipse at 24% 36%, rgba(136, 51, 188, 0.2), transparent 34%);
+}
+.stage[data-stage-theme="halloween"] .stage-atmosphere {
+  border-color: rgba(255, 145, 53, 0.35);
+  box-shadow: 0 0 100px rgba(255, 94, 0, 0.2), inset 0 0 75px rgba(145, 62, 205, 0.12);
 }
 .halo {
+  position: relative;
+  z-index: 1;
   width: 100vw;
   height: 100vh;
   object-fit: contain;
@@ -20,8 +77,75 @@ html, body {
   background: transparent !important;
   mix-blend-mode: screen;
 }
+.stage-title {
+  position: fixed;
+  z-index: 3;
+  top: clamp(24px, 7vh, 72px);
+  left: clamp(24px, 5vw, 72px);
+  max-width: min(40rem, calc(100vw - 230px));
+  color: #f6f1e8;
+  pointer-events: none;
+}
+.stage-title p,
+.stage-title h1 {
+  margin: 0;
+}
+.stage-title p {
+  color: #9dc9ff;
+  font: 700 11px/1.2 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.22em;
+}
+.stage-title h1 {
+  margin-top: 8px;
+  font: 600 clamp(20px, 3.2vw, 43px)/0.95 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.04em;
+  text-shadow: 0 3px 24px rgba(0, 0, 0, 0.72);
+}
+.stage[data-stage-theme="halloween"] .stage-title p {
+  color: #ff9d54;
+}
+.stage-switch {
+  position: fixed;
+  z-index: 5;
+  left: clamp(24px, 5vw, 72px);
+  bottom: max(40px, 7vh);
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(226, 236, 250, 0.22);
+  border-radius: 999px;
+  background: rgba(1, 4, 12, 0.54);
+  backdrop-filter: blur(14px);
+}
+.stage-option {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  color: rgba(237, 245, 255, 0.72);
+  background: transparent;
+  font: 700 11px/1 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.stage-option:hover,
+.stage-option:focus-visible {
+  color: #fff;
+  outline: none;
+  transform: translateY(-1px);
+}
+.stage-option[aria-pressed="true"] {
+  color: #07101d;
+  background: #b9d9ff;
+}
+.stage[data-stage-theme="halloween"] .stage-option[aria-pressed="true"] {
+  color: #2a0800;
+  background: #ff9a48;
+}
 .caption {
   position: fixed;
+  z-index: 3;
   left: 50%;
   bottom: 16%;
   transform: translateX(-50%);
@@ -32,8 +156,33 @@ html, body {
 }
 .used-minutes {
   position: fixed;
+  z-index: 4;
   top: 12px;
   right: 18px;
   color: #222;
   font: 700 16px/1 -apple-system, system-ui, sans-serif;
+}
+@keyframes drift-stars {
+  to { transform: translate3d(7%, 4%, 0); }
+}
+@media (max-width: 480px) {
+  .stage-title {
+    top: calc(14px + env(safe-area-inset-top));
+    left: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  .stage-title h1 {
+    margin-top: 6px;
+    font-size: 26px;
+  }
+  .stage-switch {
+    top: calc(78px + env(safe-area-inset-top));
+    bottom: auto;
+    left: 16px;
+  }
+  .stage-option {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 10px;
+  }
 }
