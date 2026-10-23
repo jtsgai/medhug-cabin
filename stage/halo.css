@@ -77,6 +77,23 @@ html, body {
   background: transparent !important;
   mix-blend-mode: screen;
 }
+.signal-stage {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 360ms ease;
+}
+.stage[data-signal-scene="ready"] .signal-stage {
+  opacity: 1;
+}
+.stage[data-signal-scene="ready"] .halo {
+  visibility: hidden;
+}
 .stage-title {
   position: fixed;
   z-index: 3;

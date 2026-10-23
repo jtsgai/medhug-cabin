@@ -4,14 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>JT Stage</title>
-  <link rel="stylesheet" href="./halo.css?v=haunted-signal-1" />
+  <link rel="stylesheet" href="./halo.css?v=haunted-signal-2" />
   <link rel="stylesheet" href="../shared-dock.css" />
   <link rel="stylesheet" href="../phone-adapt.css?v=p2" />
 </head>
 <body>
-  <main class="stage" data-stage-theme="classic">
+  <main class="stage" data-stage-theme="classic" data-signal-scene="off">
     <div class="stage-atmosphere" aria-hidden="true"></div>
     <video id="halo" class="halo" autoplay muted playsinline></video>
+    <canvas id="signal-stage" class="signal-stage" aria-hidden="true"></canvas>
     <header class="stage-title" aria-live="polite">
       <p id="stage-kicker">JT STAGE</p>
       <h1 id="stage-name">Stage Gallery</h1>
@@ -31,7 +32,8 @@
   </nav>
   <div id="used-minutes" class="used-minutes"></div>
   <script src="../usage-client.js"></script>
-  <script src="./halo.js?v=haunted-signal-1"></script>
+  <script src="./haunted-signal.js?v=1"></script>
+  <script src="./halo.js?v=haunted-signal-2"></script>
   <script src="../gate.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ const stage = document.querySelector(".stage");
 const stageName = document.querySelector("#stage-name");
 const stageKicker = document.querySelector("#stage-kicker");
 const stageOptions = [...document.querySelectorAll(".stage-option")];
+let signalIsActive = false;
 
 // The 3D Gaussian Splatting scene will replace the video playlist only after a
 // checked, compressed scene asset is supplied. These video playlists are the
@@ -45,6 +46,7 @@ let activeTheme = savedTheme in STAGES ? savedTheme : "classic";
 let last = -1;
 
 function nextShow() {
+  if (signalIsActive && activeTheme === "halloween") return;
   const current = STAGES[activeTheme];
   let i = Math.floor(Math.random() * current.shows.length);
   if (current.shows.length > 1 && i === last) i = (i + 1) % current.shows.length;
@@ -55,8 +57,29 @@ function nextShow() {
   if (caption) caption.textContent = current.caption;
 }
 
+function stopSignalScene() {
+  signalIsActive = false;
+  window.HauntedSignal?.stop();
+  stage.dataset.signalScene = "off";
+}
+
+function startSignalScene() {
+  const renderer = window.HauntedSignal;
+  if (!renderer) return false;
+  const started = renderer.start(() => {
+    if (activeTheme !== "halloween") return;
+    signalIsActive = false;
+    stage.dataset.signalScene = "fallback";
+    nextShow();
+  });
+  signalIsActive = Boolean(started);
+  stage.dataset.signalScene = signalIsActive ? "ready" : "fallback";
+  return signalIsActive;
+}
+
 function setTheme(theme, shouldPlay = true) {
   if (!(theme in STAGES)) return;
+  stopSignalScene();
   activeTheme = theme;
   last = -1;
   localStorage.setItem("jt-stage-theme", theme);
@@ -67,7 +90,15 @@ function setTheme(theme, shouldPlay = true) {
     const selected = option.dataset.stageTheme === theme;
     option.setAttribute("aria-pressed", String(selected));
   }
-  if (shouldPlay) nextShow();
+  if (!shouldPlay) return;
+  if (theme === "halloween" && startSignalScene()) {
+    video.pause();
+    video.removeAttribute("src");
+    video.load();
+    if (caption) caption.textContent = STAGES[theme].caption;
+    return;
+  }
+  nextShow();
 }
 
 async function refreshUsed() {
