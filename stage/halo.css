@@ -67,6 +67,27 @@ html, body {
   border-color: rgba(255, 145, 53, 0.35);
   box-shadow: 0 0 100px rgba(255, 94, 0, 0.2), inset 0 0 75px rgba(145, 62, 205, 0.12);
 }
+.stage[data-stage-theme="aurora"] {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(85, 235, 222, 0.17), transparent 28%),
+    radial-gradient(circle at 85% 35%, rgba(35, 86, 189, 0.28), transparent 39%),
+    linear-gradient(165deg, #021220 0%, #020815 56%, #000 100%);
+}
+.stage[data-stage-theme="aurora"]::before {
+  opacity: 0.7;
+  background-image:
+    radial-gradient(circle, rgba(166, 255, 242, 0.72) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(247, 209, 125, 0.56) 0 1px, transparent 1.4px);
+}
+.stage[data-stage-theme="aurora"]::after {
+  background:
+    radial-gradient(ellipse at 50% 90%, rgba(30, 180, 178, 0.15), transparent 47%),
+    radial-gradient(ellipse at 12% 42%, rgba(55, 105, 224, 0.18), transparent 38%);
+}
+.stage[data-stage-theme="aurora"] .stage-atmosphere {
+  border-color: rgba(141, 246, 231, 0.27);
+  box-shadow: 0 0 120px rgba(66, 202, 215, 0.16), inset 0 0 86px rgba(116, 227, 202, 0.1);
+}
 .halo {
   position: relative;
   z-index: 1;
@@ -91,7 +112,22 @@ html, body {
 .stage[data-signal-scene="ready"] .signal-stage {
   opacity: 1;
 }
-.stage[data-signal-scene="ready"] .halo {
+.aurora-stage {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 420ms ease;
+}
+.stage[data-aurora-scene="ready"] .aurora-stage {
+  opacity: 1;
+}
+.stage[data-signal-scene="ready"] .halo,
+.stage[data-aurora-scene="ready"] .halo {
   visibility: hidden;
 }
 .stage-title {
@@ -120,6 +156,9 @@ html, body {
 }
 .stage[data-stage-theme="halloween"] .stage-title p {
   color: #ff9d54;
+}
+.stage[data-stage-theme="aurora"] .stage-title p {
+  color: #9af4e3;
 }
 .stage-switch {
   position: fixed;
@@ -159,6 +198,10 @@ html, body {
 .stage[data-stage-theme="halloween"] .stage-option[aria-pressed="true"] {
   color: #2a0800;
   background: #ff9a48;
+}
+.stage[data-stage-theme="aurora"] .stage-option[aria-pressed="true"] {
+  color: #03131a;
+  background: #9de9dc;
 }
 .caption {
   position: fixed;

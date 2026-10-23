@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>JT Stage</title>
-  <link rel="stylesheet" href="./halo.css?v=haunted-signal-2" />
+  <link rel="stylesheet" href="./halo.css?v=aurora-garden-1" />
   <link rel="stylesheet" href="../shared-dock.css" />
   <link rel="stylesheet" href="../phone-adapt.css?v=p2" />
 </head>
@@ -13,6 +13,7 @@
     <div class="stage-atmosphere" aria-hidden="true"></div>
     <video id="halo" class="halo" autoplay muted playsinline></video>
     <canvas id="signal-stage" class="signal-stage" aria-hidden="true"></canvas>
+    <canvas id="aurora-stage" class="aurora-stage" aria-hidden="true"></canvas>
     <header class="stage-title" aria-live="polite">
       <p id="stage-kicker">JT STAGE</p>
       <h1 id="stage-name">Stage Gallery</h1>
@@ -20,6 +21,7 @@
     <div class="stage-switch" role="group" aria-label="Stage theme">
       <button type="button" class="stage-option" data-stage-theme="classic" aria-pressed="true">Classic</button>
       <button type="button" class="stage-option" data-stage-theme="halloween" aria-pressed="false">Halloween</button>
+      <button type="button" class="stage-option" data-stage-theme="aurora" aria-pressed="false">Aurora</button>
     </div>
     <p id="caption" class="caption">Stage</p>
   </main>
@@ -33,7 +35,8 @@
   <div id="used-minutes" class="used-minutes"></div>
   <script src="../usage-client.js"></script>
   <script src="./haunted-signal.js?v=1"></script>
-  <script src="./halo.js?v=haunted-signal-2"></script>
+  <script src="./aurora-garden.js?v=1"></script>
+  <script src="./halo.js?v=aurora-garden-1"></script>
   <script src="../gate.js"></script>
 </body>
 </html>

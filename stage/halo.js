@@ -5,7 +5,7 @@ const stage = document.querySelector(".stage");
 const stageName = document.querySelector("#stage-name");
 const stageKicker = document.querySelector("#stage-kicker");
 const stageOptions = [...document.querySelectorAll(".stage-option")];
-let signalIsActive = false;
+let activeRenderer = null;
 
 // The 3D Gaussian Splatting scene will replace the video playlist only after a
 // checked, compressed scene asset is supplied. These video playlists are the
@@ -38,6 +38,20 @@ const STAGES = {
       "./halo/filo-pumpkin.mp4?v=1",
       "./halo/filo-bat.mp4?v=1"
     ]
+  },
+  aurora: {
+    name: "Aurora Memory Garden",
+    kicker: "EVERYDAY STAGE",
+    caption: "Aurora Garden",
+    shows: [
+      "./halo/halo-halloween.mp4?v=2",
+      "./halo/halo-ghost.mp4?v=1",
+      "./halo/halo-bat.mp4?v=1",
+      "./halo/halo-cape.mp4?v=1",
+      "./halo/filo-ghost.mp4?v=1",
+      "./halo/filo-pumpkin.mp4?v=1",
+      "./halo/filo-bat.mp4?v=1"
+    ]
   }
 };
 
@@ -46,7 +60,7 @@ let activeTheme = savedTheme in STAGES ? savedTheme : "classic";
 let last = -1;
 
 function nextShow() {
-  if (signalIsActive && activeTheme === "halloween") return;
+  if (activeRenderer) return;
   const current = STAGES[activeTheme];
   let i = Math.floor(Math.random() * current.shows.length);
   if (current.shows.length > 1 && i === last) i = (i + 1) % current.shows.length;
@@ -57,29 +71,31 @@ function nextShow() {
   if (caption) caption.textContent = current.caption;
 }
 
-function stopSignalScene() {
-  signalIsActive = false;
+function stopStageRenderer() {
+  activeRenderer = null;
   window.HauntedSignal?.stop();
+  window.AuroraGarden?.stop();
   stage.dataset.signalScene = "off";
+  stage.dataset.auroraScene = "off";
 }
 
-function startSignalScene() {
-  const renderer = window.HauntedSignal;
+function startStageRenderer(key, attribute) {
+  const renderer = window[key];
   if (!renderer) return false;
   const started = renderer.start(() => {
-    if (activeTheme !== "halloween") return;
-    signalIsActive = false;
-    stage.dataset.signalScene = "fallback";
+    if (activeRenderer !== key) return;
+    activeRenderer = null;
+    stage.dataset[attribute] = "fallback";
     nextShow();
   });
-  signalIsActive = Boolean(started);
-  stage.dataset.signalScene = signalIsActive ? "ready" : "fallback";
-  return signalIsActive;
+  activeRenderer = started ? key : null;
+  stage.dataset[attribute] = started ? "ready" : "fallback";
+  return Boolean(started);
 }
 
 function setTheme(theme, shouldPlay = true) {
   if (!(theme in STAGES)) return;
-  stopSignalScene();
+  stopStageRenderer();
   activeTheme = theme;
   last = -1;
   localStorage.setItem("jt-stage-theme", theme);
@@ -91,7 +107,8 @@ function setTheme(theme, shouldPlay = true) {
     option.setAttribute("aria-pressed", String(selected));
   }
   if (!shouldPlay) return;
-  if (theme === "halloween" && startSignalScene()) {
+  const renderer = theme === "halloween" ? ["HauntedSignal", "signalScene"] : theme === "aurora" ? ["AuroraGarden", "auroraScene"] : null;
+  if (renderer && startStageRenderer(renderer[0], renderer[1])) {
     video.pause();
     video.removeAttribute("src");
     video.load();
