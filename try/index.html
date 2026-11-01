@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MedHug 试用对比 · 功能 A / 功能 B</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0f12;
+      --card: #161a20;
+      --ink: #f4efe6;
+      --muted: #9aa3ad;
+      --line: rgba(255, 255, 255, .08);
+      --a: #7dd3fc;
+      --b: #f9a8d4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.5 "PingFang SC", -apple-system, BlinkMacSystemFont, ui-sans-serif, system-ui, sans-serif;
+      padding: calc(28px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    .home {
+      color: var(--muted);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .home:hover { color: var(--ink); }
+    h1 { font-size: 1.45rem; font-weight: 700; margin: 14px 0 8px; letter-spacing: .02em; }
+    p.lead { color: var(--muted); margin: 0 0 28px; max-width: 40rem; }
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    a.card {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px 20px 18px;
+      border: 1px solid var(--line);
+      min-height: 64px;
+    }
+    a.card:hover { border-color: rgba(255, 255, 255, .22); }
+    a.card:focus-visible { outline: 2px solid #ffd28a; outline-offset: 3px; }
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: .08em;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
+    }
+    .tag.a { background: rgba(125, 211, 252, .15); color: var(--a); }
+    .tag.b { background: rgba(249, 168, 212, .15); color: var(--b); }
+    h2 { margin: 0 0 8px; font-size: 1.15rem; }
+    p { margin: 0; }
+    ul { margin: 12px 0 0; padding-left: 1.1rem; color: var(--muted); font-size: 14px; }
+    .note { margin-top: 28px; color: var(--muted); font-size: 13px; max-width: 40rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="home" href="/home.html">← 返回舱首页</a>
+    <h1>试用对比</h1>
+    <p class="lead">两个独立试用，方便并排看。现有试衣、Kids、FX、Stage、Talk 不受影响。</p>
+    <div class="grid">
+      <a class="card" href="./stage-3d/">
+        <span class="tag a">功能 A</span>
+        <h2>Stage 3D</h2>
+        <p>Open 3D Skills 的 three.js 程序化场景。实时 WebGL，可切换晨光、黄金时刻与夜景。</p>
+        <ul>
+          <li>亭子 starter，代码生成，不接摄像头</li>
+          <li>适合 Stage 演示，不替代现有全息 Stage</li>
+        </ul>
+      </a>
+      <a class="card" href="./char-db/">
+        <span class="tag b">功能 B</span>
+        <h2>二次元换装库</h2>
+        <p>char-db-cn 参考库：发型、服装、姿势检索，用来对照出图，不是实时试衣。</p>
+        <ul>
+          <li>页面内嵌原站，缩略图不进本仓库</li>
+          <li>素材版权归原作者たき AI，禁止再分发原图</li>
+        </ul>
+      </a>
+    </div>
+    <p class="note">功能 A 是实时 3D 网页。功能 B 是换装参考检索。两者都只是试用入口。</p>
+  </div>
+</body>
+</html>
