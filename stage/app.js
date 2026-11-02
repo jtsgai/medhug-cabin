@@ -47,15 +47,8 @@ function speak(text) {
     window.speechSynthesis.speak(u);
   } catch (_) {}
 }
-function setBilling(on) {
-  if (on && !billing) {
-    window.UsageClient?.start("stage");
-    billing = true;
-  } else if (!on && billing) {
-    window.UsageClient?.stop("stage");
-    billing = false;
-  }
-}
+// Stage is a free showcase (advertising): never billed.
+function setBilling(_on) {}
 function frameCabin() {
   const w = canvas.clientWidth || innerWidth;
   const h = canvas.clientHeight || innerHeight;
