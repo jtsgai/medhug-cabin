@@ -89,6 +89,16 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   ok(app.includes('"../catalog.json"') && app.includes('"../layout.json"') && app.includes('"../assets/"'), "app.js rewrites to ../catalog.json, ../layout.json, ../assets/");
   ok(app.includes(`@${PINNED_SHA}/app.js`), "app.js loads the pinned core SHA");
   ok(app.includes("https://live.medhug.ai/api/decart-token") && app.includes('credentials: "include"'), "fresh token fetch (credentials include)");
+  const reasonBody = app.slice(app.indexOf("function reasonFromError"), app.indexOf("window.__jtTryonReasonFrom")).replace(/\/\/.*$/gm, "");
+  ok(reasonBody.indexOf('raw.includes("timeout")') < reasonBody.indexOf('raw.includes("credit")') && reasonBody.includes('raw.includes("timeout")') && reasonBody.includes('raw.includes("credit")'), "reasonFromError checks timeout before credit");
+  ok(app.includes("count === 1") && app.includes("expectedCount"), "patch helper defaults to strict unique matches");
+  const gate = read("cam-gate.js");
+  ok(/picked\.obs/.test(gate) && /ideal:\s*1920/.test(gate) && /ideal:\s*1080/.test(gate) && /resizeMode:\s*"none"/.test(gate), "cam-gate requests 1920×1080 resizeMode none for OBS");
+  const obsLit = gate.slice(gate.indexOf("picked.obs"), gate.indexOf("width: { ideal: 720 }"));
+  ok(obsLit.includes("1920") && obsLit.includes('resizeMode: "none"') && !obsLit.includes("aspectRatio"), "OBS constraint branch has no aspectRatio 9/16", obsLit.slice(0, 240));
+  const css = read("preview-card.css");
+  ok(/grid-auto-rows:\s*max-content/.test(css), "explore grid sets grid-auto-rows: max-content");
+  ok(/\.left-panel\.collapsed \.rail-current \{[^}]*display:\s*flex/.test(css), "collapsed rail keeps .rail-current visible");
   const secretRe = /(sk-[A-Za-z0-9]{16,}|eyJ[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{12,}|api[_-]?key["']?\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}["']|Bearer\s+[A-Za-z0-9._-]{16,})/i;
   ok(!files.some((f) => f !== "check-preview-card.mjs" && secretRe.test(read(f))), "no key/token-looking strings in preview-card files");
   ok(readFileSync(path.join(REPO, "config.js"), "utf8").includes('DECART_API_KEY = ""'), "root config.js still has an empty key");
@@ -133,15 +143,20 @@ export function createDecartClient(opts) {
   window.__stub = window.__stub || { calls: [] };
   window.__stub.apiKey = opts && opts.apiKey;
   return { realtime: { connect: async (stream, o) => {
+    window.__stub.connectStarted = (window.__stub.connectStarted || 0) + 1;
+    const delay = Number(window.__stubConnectDelay) || 0;
+    if (delay) await new Promise((r) => setTimeout(r, delay));
+    const client = {
+      set: async (a) => { window.__stub.calls.push({ prompt: a.prompt, enhance: a.enhance, image: a.image && a.image.name, imageType: a.image && a.image.type }); },
+      disconnect: () => { window.__stub.disconnected = (window.__stub.disconnected || 0) + 1; },
+    };
+    window.__stub.lastClient = client;
     window.__stub.connectStream = stream;
     window.__stub.connectOpts = { model: o.model && o.model.__model, mirror: o.mirror, hasOnRemote: typeof o.onRemoteStream === "function" };
     const remote = new MediaStream(stream.getVideoTracks());
     window.__stub.remote = remote;
-    o.onRemoteStream(remote);
-    return {
-      set: async (a) => { window.__stub.calls.push({ prompt: a.prompt, enhance: a.enhance, image: a.image && a.image.name, imageType: a.image && a.image.type }); },
-      disconnect: () => { window.__stub.disconnected = (window.__stub.disconnected || 0) + 1; },
-    };
+    if (typeof o.onRemoteStream === "function") o.onRemoteStream(remote);
+    return client;
   } } };
 }`;
 
@@ -168,6 +183,23 @@ window.__makeSynth = (w, h) => {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const box = async (page, sel) => page.$eval(sel, (el) => { const r = el.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width, h: r.height, r: r.right, b: r.bottom }; });
 const intersects = (a, b) => a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5;
+async function cardOverlap(page) {
+  return page.$$eval("#explore-list .explore-card:not(.placeholder)", (cs) => {
+    const rects = cs.map((c, i) => {
+      const r = c.getBoundingClientRect();
+      const st = getComputedStyle(c);
+      return { i, x: r.x, y: r.y, w: r.width, h: r.height, r: r.right, b: r.bottom, disp: st.display, vis: st.visibility };
+    }).filter((r) => r.w > 1 && r.h > 1 && r.disp !== "none" && r.vis !== "hidden");
+    const overlaps = [];
+    for (let i = 0; i < rects.length; i++) {
+      for (let j = i + 1; j < rects.length; j++) {
+        const a = rects[i], b = rects[j];
+        if (a.x < b.r - 0.5 && b.x < a.r - 0.5 && a.y < b.b - 0.5 && b.y < a.b - 0.5) overlaps.push([a.i, b.i, a, b]);
+      }
+    }
+    return { n: rects.length, overlaps };
+  });
+}
 
 const { chromium } = loadPlaywright();
 const port = await freePort();
@@ -184,7 +216,7 @@ const browser = await chromium.launch({
   args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream", "--autoplay-policy=no-user-gesture-required", "--no-sandbox"],
 });
 
-async function newPage(query = "", { stubs = true } = {}) {
+async function newPage(query = "", { stubs = true, testCam = "" } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 2560 }, deviceScaleFactor: 1.5, permissions: ["camera"] });
   const page = await ctx.newPage();
   const errors = [];
@@ -211,9 +243,33 @@ async function newPage(query = "", { stubs = true } = {}) {
   });
   if (!stubs) await ctx.unroute("https://esm.sh/@decartai/sdk");
   await page.addInitScript(`
+    window.__jtTestCam = ${JSON.stringify(testCam || "")};
     window.__counts = { gum: 0, capture: 0 };
+    window.__gumConstraints = [];
     const gum = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-    navigator.mediaDevices.getUserMedia = (...a) => { window.__counts.gum++; return gum(...a); };
+    const enu = navigator.mediaDevices.enumerateDevices.bind(navigator.mediaDevices);
+    navigator.mediaDevices.enumerateDevices = async () => {
+      const real = await enu().catch(() => []);
+      if (window.__jtTestCam === "obs") {
+        return [{ deviceId: "obs-virtual", kind: "videoinput", label: "OBS Virtual Camera", groupId: "obs" }, ...real];
+      }
+      return real;
+    };
+    navigator.mediaDevices.getUserMedia = async (constraints) => {
+      window.__counts.gum++;
+      try { window.__gumConstraints.push(JSON.parse(JSON.stringify(constraints || {}))); } catch { window.__gumConstraints.push(constraints); }
+      if (window.__jtTestCam === "obs") {
+        const v = (constraints && constraints.video) || {};
+        const w = v.width && (v.width.ideal || v.width);
+        const h = v.height && (v.height.ideal || v.height);
+        if (w === 1920 && h === 1080) {
+          const s = window.__makeSynth(1920, 1080);
+          window.__obsSynth = s;
+          return s.stream;
+        }
+      }
+      return gum(constraints);
+    };
     const cap = HTMLCanvasElement.prototype.captureStream;
     HTMLCanvasElement.prototype.captureStream = function (...a) { if (this.id === "vton-in-canvas") window.__counts.capture++; return cap.apply(this, a); };
   ` + SYNTH);
@@ -253,7 +309,24 @@ try {
   ok(imgs.n > 0 && imgs.broken.length === 0, "images load (no broken asset paths; lazy ones may be pending)", JSON.stringify(imgs));
   const ctrl = await box(page, "#pc-controls");
   ok(!intersects(ctrl, card), "mode/preset controls do not overlap the card", JSON.stringify({ ctrl, card }));
+  const overlap2 = await cardOverlap(page);
+  ok(overlap2.n >= 4 && overlap2.overlaps.length === 0, "2× garment cards do not overlap", JSON.stringify(overlap2));
   ok(await page.evaluate(() => window.__jtPreviewPatchReport.every((p) => p.ok) && window.__jtPreviewPatchReport.length >= 15), "all loader patches matched the pinned core");
+  const patchReport = await page.evaluate(() => window.__jtPreviewPatchReport);
+  const exactCounts = {
+    "config-import": 1, "token-inject": 1, "connect-input": 1, "disconnect-usage": 1,
+    "skip-empty-key": 1, "end-usage": 1, "toast-reason": 1, "import-config": 0,
+    "import-i18n": 1, "assets": 9, "catalog": 1, "layout": 1, "attract-paths": 1,
+    "attract-playlist": 1, "applyLayoutVars-noop": 1, "showLocalPreview": 1,
+    "attract-initial-mode": 1, "attract-flag": 1, "attract-noop": 1,
+    "connect-begin": 1, "onRemoteStream-gen": 1, "connect-assign-gen": 1,
+    "timeout-error-text": 1, "connect-catch-invalidate": 1, "race-succeed": 1,
+    "confirm-try-guard": 1, "toggle-camera-off": 1,
+  };
+  for (const [name, count] of Object.entries(exactCounts)) {
+    const entry = patchReport.find((p) => p.name === name);
+    ok(entry && entry.ok && entry.count === count, `patch ${name} count === ${count}`, JSON.stringify(entry));
+  }
   ok((await page.evaluate(() => document.querySelector(".cabin-stage").style.width)) === "", "applyLayoutVars is a no-op (.cabin-stage keeps no inline width)");
   ok(await page.evaluate(() => !document.querySelector('script[src*="force-cam"], link[href*="ui-over-video"]')), "DOM has no force-cam / ui-over-video");
   await page.screenshot({ path: path.join(SHOTS, "preview-2x.png") });
@@ -325,6 +398,10 @@ try {
   ok(near(rail.x, 600, 0.5) && near(rail.w, 800, 0.5), "1× rail 800px wide at x=600", JSON.stringify(rail));
   ok((await page.$eval("#video-output", (v) => getComputedStyle(v).objectFit)) === "contain", "1× #video-output object-fit: contain");
   ok((await page.getAttribute('[data-mode-btn="1"]', "aria-pressed")) === "true" && (await page.getAttribute('[data-mode-btn="2"]', "aria-pressed")) === "false", "1× button marked aria-pressed");
+  await page.waitForFunction(() => [...document.querySelectorAll("#explore-list img")].every((i) => i.complete), null, { timeout: 8000 }).catch(() => {});
+  await sleep(200);
+  const overlap1 = await cardOverlap(page);
+  ok(overlap1.n >= 4 && overlap1.overlaps.length === 0, "1× garment cards do not overlap", JSON.stringify(overlap1));
   await page.screenshot({ path: path.join(SHOTS, "preview-1x.png") });
   await page.click('[data-mode-btn="full"]');
   card = await box(page, "#tryon-card");
@@ -375,6 +452,8 @@ try {
   ok(sres.call.enhance === false && /^product_/.test(sres.call.image) && sres.call.prompt.length > 10, "set({prompt,image,enhance:false}) called", JSON.stringify(sres.call));
   ok(sres.outIsRemote && !sres.outIsRaw, "#video-output shows the remote stream, never the raw camera stream");
   ok(sres.collapsed && sres.gum >= 1, "rail collapsed after try-on; camera was requested only after the click");
+  const flowCons = await fp.evaluate(() => { const last = (window.__gumConstraints || []).slice(-1)[0] || {}; return last.video || last; });
+  ok(flowCons.width && flowCons.width.ideal === 720 && flowCons.height.ideal === 1280 && flowCons.aspectRatio && Math.abs(flowCons.aspectRatio.ideal - 9 / 16) < 1e-6, "non-OBS getUserMedia keeps 720×1280 and aspectRatio 9/16", JSON.stringify(flowCons));
   const camInfo = await fp.evaluate(() => { const t = window.__jtRawStream.getVideoTracks()[0].getSettings(); return { w: t.width, h: t.height, status: window.__jtVtonStatus }; });
   ok(camInfo.status.videoWidth === camInfo.w && camInfo.status.reason !== "preset-hit", `fake camera ${camInfo.w}×${camInfo.h} measured -> ${camInfo.status.label}, no OBS ROI`, JSON.stringify(camInfo.status));
   const sel = await fp.evaluate(() => {
@@ -395,11 +474,19 @@ try {
   ok(camBtn.w > 0 && !intersects(camBtn, ccard), "摄像头 button visible, outside the card");
   await fp.waitForFunction(() => document.getElementById("rail-current-name").textContent.trim() !== "—", null, { timeout: 5000 }).catch(() => {});
   ok((await fp.textContent("#rail-current-name")).trim() !== "—", "current garment name shown", JSON.stringify(await fp.evaluate(() => ({ status: document.getElementById("status").textContent, cls: document.getElementById("status").className, name: document.getElementById("rail-current-name").textContent }))));
+  const railCur = await fp.evaluate(() => {
+    const el = document.getElementById("rail-current");
+    const st = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    return { display: st.display, visibility: st.visibility, opacity: st.opacity, w: r.width, h: r.height, x: r.x, y: r.y, r: r.right, b: r.bottom };
+  });
+  ok(railCur.display !== "none" && railCur.visibility !== "hidden" && Number(railCur.opacity) !== 0 && railCur.w > 0 && railCur.h > 0, ".rail-current is visible during try-on (not just textContent)", JSON.stringify(railCur));
+  ok(!intersects(railCur, ccard), ".rail-current does not overlap the try-on card", JSON.stringify({ railCur, ccard }));
   await fp.screenshot({ path: path.join(SHOTS, "preview-2x-tryon.png") });
 
   // 15s emphasis and end
-  await fp.waitForFunction(() => document.getElementById("btn-end").classList.contains("glow") || document.getElementById("btn-end").classList.contains("boost"), null, { timeout: 20000 });
-  ok(true, "结束 emphasis (glow/boost) appears after ~15s of live try-on");
+  const glowed = await fp.waitForFunction(() => document.getElementById("btn-end").classList.contains("glow") || document.getElementById("btn-end").classList.contains("boost"), null, { timeout: 20000 }).then(() => true).catch(() => false);
+  ok(glowed, "结束 emphasis (glow/boost) appears after ~15s of live try-on");
   await fp.click("#btn-end");
   await fp.waitForFunction(() => !document.getElementById("end-overlay").classList.contains("hidden"));
   await sleep(500);
@@ -408,9 +495,68 @@ try {
   await fp.screenshot({ path: path.join(SHOTS, "preview-end-overlay.png") });
   await flow.ctx.close();
 
+  // ---- real cam-gate path for an OBS-labelled 1920×1080 device
+  section("cam-gate OBS 1920×1080 constraints + track badge");
+  const obsFlow = await newPage("?owner=0", { testCam: "obs" });
+  const op = obsFlow.page;
+  await op.click("#explore-list .explore-card");
+  await op.click("#btn-modal-try");
+  await op.waitForFunction(() => (window.__gumConstraints || []).length > 0, null, { timeout: 15000 });
+  const obsCons = await op.evaluate(() => { const last = (window.__gumConstraints || []).slice(-1)[0] || {}; return last.video || last; });
+  ok(obsCons.width && obsCons.width.ideal === 1920 && obsCons.height && obsCons.height.ideal === 1080, "OBS getUserMedia width.ideal 1920 and height.ideal 1080", JSON.stringify(obsCons));
+  ok(obsCons.resizeMode === "none", "OBS getUserMedia resizeMode is none", JSON.stringify(obsCons));
+  ok(obsCons.aspectRatio === undefined, "OBS getUserMedia has no aspectRatio 9/16", JSON.stringify(obsCons));
+  await op.waitForFunction(() => window.__jtVtonStatus && window.__jtVtonStatus.reason === "preset-hit", null, { timeout: 10000 });
+  const obsBadge = ((await op.textContent("#obs-preset-status")) || "") + " " + ((await op.textContent("#obs-preset-detail")) || "");
+  ok(obsBadge.includes("预设已命中"), "OBS badge shows 预设已命中", obsBadge);
+  ok(/track\s*1920\s*[×x]\s*1080/.test(obsBadge), "badge/detail shows track 1920×1080", obsBadge);
+  await obsFlow.ctx.close();
+
+  // ---- late connect after timeout is discarded; error is 连接超时 not 额度不足
+  section("late connect cancelled + timeout vs credit");
+  const late = await newPage("?owner=0");
+  await late.page.evaluate(() => { window.__jtConnectTimeoutMs = 800; window.__stubConnectDelay = 2500; });
+  await late.page.click("#explore-list .explore-card");
+  await late.page.click("#btn-modal-try");
+  await late.page.waitForFunction(() => {
+    const r = document.getElementById("tryon-reason");
+    return r && !r.classList.contains("hidden") && r.textContent.trim().length > 0;
+  }, null, { timeout: 8000 });
+  const reasonText = (await late.page.textContent("#tryon-reason")) || "";
+  ok(/连接超时/.test(reasonText) && !/额度不足/.test(reasonText), "timeout is reported as 连接超时, not 额度不足", reasonText);
+  await sleep(2800);
+  const lateState = await late.page.evaluate(() => ({
+    started: window.__stub && window.__stub.connectStarted || 0,
+    disconnected: window.__stub && window.__stub.disconnected || 0,
+    outIsRemote: document.getElementById("video-output").srcObject === (window.__stub && window.__stub.remote),
+    live: window.__jtTryonLive,
+    connecting: window.__jtConn && window.__jtConn.connecting,
+  }));
+  ok(lateState.started >= 1 && lateState.disconnected >= 1, "late connect() was started and then disconnect()ed", JSON.stringify(lateState));
+  ok(!lateState.outIsRemote && !lateState.live && !lateState.connecting, "late remote stream was not attached and try-on is not live", JSON.stringify(lateState));
+  ok(late.usageHits.length === 0, "late connect did not start usage", JSON.stringify(late.usageHits));
+  await late.ctx.close();
+
+  // ---- camera off stops the try-on usage timer and clears stale vton status
+  section("camera off stops UsageClient and clears vton status");
+  const camPage = await newPage("?owner=0");
+  const cp = camPage.page;
+  await cp.click("#explore-list .explore-card");
+  await cp.click("#btn-modal-try");
+  await cp.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 20000 });
+  const usageBefore = camPage.usageHits.length;
+  await cp.click("#btn-cam-toggle");
+  await sleep(500);
+  ok(camPage.usageHits.length > usageBefore && camPage.usageHits.some((b) => /"feature":"tryon"/.test(b || "")), "camera off posts UsageClient.stop(tryon)", JSON.stringify(camPage.usageHits));
+  ok(await cp.evaluate(() => window.__jtTryonLive === false), "camera off clears __jtTryonLive");
+  const afterOff = await cp.evaluate(() => window.__jtVtonStatus);
+  ok(!afterOff || afterOff.reason === "no-video" || afterOff.videoWidth === 0, "camera off status is 等待画面 / no-video, not a stale miss", JSON.stringify(afterOff));
+  ok(((await cp.textContent("#obs-preset-status")) || "").includes("等待画面") || (afterOff && afterOff.reason === "no-video"), "badge shows 等待画面 after camera off");
+  await camPage.ctx.close();
+
   // ---- console cleanliness (main page + flow page)
   section("console");
-  const allErrors = [...errors, ...flow.errors];
+  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors];
   const unexpected = allErrors.filter((e) => !/live\.medhug\.ai|esm\.sh|Failed to load resource.*(net::ERR|404)/.test(e));
   ok(unexpected.length === 0, "zero console errors / pageerrors (expected mocked-network noise filtered)", unexpected.slice(0, 5).join(" | "));
   if (allErrors.length) console.log(`  (filtered ${allErrors.length - unexpected.length} expected network errors)`);

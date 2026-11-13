@@ -74,12 +74,17 @@ function publish(next) {
   layout = next;
   if (key === layoutKey) return;
   layoutKey = key;
+  const cam = window.__jtCamSettings || null;
   const detail = {
     status: next.status,
     reason: next.reason,
     label: STATUS_LABELS[next.reason] || "",
     videoWidth: next.videoWidth,
     videoHeight: next.videoHeight,
+    trackWidth: cam && cam.width || 0,
+    trackHeight: cam && cam.height || 0,
+    trackResizeMode: cam && cam.resizeMode || "",
+    camSettings: cam,
     obsPresetEnabled: next.obsPresetEnabled,
     fromObsDevice: Boolean(window.__jtFromObs),
     fps: next.fps,
@@ -111,10 +116,16 @@ function drawBackdrop(l) {
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 }
 
+function clearCanvas() {
+  if (!ctx) return;
+  ctx.fillStyle = FILL_COLOR;
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+}
+
 function drawFrame() {
   if (!canvas || !srcVideo) return;
   const l = refreshLayout();
-  if (!l.src || !l.dst) return;
+  if (!l.src || !l.dst) { clearCanvas(); return; }
   const { sx, sy, sw, sh } = l.src;
   const { dx, dy, dw, dh } = l.dst;
   if (l.status === STATUS_OBS_CONTAIN) {
@@ -153,7 +164,9 @@ async function fromStream(stream) {
     stopLoop();
     if (srcVideo) srcVideo.srcObject = null;
     window.__jtVtonIn = null;
-    if (canvas) refreshLayout();
+    window.__jtCamSettings = null;
+    clearCanvas();
+    publish(computeVtonLayout(0, 0, { obsPresetEnabled, fps: currentFps() }));
     return null;
   }
   ensure();

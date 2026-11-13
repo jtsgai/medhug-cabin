@@ -7,8 +7,9 @@ const APP_SRC = "https://cdn.jsdelivr.net/gh/jtsgai/medhug-cabin@424f015159b7b2c
 function reasonFromError(err) {
   const raw = String(err && err.message || err || "").toLowerCase();
   if (raw.includes("notallowed") || raw.includes("permission") || raw.includes("no camera")) return "摄像头未允许";
-  if (raw.includes("402") || raw.includes("credit") || raw.includes("insufficient") || raw.includes("额度")) return "额度不足";
+  // Timeout must be classified before "credit": the core's 30s error is "API timeout credit or network".
   if (raw.includes("timeout") || raw.includes("network") || raw.includes("failed to fetch")) return "连接超时";
+  if (raw.includes("402") || raw.includes("credit") || raw.includes("insufficient") || raw.includes("额度")) return "额度不足";
   if (raw.includes("服务暂时不可用")) return "服务暂时不可用";
   return "连接失败";
 }
@@ -24,15 +25,50 @@ window.__jtFreshDecartToken = async () => {
   return data.token;
 };
 
+// Connection generation: a late realtime.connect() after timeout / End / camera-off must disconnect
+// immediately and must not attach its remote stream, set apiConnected, or start usage.
+window.__jtTryonLive = false;
+window.__jtConn = {
+  gen: 0,
+  current: 0,
+  connecting: false,
+  begin() {
+    if (this.connecting) return null;
+    this.connecting = true;
+    this.current = ++this.gen;
+    window.__jtTryonLive = false;
+    document.body?.classList.add("is-connecting");
+    document.body?.classList.remove("is-tryon-live");
+    return this.current;
+  },
+  isCurrent(id) { return id != null && this.current === id; },
+  succeed(id) {
+    if (!this.isCurrent(id)) return false;
+    this.connecting = false;
+    window.__jtTryonLive = true;
+    document.body?.classList.remove("is-connecting");
+    document.body?.classList.add("is-tryon-live");
+    return true;
+  },
+  invalidate() {
+    this.current = -(this.gen || 1);
+    this.connecting = false;
+    window.__jtTryonLive = false;
+    document.body?.classList.remove("is-connecting", "is-tryon-live");
+  },
+};
+
 const report = [];
 // Function replacers on purpose: String.replace would interpret "$" sequences in a replacement string.
-function patch(code, name, from, to, { all = false, min = 1 } = {}) {
+// Default is a strict unique match (count === 1). Pass { all: true } or { expectedCount } to opt out.
+function patch(code, name, from, to, { all = false, expectedCount } = {}) {
   const count = code.split(from).length - 1;
-  if (count < min) {
-    report.push({ name, count, ok: false });
-    throw new Error(`preview-card patch "${name}" did not match the pinned core`);
-  }
-  report.push({ name, count, ok: true });
+  const expected = expectedCount !== undefined ? expectedCount : (all ? count : 1);
+  const ok = expectedCount !== undefined
+    ? count === expectedCount
+    : all ? count >= 1 : count === 1;
+  report.push({ name, count, expected: expectedCount !== undefined ? expectedCount : (all ? undefined : 1), all, ok });
+  if (!ok) throw new Error(`preview-card patch "${name}" did not match the pinned core (count=${count})`);
   return all ? code.split(from).join(to) : code.replace(from, () => to);
 }
 
@@ -49,27 +85,27 @@ code = patch(code, "token-inject",
   'const e=models.realtime("lucy-vton-latest"),__jtTok=await window.__jtFreshDecartToken(),n=createDecartClient({apiKey:__jtTok})');
 // Lucy gets the 720x1280 canvas stream, never the raw camera stream (throws if it is not ready).
 code = patch(code, "connect-input", "n.realtime.connect(localStream,{", "n.realtime.connect(window.__jtRequireVtonIn(),{");
-code = patch(code, "disconnect-usage", "function disconnectApi(){", 'function disconnectApi(){window.UsageClient?.stop("tryon");');
+code = patch(code, "disconnect-usage", "function disconnectApi(){", 'function disconnectApi(){window.__jtConn.invalidate();window.UsageClient?.stop("tryon");');
 // NOTE: the root app.js pattern starts with "if(" but in the pinned core this check is the tail of a comma
 // expression (`if(enterTryOnUiPreview(t),...,!DECART_API_KEY||...)`), so the root replace never matched. It is
 // harmless there only because DECART_API_KEY is "fresh". Here we match the real text so the early return is gone.
 code = patch(code, "skip-empty-key",
   '!DECART_API_KEY||"YOUR_API_KEY_HERE"===DECART_API_KEY)return showApiCreditHint(!0),void setStatusKey("status_camera");setStatusKey("status_connecting");try{',
   '!1)return;setStatusKey("status_connecting");try{');
-code = patch(code, "end-usage", "function endSession(){", 'function endSession(){window.UsageClient?.stop("tryon");');
+code = patch(code, "end-usage", "function endSession(){", 'function endSession(){window.__jtConn.invalidate();window.UsageClient?.stop("tryon");');
 code = patch(code, "toast-reason",
   'toast(String(t&&t.message||t||"API连接失败").slice(0,80))',
   'window.__jtTryonReason?.(window.__jtTryonReasonFrom?.(t)||"连接失败")');
 
 // --- preview-card path rewrites: the page lives in /preview-card/, the core expects the site root ---
-code = patch(code, "import-config", 'from"./config.js"', `from"${SITE}config.js"`, { all: true, min: 0 });
-code = patch(code, "import-i18n", 'from"./i18n.js"', `from"${SITE}i18n.js"`, { all: true });
+code = patch(code, "import-config", 'from"./config.js"', `from"${SITE}config.js"`, { all: true, expectedCount: 0 });
+code = patch(code, "import-i18n", 'from"./i18n.js"', `from"${SITE}i18n.js"`, { all: true, expectedCount: 1 });
 // Covers ASSETS_BASE, urlToFile("./assets/"+...), modal src and the template-literal <img src="./assets/${...}">.
-code = patch(code, "assets", "./assets/", "../assets/", { all: true, min: 9 });
+code = patch(code, "assets", "./assets/", "../assets/", { all: true, expectedCount: 9 });
 code = patch(code, "catalog", '"./catalog.json"', '"../catalog.json"');
 code = patch(code, "layout", '"./layout.json"', '"../layout.json"');
-code = patch(code, "attract-paths", '"./attract/"', '"../attract/"', { all: true, min: 1 });
-code = patch(code, "attract-playlist", '"./attract/playlist.json"', '"../attract/playlist.json"', { min: 0 });
+code = patch(code, "attract-paths", '"./attract/"', '"../attract/"', { all: true, expectedCount: 1 });
+code = patch(code, "attract-playlist", '"./attract/playlist.json"', '"../attract/playlist.json"', { expectedCount: 1 });
 
 // --- preview-card layout / stream isolation ---
 // The pinned applyLayoutVars() shrinks .cabin-stage to a phone-like frame (min(560px,96vw)...). Keep the
@@ -85,12 +121,34 @@ code = patch(code, "attract-flag",
   "applyLayoutVars(),applyI18n(),renderCats(),renderFeatured(),renderExplore(),renderShortlist()}",
   "layout.attract_enabled=!1,applyLayoutVars(),applyI18n(),renderCats(),renderFeatured(),renderExplore(),renderShortlist()}");
 code = patch(code, "attract-noop", "function showAttract(){", "function showAttract(){return;");
-// Usage: start the tryon timer after a successful connect (stop is patched into disconnectApi/endSession above).
-if (new URLSearchParams(location.search).get("usage") !== "0") {
-  code = patch(code, "usage-start",
-    'clearTimeout(n),showApiCreditHint(!1),setStatusKey("status_live",!0)',
-    'clearTimeout(n),showApiCreditHint(!1),setStatusKey("status_live",!0),window.UsageClient?.start("tryon")');
-}
+
+// --- connection generation, late-connect cleanup, no double try-on, camera-off stops usage ---
+code = patch(code, "connect-begin",
+  "async function connectApiAndTry(t){clearError();",
+  "async function connectApiAndTry(t){if(window.__jtConn.connecting)return;const __gen=window.__jtConn.begin();if(__gen==null)return;clearError();");
+code = patch(code, "onRemoteStream-gen",
+  'onRemoteStream:t=>{$("#video-output").srcObject=t,$("#video-placeholder").classList.add("hidden"),showApiCreditHint(!1)}',
+  'onRemoteStream:t=>{if(!window.__jtConn.isCurrent(__gen))return;$("#video-output").srcObject=t,$("#video-placeholder").classList.add("hidden"),showApiCreditHint(!1)}');
+code = patch(code, "connect-assign-gen",
+  "realtimeClient=a,apiConnected=!0,boostEndLater(),await applyGarment(t)",
+  "if(!window.__jtConn.isCurrent(__gen)){try{a.disconnect()}catch(_){}return}realtimeClient=a,apiConnected=!0,boostEndLater(),await applyGarment(t)");
+code = patch(code, "timeout-error-text",
+  'n=setTimeout(()=>e(new Error("API timeout credit or network")),3e4)',
+  'n=setTimeout(()=>e(new Error("API timeout or network")),window.__jtConnectTimeoutMs||3e4)');
+code = patch(code, "connect-catch-invalidate",
+  '}catch(t){if(console.warn("[JT] API connect failed",t)',
+  '}catch(t){window.__jtConn.invalidate();if(console.warn("[JT] API connect failed",t)');
+const usageOn = new URLSearchParams(location.search).get("usage") !== "0";
+code = patch(code, "race-succeed",
+  'clearTimeout(n),showApiCreditHint(!1),setStatusKey("status_live",!0)',
+  'clearTimeout(n);if(!window.__jtConn.succeed(__gen))return;showApiCreditHint(!1),setStatusKey("status_live",!0)'
+    + (usageOn ? ',window.UsageClient?.start("tryon")' : ""));
+code = patch(code, "confirm-try-guard",
+  "async function confirmTryOn(){const t=pendingGarmentId;",
+  "async function confirmTryOn(){if(window.__jtConn.connecting)return;const t=pendingGarmentId;");
+code = patch(code, "toggle-camera-off",
+  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}setCameraOffStage(!0)}else",
+  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtConn.invalidate(),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
 
 window.__jtPreviewPatchReport = report;
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));

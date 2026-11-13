@@ -157,7 +157,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
   min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: max-content;
   align-content: start;
+  align-items: start;
   gap: 12px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -172,6 +174,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   height: auto !important;
   max-width: none !important;
   max-height: none !important;
+  align-self: start;
   aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
@@ -213,11 +216,19 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .left-panel.collapsed .btn-expand-strip { pointer-events: auto; }
 .left-panel.collapsed .logo,
 .left-panel.collapsed .btn-lang,
-.left-panel.collapsed .rail-current,
 .left-panel.collapsed .zone-label,
 .left-panel.collapsed #cat-tabs,
 .left-panel.collapsed .zone-4,
 .left-panel.collapsed .zone-session-done { display: none !important; }
+/* Keep the current garment name visible in the slim right rail (plan §3.1). */
+.left-panel.collapsed .rail-current {
+  display: flex !important;
+  padding: 8px 6px;
+  gap: 2px;
+  pointer-events: none;
+}
+.left-panel.collapsed .rail-current-label { font-size: 11px; letter-spacing: 0.1em; }
+.left-panel.collapsed .rail-current-name { font-size: 14px; line-height: 1.3; word-break: break-word; }
 .left-panel.collapsed .btn-expand-strip { display: block !important; font-size: 15px; min-height: 48px; padding: 6px 4px; }
 .left-panel.collapsed .brand-row { justify-content: center; }
 .left-panel.collapsed .status { max-width: 140px; font-size: 14px; }
@@ -374,3 +385,6 @@ html.is-fullscreen-compare .tryon-hint,
 html.is-fullscreen-compare .owner-stats { display: none; }
 html.is-fullscreen-compare .tryon-reason { left: 50%; top: 190px; max-width: 70vw; }
 html.is-fullscreen-compare .pc-controls { top: 12px; right: 12px; }
+
+body.is-connecting #btn-modal-try,
+body.is-connecting .left-panel.collapsed .explore-card { pointer-events: none; opacity: 0.65; }
