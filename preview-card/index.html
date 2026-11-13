@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-display-mode="2">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>JT 试衣舱 · 预览卡片（preview-card）</title>
+  <!-- Isolated preview route. Self-contained CSS only; none of the live full-screen override scripts or styles are loaded. -->
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="./preview-card.css" />
+  <script src="./display-mode.js"></script>
+</head>
+<body class="tryon-page pc-page">
+  <div id="error-banner" class="error-banner"></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <nav class="jt-dock" id="jt-dock" aria-label="modes">
+    <a href="./" class="is-here">TRY ON</a>
+    <a href="../kids/">KIDS</a>
+    <a href="../fx/">FX</a>
+    <a href="../stage/">STAGE</a>
+    <a href="../talk/">TALK</a>
+  </nav>
+
+  <!-- Staff controls: top-right, in the empty band above the card, never over the face/hem. -->
+  <div class="pc-controls" id="pc-controls">
+    <div class="pc-modes" role="group" aria-label="显示模式">
+      <button type="button" data-mode-btn="1" aria-pressed="false">清晰 1×</button>
+      <button type="button" data-mode-btn="2" aria-pressed="true" class="is-active">标准 2×</button>
+      <button type="button" data-mode-btn="full" aria-pressed="false">全屏对照</button>
+    </div>
+    <div class="pc-preset">
+      <button type="button" id="obs-preset-toggle" class="pc-switch is-on" role="switch" aria-checked="true"
+              title="开启：仅当实测画面为 1920×1080 时使用 OBS 人物区完整装入；关闭：通用 9:16 居中 cover 裁切">
+        <span class="pc-switch-knob" aria-hidden="true"></span>
+        <span class="pc-switch-label">OBS 预设（1920×1080）</span>
+      </button>
+      <span id="obs-preset-status" class="pc-badge" data-state="no-video" role="status">等待画面</span>
+      <span id="obs-preset-detail" class="pc-preset-detail"></span>
+    </div>
+  </div>
+
+  <main class="cabin-stage pc-stage" id="pc-stage">
+    <div id="attract-layer" class="attract-layer hidden" aria-hidden="true">
+      <video id="attract-video" muted playsinline></video>
+    </div>
+
+    <!-- Try-on card: 720x1280 canvas stream shown with object-fit: contain. -->
+    <section class="pc-card" id="tryon-card" aria-label="试衣画面">
+      <video id="video-output" autoplay playsinline muted></video>
+      <div id="video-placeholder" class="video-placeholder"></div>
+      <div id="camera-off-stage" class="camera-off-stage hidden" aria-hidden="true"></div>
+      <div id="api-credit-hint" class="api-credit-hint hidden" aria-hidden="true">
+        <span class="api-credit-ring"></span>
+        <span class="api-credit-core"></span>
+      </div>
+    </section>
+
+    <!-- Garment rail (right side). #left-panel keeps its id because the pinned core looks it up. -->
+    <div class="pc-rail-col" id="pc-rail-col">
+      <aside id="left-panel" class="left-panel">
+        <div class="zone zone-1">
+          <div class="brand-row">
+            <span class="logo">JT M&amp;C Pte Ltd</span>
+            <div class="zone1-right">
+              <span id="status" class="status hidden"></span>
+              <button type="button" id="btn-lang" class="btn-lang">EN</button>
+            </div>
+          </div>
+        </div>
+        <button type="button" id="btn-expand-strip" class="btn-expand-strip hidden">‹ 全部款式</button>
+        <div class="rail-current" id="rail-current">
+          <span class="rail-current-label">当前款</span>
+          <span class="rail-current-name" id="rail-current-name">—</span>
+        </div>
+        <!-- Featured slot is kept in the DOM (the pinned core touches it) but hidden in this layout. -->
+        <div class="zone zone-2" id="zone-featured">
+          <div class="zone-label" data-i18n="featured">主推</div>
+          <div id="featured-slot" class="featured-slot"></div>
+          <button type="button" id="btn-feat-prev" class="icon-btn">‹</button>
+          <button type="button" id="btn-feat-next" class="icon-btn icon-btn-next">›</button>
+        </div>
+        <div class="zone zone-3">
+          <div class="zone-label" data-i18n="explore">选衣</div>
+          <div id="cat-tabs" class="cat-tabs"></div>
+          <div class="explore-wrap">
+            <div id="explore-list" class="explore-list"></div>
+            <div id="explore-scroll-hint" class="explore-scroll-hint" aria-hidden="true">∨</div>
+          </div>
+        </div>
+        <div class="zone zone-session-done hidden" id="zone-session-done">
+          <button type="button" id="btn-session-done" class="btn-session-done" data-i18n="done">完成</button>
+        </div>
+        <div class="zone zone-4" id="zone-shortlist">
+          <div class="zone-label"><span data-i18n="shortlist">备选</span> <span id="shortlist-count">0</span></div>
+          <div id="shortlist" class="shortlist"></div>
+          <button type="button" id="btn-end-link" class="btn-end-link hidden" data-i18n="end_session">结束试穿</button>
+        </div>
+        <div class="zone-empty"></div>
+      </aside>
+      <button type="button" id="btn-return-dot" class="btn-return-dot hidden" aria-label="back"></button>
+
+      <!-- Bottom actions: outside #left-panel on purpose (a click inside a collapsed #left-panel ends the session). -->
+      <section class="right-panel pc-actions">
+        <button id="btn-end" class="btn-end hidden" data-i18n="end">结束</button>
+        <button id="btn-change" class="btn-change hidden" data-i18n="change">换衣</button>
+        <button type="button" id="btn-cam-toggle" class="btn-cam-toggle" aria-label="camera"><span class="cam-label">摄像头</span></button>
+        <button id="btn-save" class="btn-save hidden" data-i18n="add_shortlist">加入备选</button>
+      </section>
+    </div>
+  </main>
+
+  <div id="product-modal" class="modal hidden">
+    <div class="modal-card">
+      <img id="product-modal-img" alt="" />
+      <div class="modal-name" id="product-modal-name"></div>
+      <div id="modal-swatches" class="modal-swatches"></div>
+      <div class="modal-actions">
+        <button type="button" id="btn-modal-cancel" data-i18n="back">返回</button>
+        <button type="button" id="btn-modal-shortlist" data-i18n="add_shortlist">加入备选</button>
+        <button type="button" id="btn-modal-try" class="primary" data-i18n="try_on">试穿</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="end-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <h3 data-i18n="session_title">本次试穿</h3>
+      <p class="overlay-sub" data-i18n="session_thanks">感谢体验</p>
+      <div id="end-tried" class="end-list"></div>
+      <div id="end-shortlist-wrap" class="hidden">
+        <h4 data-i18n="session_shortlist">你的备选</h4>
+        <div id="end-shortlist" class="end-list end-list-clickable"></div>
+      </div>
+      <p class="overlay-hint" data-i18n="session_hint">画面将保留片刻</p>
+      <button id="btn-end-close" class="primary" data-i18n="done">完成</button>
+    </div>
+  </div>
+
+  <script src="../usage-client.js"></script>
+  <script src="./ops.js"></script>
+  <script src="./cam-gate.js"></script>
+  <script type="module" src="./vton-in.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
