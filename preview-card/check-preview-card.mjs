@@ -99,6 +99,11 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   const css = read("preview-card.css");
   ok(/grid-auto-rows:\s*max-content/.test(css), "explore grid sets grid-auto-rows: max-content");
   ok(/\.left-panel\.collapsed \.rail-current \{[^}]*display:\s*flex/.test(css), "collapsed rail keeps .rail-current visible");
+  ok(app.includes("if(!window.__jtConn.isCurrent(__gen))return;window.__jtConn.invalidate()"), "stale catch does not invalidate a newer generation");
+  ok(app.includes("await startLocalCamera()}catch(t){}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled)"), "connectApiAndTry rechecks generation after startLocalCamera");
+  ok(app.includes("__jtCamGate?.markOff()"), "toggleCamera off notifies cam-gate");
+  ok(/markOff/.test(gate) && /AbortError/.test(gate) && /Camera closed while opening/.test(gate) && /camEpoch/.test(gate), "cam-gate aborts late getUserMedia after camera off");
+
   const secretRe = /(sk-[A-Za-z0-9]{16,}|eyJ[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{12,}|api[_-]?key["']?\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}["']|Bearer\s+[A-Za-z0-9._-]{16,})/i;
   ok(!files.some((f) => f !== "check-preview-card.mjs" && secretRe.test(read(f))), "no key/token-looking strings in preview-card files");
   ok(readFileSync(path.join(REPO, "config.js"), "utf8").includes('DECART_API_KEY = ""'), "root config.js still has an empty key");
@@ -143,18 +148,27 @@ export function createDecartClient(opts) {
   window.__stub = window.__stub || { calls: [] };
   window.__stub.apiKey = opts && opts.apiKey;
   return { realtime: { connect: async (stream, o) => {
-    window.__stub.connectStarted = (window.__stub.connectStarted || 0) + 1;
-    const delay = Number(window.__stubConnectDelay) || 0;
+    const id = window.__stub.connectStarted = (window.__stub.connectStarted || 0) + 1;
+    const delay = (window.__stubConnectDelays && window.__stubConnectDelays.length)
+      ? Number(window.__stubConnectDelays.shift())
+      : (Number(window.__stubConnectDelay) || 0);
     if (delay) await new Promise((r) => setTimeout(r, delay));
     const client = {
-      set: async (a) => { window.__stub.calls.push({ prompt: a.prompt, enhance: a.enhance, image: a.image && a.image.name, imageType: a.image && a.image.type }); },
-      disconnect: () => { window.__stub.disconnected = (window.__stub.disconnected || 0) + 1; },
+      id,
+      set: async (a) => { window.__stub.calls.push({ prompt: a.prompt, enhance: a.enhance, image: a.image && a.image.name, imageType: a.image && a.image.type, id }); },
+      disconnect: () => {
+        window.__stub.disconnected = (window.__stub.disconnected || 0) + 1;
+        window.__stub.disconnectedIds = window.__stub.disconnectedIds || [];
+        window.__stub.disconnectedIds.push(id);
+      },
     };
     window.__stub.lastClient = client;
     window.__stub.connectStream = stream;
     window.__stub.connectOpts = { model: o.model && o.model.__model, mirror: o.mirror, hasOnRemote: typeof o.onRemoteStream === "function" };
     const remote = new MediaStream(stream.getVideoTracks());
     window.__stub.remote = remote;
+    window.__stub.remotes = window.__stub.remotes || {};
+    window.__stub.remotes[id] = remote;
     if (typeof o.onRemoteStream === "function") o.onRemoteStream(remote);
     return client;
   } } };
@@ -258,6 +272,8 @@ async function newPage(query = "", { stubs = true, testCam = "" } = {}) {
     navigator.mediaDevices.getUserMedia = async (constraints) => {
       window.__counts.gum++;
       try { window.__gumConstraints.push(JSON.parse(JSON.stringify(constraints || {}))); } catch { window.__gumConstraints.push(constraints); }
+      const gumDelay = Number(window.__gumDelay) || 0;
+      if (gumDelay) await new Promise((r) => setTimeout(r, gumDelay));
       if (window.__jtTestCam === "obs") {
         const v = (constraints && constraints.video) || {};
         const w = v.width && (v.width.ideal || v.width);
@@ -320,7 +336,7 @@ try {
     "attract-playlist": 1, "applyLayoutVars-noop": 1, "showLocalPreview": 1,
     "attract-initial-mode": 1, "attract-flag": 1, "attract-noop": 1,
     "connect-begin": 1, "onRemoteStream-gen": 1, "connect-assign-gen": 1,
-    "timeout-error-text": 1, "connect-catch-invalidate": 1, "race-succeed": 1,
+    "start-camera-gen-guard": 1, "timeout-error-text": 1, "connect-catch-invalidate": 1, "race-succeed": 1,
     "confirm-try-guard": 1, "toggle-camera-off": 1,
   };
   for (const [name, count] of Object.entries(exactCounts)) {
@@ -554,9 +570,110 @@ try {
   ok(((await cp.textContent("#obs-preset-status")) || "").includes("等待画面") || (afterOff && afterOff.reason === "no-video"), "badge shows 等待画面 after camera off");
   await camPage.ctx.close();
 
+  // ---- P1-4(a): stale gen1 catch must not kill a live gen2
+  section("stale gen1 catch does not kill live gen2");
+  async function tryOnCard(page, index) {
+    const cards = await page.$$("#explore-list .explore-card:not(.placeholder)");
+    await cards[index].click();
+    await page.click("#btn-modal-try");
+  }
+  async function assertGen2Survives(page, usageHits, label) {
+    await page.waitForFunction(() => window.__jtTryonLive === true && window.__stub && window.__stub.connectStarted >= 2, null, { timeout: 15000 });
+    const afterLive = await page.evaluate(() => ({
+      live: window.__jtTryonLive,
+      current: window.__jtConn.current,
+      liveId: window.__stub.lastClient && window.__stub.lastClient.id,
+    }));
+    const liveId = afterLive.liveId;
+    // Wait past gen1's 1800ms timeout AND its 2500ms delayed connect() resolution,
+    // which may disconnect gen1 (expected) and overwrite stub.lastClient/remote.
+    await new Promise((r) => setTimeout(r, 2800));
+    const afterStale = await page.evaluate((liveId) => ({
+      live: window.__jtTryonLive,
+      current: window.__jtConn.current,
+      connecting: window.__jtConn.connecting,
+      started: window.__stub.connectStarted,
+      disconnected: window.__stub.disconnected || 0,
+      disconnectedIds: window.__stub.disconnectedIds || [],
+      outIsGen2: document.getElementById("video-output").srcObject === (window.__stub.remotes && window.__stub.remotes[liveId]),
+      status: (document.getElementById("status") && document.getElementById("status").textContent) || "",
+      reason: (document.getElementById("tryon-reason") && !document.getElementById("tryon-reason").classList.contains("hidden") && document.getElementById("tryon-reason").textContent) || "",
+    }), liveId);
+    ok(afterStale.live === true && afterStale.current === afterLive.current, `${label}: gen2 remains live after gen1 timeout`, JSON.stringify({ afterLive, afterStale }));
+    ok(!afterStale.disconnectedIds.includes(liveId), `${label}: gen2 client was not disconnected`, JSON.stringify({ liveId, afterStale }));
+    ok(afterStale.outIsGen2, `${label}: #video-output still shows gen2 remote stream`, JSON.stringify({ liveId, afterStale }));
+    ok(!/连接超时|额度不足/.test(afterStale.reason || "") && !/timeout/i.test(afterStale.status || ""), `${label}: no timeout error overwrites status`, JSON.stringify({ status: afterStale.status, reason: afterStale.reason }));
+    const usageBeforeEnd = usageHits.length;
+    await page.click("#btn-end");
+    await page.waitForFunction(() => !document.getElementById("end-overlay").classList.contains("hidden"), null, { timeout: 8000 });
+    await new Promise((r) => setTimeout(r, 400));
+    ok(usageHits.length > usageBeforeEnd && usageHits.some((b) => /"feature":"tryon"/.test(b || "")), `${label}: UsageClient still tracks and stops on End`, JSON.stringify(usageHits));
+  }
+
+  const staleExpand = await newPage("?owner=0");
+  await staleExpand.page.evaluate(() => { window.__jtConnectTimeoutMs = 1800; window.__stubConnectDelays = [2500, 80]; });
+  await tryOnCard(staleExpand.page, 0);
+  await staleExpand.page.waitForFunction(() => window.__stub && window.__stub.connectStarted >= 1 && window.__jtConn && window.__jtConn.connecting, null, { timeout: 10000 });
+  await staleExpand.page.waitForSelector("#btn-expand-strip", { state: "visible", timeout: 8000 });
+  await staleExpand.page.click("#btn-expand-strip");
+  await staleExpand.page.waitForFunction(() => !document.getElementById("left-panel").classList.contains("collapsed"), null, { timeout: 8000 });
+  await tryOnCard(staleExpand.page, 1);
+  await assertGen2Survives(staleExpand.page, staleExpand.usageHits, "expand/换款");
+  await staleExpand.ctx.close();
+
+  const staleCam = await newPage("?owner=0");
+  await staleCam.page.evaluate(() => { window.__jtConnectTimeoutMs = 1800; window.__stubConnectDelays = [2500, 80]; });
+  await tryOnCard(staleCam.page, 0);
+  await staleCam.page.waitForFunction(() => window.__stub && window.__stub.connectStarted >= 1 && window.__jtConn && window.__jtConn.connecting, null, { timeout: 10000 });
+  await staleCam.page.click("#btn-cam-toggle"); // off
+  await new Promise((r) => setTimeout(r, 200));
+  await staleCam.page.click("#btn-cam-toggle"); // on
+  await new Promise((r) => setTimeout(r, 400));
+  const camCollapsed = await staleCam.page.evaluate(() => document.getElementById("left-panel").classList.contains("collapsed"));
+  if (camCollapsed) {
+    await staleCam.page.click("#btn-expand-strip");
+    await staleCam.page.waitForFunction(() => !document.getElementById("left-panel").classList.contains("collapsed"), null, { timeout: 8000 });
+  }
+  await tryOnCard(staleCam.page, 1);
+  await assertGen2Survives(staleCam.page, staleCam.usageHits, "camera off/on");
+  await staleCam.ctx.close();
+
+  // ---- P1-4(b): camera off while getUserMedia is pending
+  section("camera off during pending getUserMedia aborts stream and Decart connect");
+  const gumOff = await newPage("?owner=0");
+  await gumOff.page.evaluate(() => { window.__gumDelay = 1500; });
+  await tryOnCard(gumOff.page, 0);
+  await gumOff.page.waitForFunction(() => (window.__counts && window.__counts.gum >= 1), null, { timeout: 8000 });
+  await gumOff.page.click("#btn-cam-toggle");
+  await new Promise((r) => setTimeout(r, 2000)); // let delayed gum resolve
+  const gumState = await gumOff.page.evaluate(() => {
+    const raw = window.__jtRawStream;
+    const tracks = raw && raw.getTracks ? raw.getTracks() : [];
+    const overlay = document.getElementById("camera-off-stage");
+    const ost = overlay && getComputedStyle(overlay);
+    const after = overlay ? getComputedStyle(overlay, "::after").content : "";
+    return {
+      rawNull: !raw,
+      trackStates: tracks.map((t) => t.readyState),
+      src: document.getElementById("video-output") && document.getElementById("video-output").srcObject,
+      overlayHidden: !overlay || overlay.classList.contains("hidden") || (ost && ost.display === "none"),
+      overlayText: after,
+      connectStarted: (window.__stub && window.__stub.connectStarted) || 0,
+      connecting: !!(window.__jtConn && window.__jtConn.connecting),
+      bodyConnecting: document.body.classList.contains("is-connecting"),
+      live: window.__jtTryonLive,
+      status: (document.getElementById("status") && document.getElementById("status").textContent) || "",
+    };
+  });
+  ok(gumState.rawNull || gumState.trackStates.every((st) => st === "ended"), "pending-gum cam-off: no live raw tracks", JSON.stringify(gumState));
+  ok(gumState.src == null && !gumState.overlayHidden && /摄像头已关闭/.test(gumState.overlayText || ""), "pending-gum cam-off: video is empty and 摄像头已关闭 overlay stays", JSON.stringify(gumState));
+  ok(gumState.connectStarted === 0, "pending-gum cam-off: Decart connect() was never invoked", JSON.stringify(gumState));
+  ok(!gumState.connecting && !gumState.bodyConnecting && !gumState.live, "pending-gum cam-off: UI is not stuck in Connecting", JSON.stringify(gumState));
+  await gumOff.ctx.close();
+
   // ---- console cleanliness (main page + flow page)
   section("console");
-  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors];
+  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors, ...staleExpand.errors, ...staleCam.errors, ...gumOff.errors];
   const unexpected = allErrors.filter((e) => !/live\.medhug\.ai|esm\.sh|Failed to load resource.*(net::ERR|404)/.test(e));
   ok(unexpected.length === 0, "zero console errors / pageerrors (expected mocked-network noise filtered)", unexpected.slice(0, 5).join(" | "));
   if (allErrors.length) console.log(`  (filtered ${allErrors.length - unexpected.length} expected network errors)`);

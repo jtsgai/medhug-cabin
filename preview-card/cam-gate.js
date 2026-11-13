@@ -11,7 +11,31 @@
   window.__jtRawStream = null;
   window.__jtFromObs = false;
   window.__jtCamSettings = null;
+  let camEpoch = 0;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+
+  function markOff() {
+    camEpoch += 1;
+    window.__jtAllowCam = false;
+  }
+
+  function abortCam(stream) {
+    if (stream) {
+      try { stream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+    }
+    if (stream && window.__jtRawStream === stream) window.__jtRawStream = null;
+    if (!stream) window.__jtRawStream = null;
+    window.__jtCamSettings = null;
+    if (typeof window.jtPortraitIn === "function") window.jtPortraitIn(null);
+    const err = typeof DOMException === "function"
+      ? new DOMException("Camera closed while opening", "AbortError")
+      : Object.assign(new Error("Camera closed while opening"), { name: "AbortError" });
+    throw err;
+  }
+
+  function cancelled(epoch) {
+    return camEpoch !== epoch || !window.__jtAllowCam;
+  }
 
   async function pickCam() {
     try {
@@ -51,7 +75,9 @@
     if (!window.__jtAllowCam) {
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
     }
+    const epoch = camEpoch;
     const picked = await pickCam();
+    if (cancelled(epoch)) abortCam(null);
     window.__jtFromObs = !!picked.obs;
     const deviceId = picked.id ? { exact: picked.id } : undefined;
     // OBS: ask for the native 1920x1080 landscape canvas and forbid crop-and-scale.
@@ -60,18 +86,20 @@
       ? { deviceId, width: { ideal: 1920 }, height: { ideal: 1080 }, resizeMode: "none", frameRate: { ideal: 30, max: 30 } }
       : { deviceId, width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 }, frameRate: { ideal: 30, max: 30 } };
     const stream = await orig({ audio: false, video });
+    if (cancelled(epoch)) abortCam(stream);
     window.__jtRawStream = stream;
     recordTrackSettings(stream);
     if (typeof window.jtPortraitIn === "function") {
       try { await window.jtPortraitIn(stream); } catch (e) { console.warn("[preview-card] jtPortraitIn failed", e); }
     }
+    if (cancelled(epoch)) abortCam(stream);
     window.dispatchEvent(new CustomEvent("jt-cam-stream", { detail: { fromObs: window.__jtFromObs, settings: window.__jtCamSettings } }));
     return stream;
   };
 
   function on() { window.__jtAllowCam = true; }
   function off() {
-    window.__jtAllowCam = false;
+    markOff();
     const canvasStream = window.__jtVton?.getStream?.();
     window.__jtVtonIn = null;
     window.__jtCamSettings = null;
@@ -100,4 +128,5 @@
   }, true);
   window.jtCamOn = on;
   window.jtCamOff = off;
+  window.__jtCamGate = { markOff, get epoch() { return camEpoch; } };
 })();

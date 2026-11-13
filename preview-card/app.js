@@ -132,12 +132,15 @@ code = patch(code, "onRemoteStream-gen",
 code = patch(code, "connect-assign-gen",
   "realtimeClient=a,apiConnected=!0,boostEndLater(),await applyGarment(t)",
   "if(!window.__jtConn.isCurrent(__gen)){try{a.disconnect()}catch(_){}return}realtimeClient=a,apiConnected=!0,boostEndLater(),await applyGarment(t)");
+code = patch(code, "start-camera-gen-guard",
+  "try{localStream||await startLocalCamera()}catch(t){}if(enterTryOnUiPreview(t),",
+  "try{localStream||await startLocalCamera()}catch(t){}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled){try{localStream&&localStream.getTracks().forEach(t=>t.stop())}catch(_){}localStream=null;window.jtPortraitIn?.(null);if(window.__jtConn.isCurrent(__gen))window.__jtConn.invalidate();return}if(enterTryOnUiPreview(t),");
 code = patch(code, "timeout-error-text",
   'n=setTimeout(()=>e(new Error("API timeout credit or network")),3e4)',
   'n=setTimeout(()=>e(new Error("API timeout or network")),window.__jtConnectTimeoutMs||3e4)');
 code = patch(code, "connect-catch-invalidate",
   '}catch(t){if(console.warn("[JT] API connect failed",t)',
-  '}catch(t){window.__jtConn.invalidate();if(console.warn("[JT] API connect failed",t)');
+  '}catch(t){if(!window.__jtConn.isCurrent(__gen))return;window.__jtConn.invalidate();if(console.warn("[JT] API connect failed",t)');
 const usageOn = new URLSearchParams(location.search).get("usage") !== "0";
 code = patch(code, "race-succeed",
   'clearTimeout(n),showApiCreditHint(!1),setStatusKey("status_live",!0)',
@@ -148,7 +151,7 @@ code = patch(code, "confirm-try-guard",
   "async function confirmTryOn(){if(window.__jtConn.connecting)return;const t=pendingGarmentId;");
 code = patch(code, "toggle-camera-off",
   "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}setCameraOffStage(!0)}else",
-  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtConn.invalidate(),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
+  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtCamGate?.markOff(),window.__jtConn.invalidate(),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
 
 window.__jtPreviewPatchReport = report;
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
