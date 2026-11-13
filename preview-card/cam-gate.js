@@ -1,13 +1,16 @@
 // Preview-card copy of the root cam-gate.js (root file is untouched).
 // - Gates the camera until a try-on / camera-toggle click (same idea as the live page).
 // - Picks OBS virtual camera by label, else scores Logitech/C922-style devices.
-// - Ignores the caller's constraints and asks for 720x1280 ideal; the real source size is measured later
-//   (OBS on the cabin still delivers 1920x1080), so __jtFromObs only informs the UI, never the crop.
+// - OBS devices request 1920x1080 with resizeMode "none" and NO 9:16 aspectRatio, so Chrome
+//   does not pre-crop the landscape canvas before the ROI math runs.
+// - Non-OBS devices keep the generic 720x1280 / 9:16 portrait constraints.
+// - ROI itself still requires a measured 1920x1080 (vton-in-math.js); the device name never decides the crop.
 // - Always awaits window.jtPortraitIn(stream) (the 720x1280 canvas pipeline) before returning.
 (function () {
   window.__jtAllowCam = false;
   window.__jtRawStream = null;
   window.__jtFromObs = false;
+  window.__jtCamSettings = null;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
   async function pickCam() {
@@ -30,28 +33,39 @@
     }
   }
 
+  function recordTrackSettings(stream) {
+    const track = stream && stream.getVideoTracks && stream.getVideoTracks()[0];
+    const s = track && typeof track.getSettings === "function" ? (track.getSettings() || {}) : {};
+    window.__jtCamSettings = {
+      width: s.width || 0,
+      height: s.height || 0,
+      resizeMode: s.resizeMode || "",
+      frameRate: s.frameRate,
+      aspectRatio: s.aspectRatio,
+      deviceId: s.deviceId || "",
+    };
+    return window.__jtCamSettings;
+  }
+
   navigator.mediaDevices.getUserMedia = async function () {
     if (!window.__jtAllowCam) {
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
     }
     const picked = await pickCam();
     window.__jtFromObs = !!picked.obs;
-    const stream = await orig({
-      audio: false,
-      video: {
-        deviceId: picked.id ? { exact: picked.id } : undefined,
-        width: { ideal: 720 },
-        height: { ideal: 1280 },
-        aspectRatio: { ideal: 9 / 16 },
-        frameRate: { ideal: 30, max: 30 },
-      },
-    });
+    const deviceId = picked.id ? { exact: picked.id } : undefined;
+    // OBS: ask for the native 1920x1080 landscape canvas and forbid crop-and-scale.
+    // Non-OBS: keep the generic portrait request used for phones / laptop webcams.
+    const video = picked.obs
+      ? { deviceId, width: { ideal: 1920 }, height: { ideal: 1080 }, resizeMode: "none", frameRate: { ideal: 30, max: 30 } }
+      : { deviceId, width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 }, frameRate: { ideal: 30, max: 30 } };
+    const stream = await orig({ audio: false, video });
     window.__jtRawStream = stream;
-    // The 720x1280 canvas stream (window.__jtVtonIn) must exist before the caller continues.
+    recordTrackSettings(stream);
     if (typeof window.jtPortraitIn === "function") {
       try { await window.jtPortraitIn(stream); } catch (e) { console.warn("[preview-card] jtPortraitIn failed", e); }
     }
-    window.dispatchEvent(new CustomEvent("jt-cam-stream", { detail: { fromObs: window.__jtFromObs } }));
+    window.dispatchEvent(new CustomEvent("jt-cam-stream", { detail: { fromObs: window.__jtFromObs, settings: window.__jtCamSettings } }));
     return stream;
   };
 
@@ -60,6 +74,7 @@
     window.__jtAllowCam = false;
     const canvasStream = window.__jtVton?.getStream?.();
     window.__jtVtonIn = null;
+    window.__jtCamSettings = null;
     if (typeof window.jtPortraitIn === "function") window.jtPortraitIn(null);
     if (window.__jtRawStream) {
       try { window.__jtRawStream.getTracks().forEach((t) => t.stop()); } catch (_) {}

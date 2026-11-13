@@ -43,13 +43,17 @@
     if (!badge) return;
     const d = detail || window.__jtVtonStatus;
     if (!d) return;
-    badge.textContent = d.label || "";
+    const tw = d.trackWidth || (d.camSettings && d.camSettings.width) || 0;
+    const th = d.trackHeight || (d.camSettings && d.camSettings.height) || 0;
+    const trackLabel = tw && th ? `track ${tw}×${th}` : "";
+    badge.textContent = [d.label || "", trackLabel].filter(Boolean).join(" · ");
     badge.setAttribute("data-state", d.reason);
     const sub = document.getElementById("obs-preset-detail");
     if (sub) {
-      const size = d.videoWidth && d.videoHeight ? `${d.videoWidth}×${d.videoHeight}` : "—";
+      const src = d.videoWidth && d.videoHeight ? `源 ${d.videoWidth}×${d.videoHeight}` : "源 —";
       const dev = d.fromObsDevice ? "OBS 设备" : "非 OBS 设备";
-      sub.textContent = `${size} · ${dev} · ${d.fps}fps`;
+      const bits = [trackLabel || null, src, dev, `${d.fps || 20}fps`].filter(Boolean);
+      sub.textContent = bits.join(" · ");
     }
     if (toggle) {
       toggle.setAttribute("aria-checked", d.obsPresetEnabled ? "true" : "false");

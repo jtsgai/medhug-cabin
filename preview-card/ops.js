@@ -94,14 +94,20 @@
   }
 
   function isLive() {
-    return Boolean(panel && panel.classList.contains("collapsed"));
+    // Only after a successful Decart connect, not during the connecting / 30s-timeout window.
+    return Boolean(window.__jtTryonLive);
   }
 
+  let ticking = false;
   setInterval(async () => {
+    if (ticking) return;
+    ticking = true;
+    try {
     const live = isLive();
+    const connecting = Boolean(window.__jtConn && window.__jtConn.connecting);
     const end = $("btn-end");
     hint.textContent = isEn() ? "Tap a look, then Try on" : "选一件衣服，再点「试穿」";
-    hint.classList.toggle("hidden", live);
+    hint.classList.toggle("hidden", live || connecting || Boolean(panel && panel.classList.contains("collapsed")));
     dock?.classList.toggle("locked", live);
     document.body.classList.toggle("is-tryon-live", live);
     if (live && !liveSince) liveSince = Date.now();
@@ -135,6 +141,9 @@
     else if (Date.now() - absentSince >= ABSENT_STOP_MS) {
       absentSince = 0;
       $("btn-end")?.click();
+    }
+    } finally {
+      ticking = false;
     }
   }, 500);
 })();

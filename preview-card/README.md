@@ -26,6 +26,10 @@ Useful query flags:
 - `?mode=1` / `?mode=2` / `?mode=full` — initial display mode
 - `?obs=off` — start with the OBS preset off
 - `?fps=20` — canvas capture frame rate (default 20)
+- `?usage=0` — do not report try-on minutes to `live.medhug.ai`
+- `?owner=0` — hide the owner minutes badge
+
+When an OBS / virtual camera is selected, the page requests `1920×1080` with `resizeMode: "none"` (no 9:16 aspectRatio) so Chrome does not pre-crop the landscape canvas. The ROI still applies only if the measured track is exactly 1920×1080; the badge detail shows `track.getSettings()` width × height for cabin verification.
 
 ## Checks
 
