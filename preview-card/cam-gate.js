@@ -15,28 +15,55 @@
   let camReq = 0;
   let currentReq = 0;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+  const PORTRAIT_MS = () => {
+    const n = Number(window.__jtPortraitTimeoutMs);
+    return Number.isFinite(n) && n > 0 ? n : 4000;
+  };
 
   function markOff(userOff) {
     camEpoch += 1;
     currentReq = 0;
     window.__jtAllowCam = false;
     // Only the camera-toggle path is "user turned the camera off".
-    // 换衣 / expand / End also call off() → markOff(), but a later 试穿 should be able to reopen.
+    // 换衣 / expand also call off() → markOff(), and must keep the flag.
     if (userOff) window.__jtCamUserOff = true;
+  }
+
+  function clearUserOff() {
+    window.__jtCamUserOff = false;
+  }
+
+  function isEn() {
+    try { return (localStorage.getItem("jt_lang") || "zh") === "en"; } catch (_) { return false; }
   }
 
   function camErrorText(err) {
     return (window.__jtTryonReasonFrom && window.__jtTryonReasonFrom(err))
       || (err && (err.message || String(err)))
-      || "连接失败";
+      || (isEn() ? "Connection failed" : "连接失败");
+  }
+
+  function noFrameError() {
+    return Object.assign(new Error("no camera frames"), { name: "CamNoFrame" });
+  }
+
+  function streamHasLiveVideo(stream) {
+    return Boolean(stream && stream.getVideoTracks && stream.getVideoTracks().some((t) => t.readyState === "live"));
+  }
+
+  function cameraIsLive() {
+    return streamHasLiveVideo(window.__jtRawStream) || streamHasLiveVideo(window.__jtVtonIn);
   }
 
   // Current request failed: drop stale settings / portrait and show a classified reason.
   // A stale request must still not touch those globals (P1-5).
-  function failCurrent(err) {
+  function failCurrent(err, stream) {
     window.__jtLastCamError = err;
     window.__jtCamSettings = null;
-    if (window.__jtRawStream) {
+    if (stream) {
+      try { stream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+      if (window.__jtRawStream === stream) window.__jtRawStream = null;
+    } else if (window.__jtRawStream) {
       try { window.__jtRawStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
       window.__jtRawStream = null;
     }
@@ -45,10 +72,15 @@
   }
 
   function hintCamOff() {
-    const shown = "请先打开摄像头";
+    const shown = isEn() ? "Turn the camera on first" : "请先打开摄像头";
     window.__jtCamOffHint = shown;
     window.__jtCamOffHintEn = "Turn the camera on first";
     window.__jtTryonReason?.(shown);
+  }
+
+  function closeProductModal() {
+    const modal = document.getElementById("product-modal");
+    if (modal && !modal.classList.contains("hidden")) modal.classList.add("hidden");
   }
 
   // A stale/late request may only stop its OWN tracks. It must not clear
@@ -103,6 +135,16 @@
     return window.__jtCamSettings;
   }
 
+  function withTimeout(promise, ms, err) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(err), ms);
+      Promise.resolve(promise).then(
+        (v) => { clearTimeout(timer); resolve(v); },
+        (e) => { clearTimeout(timer); reject(e); },
+      );
+    });
+  }
+
   navigator.mediaDevices.getUserMedia = async function () {
     if (!window.__jtAllowCam) {
       return Promise.reject(Object.assign(new Error("camera gated"), { name: "NotAllowedError" }));
@@ -110,6 +152,7 @@
     const epoch = camEpoch;
     const reqId = ++camReq;
     currentReq = reqId;
+    window.__jtLastCamError = null;
     const picked = await pickCam();
     if (!isFresh(reqId, epoch)) abortOwn(null);
     window.__jtFromObs = !!picked.obs;
@@ -127,12 +170,25 @@
       throw err;
     }
     if (!isFresh(reqId, epoch)) abortOwn(stream);
+    if (!streamHasLiveVideo(stream)) {
+      const err = noFrameError();
+      if (isFresh(reqId, epoch)) failCurrent(err, stream);
+      else abortOwn(stream);
+      throw err;
+    }
     window.__jtRawStream = stream;
     recordTrackSettings(stream);
     if (typeof window.jtPortraitIn === "function") {
-      try { await window.jtPortraitIn(stream); } catch (e) { console.warn("[preview-card] jtPortraitIn failed", e); }
+      try {
+        await withTimeout(window.jtPortraitIn(stream), PORTRAIT_MS(), noFrameError());
+      } catch (e) {
+        if (isFresh(reqId, epoch)) failCurrent(e, stream);
+        else abortOwn(stream);
+        throw e;
+      }
     }
     if (!isFresh(reqId, epoch)) abortOwn(stream);
+    window.__jtLastCamError = null;
     window.dispatchEvent(new CustomEvent("jt-cam-stream", { detail: { fromObs: window.__jtFromObs, settings: window.__jtCamSettings } }));
     return stream;
   };
@@ -165,19 +221,34 @@
   }
 
   document.addEventListener("click", (e) => {
+    const sessionEnd = e.target.closest("#btn-end, #btn-end-close, #btn-session-done, #btn-end-link");
+    if (sessionEnd) {
+      clearUserOff();
+      off();
+      return;
+    }
     const wantsTry = e.target.closest("#btn-modal-try, .left-panel.collapsed .explore-card");
-    if (wantsTry && window.__jtCamUserOff) {
+    // Intercept only when the visitor themselves turned the camera off AND it is not live.
+    if (wantsTry && window.__jtCamUserOff && !cameraIsLive()) {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+      closeProductModal();
       hintCamOff();
       return;
     }
     if (e.target.closest("#btn-modal-try, #btn-cam-toggle")) on();
     if (e.target.closest(".left-panel.collapsed .explore-card")) on();
-    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) off();
+    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip")) off();
   }, true);
   window.jtCamOn = on;
   window.jtCamOff = off;
-  window.__jtCamGate = { markOff, get epoch() { return camEpoch; }, get currentReq() { return currentReq; } };
+  window.__jtCamGate = {
+    markOff,
+    clearUserOff,
+    on,
+    get epoch() { return camEpoch; },
+    get currentReq() { return currentReq; },
+    cameraIsLive,
+  };
 })();

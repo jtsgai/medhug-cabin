@@ -91,7 +91,9 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   ok(app.includes("https://live.medhug.ai/api/decart-token") && app.includes('credentials: "include"'), "fresh token fetch (credentials include)");
   const reasonBody = app.slice(app.indexOf("function reasonFromError"), app.indexOf("window.__jtTryonReasonFrom")).replace(/\/\/.*$/gm, "");
   ok(reasonBody.indexOf('blob.includes("timeout")') < reasonBody.indexOf('blob.includes("credit")') && reasonBody.includes('blob.includes("timeout")') && reasonBody.includes('blob.includes("credit")'), "reasonFromError checks timeout before credit");
-  ok(reasonBody.indexOf("notreadable") < reasonBody.indexOf("notallowed") && reasonBody.includes("texts.busy") && reasonBody.includes("texts.denied") && !reasonBody.includes("no camera"), "reasonFromError classifies NotReadableError as busy, not permission");
+  ok(reasonBody.indexOf("notreadable") < reasonBody.indexOf("notallowed") && reasonBody.includes("texts.busy") && reasonBody.includes("texts.denied"), "reasonFromError classifies NotReadableError as busy, not permission");
+  ok(reasonBody.includes("texts.noFrame") && reasonBody.indexOf("camnoframe") < reasonBody.indexOf('blob.includes("timeout")'), "reasonFromError classifies no-frame before generic timeout");
+  ok(reasonBody.includes("const weak") && reasonBody.includes("if (weak) add(window.__jtLastCamError)"), "reasonFromError only uses __jtLastCamError when the current error is weak");
   ok(app.includes("count === 1") && app.includes("expectedCount"), "patch helper defaults to strict unique matches");
   const gate = read("cam-gate.js");
   ok(/picked\.obs/.test(gate) && /ideal:\s*1920/.test(gate) && /ideal:\s*1080/.test(gate) && /resizeMode:\s*"none"/.test(gate), "cam-gate requests 1920×1080 resizeMode none for OBS");
@@ -101,7 +103,7 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   ok(/grid-auto-rows:\s*max-content/.test(css), "explore grid sets grid-auto-rows: max-content");
   ok(/\.left-panel\.collapsed \.rail-current \{[^}]*display:\s*flex/.test(css), "collapsed rail keeps .rail-current visible");
   ok(app.includes("if(!window.__jtConn.isCurrent(__gen))return;window.__jtConn.invalidate()"), "stale catch does not invalidate a newer generation");
-  ok(app.includes("await startLocalCamera()}catch(t){window.__jtLastCamError=t}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled)"), "connectApiAndTry rechecks generation after startLocalCamera");
+  ok(app.includes("AbortError") && app.includes("if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled)") && app.includes("__jtLastCamError"), "connectApiAndTry rechecks generation after startLocalCamera");
   ok(app.includes("__jtCamGate?.markOff(!0)"), "toggleCamera off notifies cam-gate (user-off)");
   ok(/markOff/.test(gate) && /AbortError/.test(gate) && /Camera closed while opening/.test(gate) && /camEpoch/.test(gate), "cam-gate aborts late getUserMedia after camera off");
   const abortBody = gate.slice(gate.indexOf("function abortOwn"), gate.indexOf("function isFresh"));
@@ -115,6 +117,11 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   ok(vin.includes("const g = ++inputGen") && vin.includes("if (g !== inputGen || srcVideo.srcObject !== stream) return null"), "fromStream checks inputGen after play() and skips stale completion");
   ok(vin.includes("const g = ++inputGen") && vin.indexOf("const g = ++inputGen") < vin.indexOf("if (!stream)"), "inputGen increments on every fromStream call including null");
   ok(gate.includes("function failCurrent") && gate.includes("jtPortraitIn(null)") && gate.includes("__jtCamUserOff") && gate.includes("请先打开摄像头"), "cam-gate fails the current request cleanly and hints when camera is off");
+  ok(gate.includes("function clearUserOff") && gate.includes("#btn-end-close") && gate.includes("#btn-session-done") && !gate.includes("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end"), "session-end clicks clear __jtCamUserOff; 换衣/expand do not");
+  ok(gate.includes("function cameraIsLive") && gate.includes("!cameraIsLive()"), "try-on intercept is skipped when the camera is actually live");
+  ok(gate.includes("function closeProductModal") && gate.includes("Turn the camera on first"), "blocked 试穿 closes the product modal and has an English hint");
+  ok(gate.includes("CamNoFrame") && gate.includes("no camera frames") && gate.includes("withTimeout") && gate.includes("PORTRAIT_MS"), "jtPortraitIn waits have a timeout and no-frame error");
+  ok(gate.includes("__jtLastCamError = null") && app.includes("restore-cam-user-off") && app.includes("hold-ms") && app.includes("cam-button-aria"), "last cam error is cleared and session-restore patches exist");
 
   const secretRe = /(sk-[A-Za-z0-9]{16,}|eyJ[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{12,}|api[_-]?key["']?\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}["']|Bearer\s+[A-Za-z0-9._-]{16,})/i;
   ok(!files.some((f) => f !== "check-preview-card.mjs" && secretRe.test(read(f))), "no key/token-looking strings in preview-card files");
@@ -165,6 +172,7 @@ export function createDecartClient(opts) {
       ? Number(window.__stubConnectDelays.shift())
       : (Number(window.__stubConnectDelay) || 0);
     if (delay) await new Promise((r) => setTimeout(r, delay));
+    if (window.__connectThrow) throw new Error(String(window.__connectThrow));
     const client = {
       id,
       set: async (a) => { window.__stub.calls.push({ prompt: a.prompt, enhance: a.enhance, image: a.image && a.image.name, imageType: a.image && a.image.type, id }); },
@@ -313,6 +321,20 @@ async function newPage(query = "", { stubs = true, testCam = "" } = {}) {
           : Object.assign(new Error("Could not start video source"), { name: throwName });
         throw err;
       }
+      const empty = window.__gumEmpty && (window.__gumEmpty[gumIdx] || window.__gumEmpty === true);
+      if (empty) {
+        const stream = new MediaStream();
+        window.__gumStreams.push(stream);
+        return stream;
+      }
+      const frameless = window.__gumFrameless && (window.__gumFrameless[gumIdx] || window.__gumFrameless === true);
+      if (frameless) {
+        const c = document.createElement("canvas");
+        c.width = 640; c.height = 480;
+        const stream = c.captureStream(0);
+        window.__gumStreams.push(stream);
+        return stream;
+      }
       let stream;
       if (window.__jtTestCam === "obs") {
         const v = (constraints && constraints.video) || {};
@@ -380,6 +402,7 @@ try {
     "connect-begin": 1, "onRemoteStream-gen": 1, "connect-assign-gen": 1,
     "start-local-camera-req": 1, "start-camera-gen-guard": 1, "timeout-error-text": 1, "connect-catch-invalidate": 1, "race-succeed": 1,
     "confirm-try-guard": 1, "toggle-camera-off": 1,
+    "restore-cam-user-off": 1, "hold-ms": 1, "cam-button-aria": 1,
   };
   for (const [name, count] of Object.entries(exactCounts)) {
     const entry = patchReport.find((p) => p.name === name);
@@ -618,7 +641,7 @@ try {
     return r && !r.classList.contains("hidden") && r.textContent.trim().length > 0;
   }, null, { timeout: 8000 });
   const reasonText = (await late.page.textContent("#tryon-reason")) || "";
-  ok(/连接超时/.test(reasonText) && !/额度不足/.test(reasonText), "timeout is reported as 连接超时, not 额度不足", reasonText);
+  ok(/连接超时|Connection timed out/.test(reasonText) && !/额度不足|Insufficient credits/.test(reasonText), "timeout is reported as 连接超时, not 额度不足", reasonText);
   await sleep(2800);
   const lateState = await late.page.evaluate(() => ({
     started: window.__stub && window.__stub.connectStarted || 0,
@@ -1013,7 +1036,7 @@ try {
   const v10s = await playSnap(v10.page);
   ok(v10s.live === 0, "V10: 0 live camera tracks after latest gum is rejected", JSON.stringify(v10s));
   ok(!v10s.vton && !v10s.settings && !v10s.drawing, "V10: settings and portrait were cleared", JSON.stringify(v10s));
-  ok(/摄像头被占用/.test(v10s.reason || "") && !/摄像头未允许/.test(v10s.reason || ""), "V10: shows 摄像头被占用, not 摄像头未允许", JSON.stringify(v10s));
+  ok(/摄像头被占用|Camera is in use/.test(v10s.reason || "") && !/摄像头未允许|Camera permission denied/.test(v10s.reason || ""), "V10: shows 摄像头被占用, not 摄像头未允许", JSON.stringify(v10s));
   ok(!v10s.liveFlag, "V10: did not stay in a live try-on", JSON.stringify(v10s));
   await v10.ctx.close();
 
@@ -1040,7 +1063,7 @@ try {
   await sleep(800);
   const hint1 = await playSnap(offHint.page);
   ok(hint1.gum === gumBefore, "camera-off 试穿 does not call getUserMedia", JSON.stringify({ gumBefore, ...hint1 }));
-  ok(/请先打开摄像头/.test(hint1.reason || hint1.hint || ""), "camera-off 试穿 shows 请先打开摄像头", JSON.stringify(hint1));
+  ok(/请先打开摄像头|Turn the camera on first/.test(hint1.reason || hint1.hint || ""), "camera-off 试穿 shows 请先打开摄像头", JSON.stringify(hint1));
   ok(hint1.live === 0 && !hint1.overlayHidden, "camera stays off after 试穿 hint", JSON.stringify(hint1));
   // Close the modal so it does not intercept the camera toggle, then exercise the collapsed-card path.
   await offHint.page.evaluate(() => document.getElementById("btn-modal-cancel")?.click());
@@ -1060,7 +1083,7 @@ try {
   await sleep(800);
   const hint2 = await playSnap(offHint.page);
   ok(hint2.gum === gumMid, "camera-off collapsed card does not call getUserMedia", JSON.stringify({ gumMid, ...hint2 }));
-  ok(/请先打开摄像头/.test(hint2.reason || hint2.hint || ""), "camera-off collapsed card shows 请先打开摄像头", JSON.stringify(hint2));
+  ok(/请先打开摄像头|Turn the camera on first/.test(hint2.reason || hint2.hint || ""), "camera-off collapsed card shows 请先打开摄像头", JSON.stringify(hint2));
   ok(hint2.live === 0, "camera-off collapsed card leaves 0 live tracks", JSON.stringify(hint2));
   await offHint.ctx.close();
 
@@ -1084,9 +1107,199 @@ try {
   ok(u0.usageHits.length === 0, "?usage=0 never posts UsageClient start/stop", JSON.stringify(u0.usageHits));
   await u0.ctx.close();
 
+  // ---- P1-6 / P2-C / P2-D / P2-E (rereview4 F3c / E4 / E1 / E1b)
+  section("P1-6: session end clears camera-off flag for the next visitor");
+  const camBtnState = (page) => page.evaluate(() => {
+    const b = document.getElementById("btn-cam-toggle");
+    const overlay = document.getElementById("camera-off-stage");
+    const ost = overlay && getComputedStyle(overlay);
+    return {
+      userOff: !!window.__jtCamUserOff,
+      isOff: !!(b && b.classList.contains("is-off")),
+      pressed: b ? b.getAttribute("aria-pressed") : null,
+      checked: b ? b.getAttribute("aria-checked") : null,
+      overlayHidden: !overlay || overlay.classList.contains("hidden") || (ost && ost.display === "none"),
+    };
+  });
+
+  const f3c = await newPage("?owner=0");
+  await tryOnCard(f3c.page, 0);
+  await f3c.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  await f3c.page.click("#btn-cam-toggle"); // off
+  await sleep(400);
+  const f3cOff = await camBtnState(f3c.page);
+  ok(f3cOff.userOff && f3cOff.isOff && f3cOff.pressed === "false" && !f3cOff.overlayHidden, "F3c: camera button looks off after the visitor turns it off", JSON.stringify(f3cOff));
+  await f3c.page.click("#btn-end");
+  await f3c.page.waitForFunction(() => !document.getElementById("end-overlay").classList.contains("hidden"), null, { timeout: 8000 });
+  await f3c.page.click("#btn-end-close"); // 完成
+  await sleep(1500);
+  const f3cIdle = { ...(await camBtnState(f3c.page)), ...(await liveGum(f3c.page)) };
+  ok(!f3cIdle.userOff, "F3c after 完成: __jtCamUserOff is cleared", JSON.stringify(f3cIdle));
+  ok(!f3cIdle.isOff && f3cIdle.pressed === "true" && f3cIdle.overlayHidden, "F3c after 完成: camera button matches camera-on", JSON.stringify(f3cIdle));
+  const f3cModal = await f3c.page.evaluate(() => {
+    const m = document.getElementById("product-modal");
+    return !!(m && !m.classList.contains("hidden"));
+  });
+  if (f3cModal) await f3c.page.evaluate(() => document.getElementById("product-modal")?.classList.add("hidden"));
+  await tryOnCard(f3c.page, 1);
+  await f3c.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  const f3cNext = { ...(await liveGum(f3c.page)), ...(await playSnap(f3c.page)), ...(await camBtnState(f3c.page)) };
+  ok(f3cNext.live === 1 && f3cNext.liveFlag, "F3c: next visitor 试穿 starts with 1 live track", JSON.stringify(f3cNext));
+  ok(!/请先打开摄像头|Turn the camera on first/.test(f3cNext.reason || f3cNext.hint || ""), "F3c: next visitor was not blocked by the camera-off hint", JSON.stringify(f3cNext));
+  await f3c.ctx.close();
+
+  const autoEnd = await newPage("?owner=0");
+  await autoEnd.page.evaluate(() => { window.__jtHoldMs = 400; });
+  await tryOnCard(autoEnd.page, 0);
+  await autoEnd.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  await autoEnd.page.click("#btn-cam-toggle"); // off
+  await sleep(400);
+  await autoEnd.page.click("#btn-end");
+  await autoEnd.page.waitForFunction(() => !document.getElementById("end-overlay").classList.contains("hidden"), null, { timeout: 8000 });
+  await sleep(1200); // hold elapsed; restoreLocalCamera should have run
+  const autoIdle = await camBtnState(autoEnd.page);
+  ok(!autoIdle.userOff, "auto-finish: __jtCamUserOff is cleared without clicking 完成", JSON.stringify(autoIdle));
+  ok(!autoIdle.isOff && autoIdle.pressed === "true", "auto-finish: camera button matches camera-on", JSON.stringify(autoIdle));
+  await autoEnd.page.evaluate(() => document.getElementById("end-overlay")?.classList.add("hidden"));
+  await tryOnCard(autoEnd.page, 1);
+  await autoEnd.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  const autoNext = { ...(await liveGum(autoEnd.page)), ...(await playSnap(autoEnd.page)) };
+  ok(autoNext.live === 1 && autoNext.liveFlag, "auto-finish: next visitor 试穿 starts with 1 live track", JSON.stringify(autoNext));
+  await autoEnd.ctx.close();
+
+  section("P2-C: leftover __jtLastCamError does not mislabel later connect failures (E4)");
+  const e4 = await newPage("?owner=0");
+  await e4.page.evaluate(() => { window.__gumThrows = { 0: "NotReadableError" }; });
+  await tryOnCard(e4.page, 0);
+  await sleep(1200);
+  const e4busy = await playSnap(e4.page);
+  ok(/摄像头被占用|Camera is in use/.test(e4busy.reason || ""), "E4: first failure is 摄像头被占用", JSON.stringify(e4busy));
+  await e4.page.evaluate(() => {
+    window.__gumThrows = {};
+    window.__connectThrow = "boom 500";
+    window.__stubConnectDelay = 200;
+  });
+  await tryOnCard(e4.page, 1);
+  await sleep(1500);
+  const e4fail = await playSnap(e4.page);
+  ok(/连接失败|Connection failed/.test(e4fail.reason || "") && !/摄像头被占用|Camera is in use/.test(e4fail.reason || ""), "E4: later connect failure is not 摄像头被占用", JSON.stringify(e4fail));
+  await e4.page.evaluate(() => {
+    window.__connectThrow = "";
+    window.__jtConnectTimeoutMs = 600;
+    window.__stubConnectDelay = 2500;
+  });
+  const e4col = await e4.page.evaluate(() => document.getElementById("left-panel").classList.contains("collapsed"));
+  if (e4col) {
+    await e4.page.click("#btn-expand-strip");
+    await e4.page.waitForFunction(() => !document.getElementById("left-panel").classList.contains("collapsed"), null, { timeout: 8000 });
+  }
+  await tryOnCard(e4.page, 0);
+  await e4.page.waitForFunction(() => {
+    const r = document.getElementById("tryon-reason");
+    const t = (r && r.textContent) || "";
+    return r && !r.classList.contains("hidden") && /超时|timed out/i.test(t);
+  }, null, { timeout: 8000 });
+  const e4to = await playSnap(e4.page);
+  ok(/连接超时|Connection timed out/.test(e4to.reason || "") && !/摄像头被占用|Camera is in use/.test(e4to.reason || ""), "E4: later timeout is 连接超时, not 摄像头被占用", JSON.stringify(e4to));
+  await e4.ctx.close();
+
+  section("P2-D: empty or frameless camera times out instead of hanging in Connecting (E1 / E1b)");
+  const e1 = await newPage("?owner=0");
+  await e1.page.evaluate(() => { window.__gumEmpty = { 0: 1 }; });
+  await tryOnCard(e1.page, 0);
+  await sleep(1500);
+  const e1s = await playSnap(e1.page);
+  const e1conn = await e1.page.evaluate(() => ({ connecting: !!(window.__jtConn && window.__jtConn.connecting), body: document.body.classList.contains("is-connecting") }));
+  ok(/摄像头无画面|No camera picture/.test(e1s.reason || ""), "E1: empty stream shows 摄像头无画面", JSON.stringify({ ...e1s, ...e1conn }));
+  ok(!e1conn.connecting && !e1conn.body && !e1s.liveFlag, "E1: is not stuck in Connecting", JSON.stringify(e1conn));
+  ok(e1s.live === 0, "E1: 0 live tracks", JSON.stringify(e1s));
+  await e1.ctx.close();
+
+  const e1b = await newPage("?owner=0");
+  await e1b.page.evaluate(() => {
+    window.__gumFrameless = { 0: 1 };
+    window.__playDelays = [20000];
+    window.__playMode = "hang";
+    window.__jtPortraitTimeoutMs = 1200;
+  });
+  await tryOnCard(e1b.page, 0);
+  await sleep(2500);
+  const e1bs = await playSnap(e1b.page);
+  const e1bconn = await e1b.page.evaluate(() => ({ connecting: !!(window.__jtConn && window.__jtConn.connecting), body: document.body.classList.contains("is-connecting") }));
+  ok(/摄像头无画面|No camera picture/.test(e1bs.reason || ""), "E1b: frameless track shows 摄像头无画面", JSON.stringify({ ...e1bs, ...e1bconn }));
+  ok(!e1bconn.connecting && !e1bconn.body && !e1bs.liveFlag, "E1b: is not stuck in Connecting", JSON.stringify(e1bconn));
+  ok(e1bs.live === 0 && !e1bs.vton && !e1bs.drawing, "E1b: preview was reset after the portrait timeout", JSON.stringify(e1bs));
+  await e1b.ctx.close();
+
+  const staleTo = await newPage("?owner=0");
+  await staleTo.page.evaluate(() => { window.__jtPortraitTimeoutMs = 2000; window.__playDelays = [8000]; window.__playMode = "hang"; window.__playLog = []; });
+  await openCamera(staleTo.page);
+  await staleTo.page.waitForFunction(() => window.__playLog && window.__playLog.length >= 1, null, { timeout: 8000 });
+  const staleOff = await staleTo.page.evaluate(() => {
+    const e = document.getElementById("camera-off-stage");
+    return e && !e.classList.contains("hidden");
+  });
+  if (!staleOff) await staleTo.page.click("#btn-cam-toggle");
+  await sleep(80);
+  await staleTo.page.evaluate(() => { window.__playDelays = []; window.__playMode = "real"; });
+  await staleTo.page.click("#btn-cam-toggle"); // gum2 succeeds
+  await sleep(800);
+  const staleMid = { ...(await liveGum(staleTo.page)), ...(await previewState(staleTo.page)) };
+  ok(staleMid.live >= 1 && staleMid.vton && staleMid.mean > 20 && staleMid.overlayHidden, "stale-timeout mid: latest preview is live", JSON.stringify(staleMid));
+  await sleep(2500); // gum1 portrait timeout should be stale
+  const lateTo = { ...(await liveGum(staleTo.page)), ...(await previewState(staleTo.page)) };
+  ok(lateTo.live === 1, "stale-timeout: still exactly 1 live track after the late timeout", JSON.stringify(lateTo));
+  ok(lateTo.vton && lateTo.reason !== "no-video" && lateTo.mean > 20 && lateTo.overlayHidden, "stale-timeout: late portrait timeout did not wipe the newer preview", JSON.stringify(lateTo));
+  await staleTo.ctx.close();
+
+  section("P2-E: blocked 试穿 closes the modal; English UI shows the English hint");
+  const p2e = await newPage("?owner=0");
+  await openCamera(p2e.page);
+  await p2e.page.waitForFunction(() => !!window.__jtRawStream, null, { timeout: 8000 });
+  const p2eOff = await p2e.page.evaluate(() => {
+    const e = document.getElementById("camera-off-stage");
+    return e && !e.classList.contains("hidden");
+  });
+  if (!p2eOff) await p2e.page.click("#btn-cam-toggle");
+  await sleep(200);
+  // Default cabin layout language is English; keep it and assert the English copy.
+  const lang = await p2e.page.evaluate(() => localStorage.getItem("jt_lang") || "zh");
+  if (lang !== "en") {
+    await p2e.page.click("#btn-lang");
+    await sleep(200);
+  }
+  const cardsE = await p2e.page.$$("#explore-list .explore-card:not(.placeholder)");
+  await cardsE[0].click();
+  await p2e.page.waitForFunction(() => {
+    const m = document.getElementById("product-modal");
+    return m && !m.classList.contains("hidden");
+  }, null, { timeout: 5000 });
+  await p2e.page.click("#btn-modal-try");
+  await sleep(500);
+  const p2eUi = await p2e.page.evaluate(() => {
+    const modal = document.getElementById("product-modal");
+    const reason = document.getElementById("tryon-reason");
+    const rr = reason ? reason.getBoundingClientRect() : null;
+    const top = rr ? document.elementFromPoint(rr.left + rr.width / 2, rr.top + Math.min(8, rr.height / 2)) : null;
+    const langNow = localStorage.getItem("jt_lang") || "zh";
+    return {
+      modalHidden: !modal || modal.classList.contains("hidden"),
+      reasonText: reason && !reason.classList.contains("hidden") ? reason.textContent : "",
+      reasonVisible: !!(reason && !reason.classList.contains("hidden") && rr && rr.width > 0 && rr.height > 0),
+      topId: top && (top.id || (top.closest && (top.closest("#tryon-reason") || {}).id) || top.tagName),
+      topIsModal: !!(top && top.closest && top.closest("#product-modal")),
+      lang: langNow,
+      hint: window.__jtCamOffHint || "",
+    };
+  });
+  ok(p2eUi.modalHidden, "P2-E: product modal closes after blocked 试穿", JSON.stringify(p2eUi));
+  ok(p2eUi.reasonVisible && !p2eUi.topIsModal, "P2-E: hint is visible and not under the modal", JSON.stringify(p2eUi));
+  ok(/Turn the camera on first/.test(p2eUi.reasonText || p2eUi.hint || "") && p2eUi.lang === "en", "P2-E: English UI shows the English camera-off hint", JSON.stringify(p2eUi));
+  await p2e.ctx.close();
+
   // ---- console cleanliness (main page + flow page)
   section("console");
-  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors, ...staleExpand.errors, ...staleCam.errors, ...gumOff.errors, ...b2.errors, ...b3.errors, ...b6.errors, ...re.errors, ...v7.errors, ...v9.errors, ...v10.errors, ...offHint.errors, ...u0.errors];
+  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors, ...staleExpand.errors, ...staleCam.errors, ...gumOff.errors, ...b2.errors, ...b3.errors, ...b6.errors, ...re.errors, ...v7.errors, ...v9.errors, ...v10.errors, ...offHint.errors, ...u0.errors, ...f3c.errors, ...autoEnd.errors, ...e4.errors, ...e1.errors, ...e1b.errors, ...staleTo.errors, ...p2e.errors];
   const unexpected = allErrors.filter((e) => !/live\.medhug\.ai|esm\.sh|Failed to load resource.*(net::ERR|404)/.test(e));
   ok(unexpected.length === 0, "zero console errors / pageerrors (expected mocked-network noise filtered)", unexpected.slice(0, 5).join(" | "));
   if (allErrors.length) console.log(`  (filtered ${allErrors.length - unexpected.length} expected network errors)`);

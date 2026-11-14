@@ -5,8 +5,17 @@ const SITE = new URL("../", location.href).href; // parent of /preview-card/, e.
 const APP_SRC = "https://cdn.jsdelivr.net/gh/jtsgai/medhug-cabin@424f015159b7b2cca6cacb471eaf6aae439bc1ab/app.js";
 
 function reasonFromError(err) {
-  // Chinese strings stay canonical (toasts / #tryon-reason / tests). English aliases are kept for i18n consistency.
-  const texts = {
+  const en = (() => { try { return (localStorage.getItem("jt_lang") || "zh") === "en"; } catch (_) { return false; } })();
+  const texts = en ? {
+    noFrame: "No camera picture",
+    busy: "Camera is in use",
+    denied: "Camera permission denied",
+    timeout: "Connection timed out",
+    credit: "Insufficient credits",
+    unavailable: "Service temporarily unavailable",
+    fail: "Connection failed",
+  } : {
+    noFrame: "摄像头无画面",
     busy: "摄像头被占用",
     denied: "摄像头未允许",
     timeout: "连接超时",
@@ -14,23 +23,19 @@ function reasonFromError(err) {
     unavailable: "服务暂时不可用",
     fail: "连接失败",
   };
-  const textsEn = {
-    busy: "Camera is in use",
-    denied: "Camera permission denied",
-    timeout: "Connection timed out",
-    credit: "Insufficient credits",
-    unavailable: "Service temporarily unavailable",
-    fail: "Connection failed",
-  };
-  void textsEn;
   const parts = [];
   const add = (e) => {
     if (!e) return;
     parts.push(String(e.name || ""), String(e.message || e || ""));
   };
   add(err);
-  add(window.__jtLastCamError);
+  // Only consult a leftover cam error when the thrown value is missing or generic (P2-C).
+  const cur = String(err && (err.name || err.message || err) || "").trim();
+  const weak = !cur || /^no camera stream$/i.test(cur);
+  if (weak) add(window.__jtLastCamError);
   const blob = parts.join(" ").toLowerCase();
+  // No-frame / portrait timeout must be classified before generic "timeout".
+  if (blob.includes("camnoframe") || blob.includes("no camera frames") || blob.includes("无画面") || blob.includes("no camera picture")) return texts.noFrame;
   // Busy / in-use before permission: "no camera stream" used to be misread as 摄像头未允许 (P2-B).
   if (blob.includes("notreadable") || blob.includes("in use") || blob.includes("trackstart")
     || blob.includes("could not start") || blob.includes("device busy") || blob.includes("occupied")
@@ -166,7 +171,7 @@ code = patch(code, "start-local-camera-req",
   'async function startLocalCamera(){const __req=(window.__jtCamStart=(window.__jtCamStart||0)+1);if(localStream){const t=localStream.getVideoTracks?.()||[];if(localStream.active&&t.some(t=>"live"===t.readyState))return showLocalPreview(),localStream;try{localStream.getTracks().forEach(t=>t.stop())}catch(t){}localStream=null}try{const __s=await navigator.mediaDevices.getUserMedia({audio:!1,video:{facingMode:"user",width:{ideal:720},height:{ideal:1280},frameRate:{ideal:30}}});if(__req!==window.__jtCamStart){if(__s&&__s!==localStream){try{__s.getTracks().forEach(t=>t.stop())}catch(_){}}return localStream}return localStream=__s,showLocalPreview(),setStatusKey("status_camera"),localStream}catch(t){return console.warn("[JT] camera",t),__req!==window.__jtCamStart?localStream:(localStream=null,null)}}');
 code = patch(code, "start-camera-gen-guard",
   "try{localStream||await startLocalCamera()}catch(t){}if(enterTryOnUiPreview(t),",
-  "try{localStream||await startLocalCamera()}catch(t){window.__jtLastCamError=t}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled){if(window.__jtConn.isCurrent(__gen)){try{localStream&&localStream.getTracks().forEach(t=>t.stop())}catch(_){}localStream=null;window.jtPortraitIn?.(null);window.__jtConn.invalidate()}return}if(!localStream){window.__jtTryonReason?.(window.__jtTryonReasonFrom?.(window.__jtLastCamError)||\"连接失败\");window.__jtConn.invalidate();setStatusKey(\"status_camera\");return}if(enterTryOnUiPreview(t),");
+  "try{localStream||await startLocalCamera()}catch(t){if(t&&t.name!==\"AbortError\")window.__jtLastCamError=t}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled){if(window.__jtConn.isCurrent(__gen)){try{localStream&&localStream.getTracks().forEach(t=>t.stop())}catch(_){}localStream=null;window.jtPortraitIn?.(null);window.__jtConn.invalidate()}return}if(!localStream){window.__jtTryonReason?.(window.__jtTryonReasonFrom?.(window.__jtLastCamError)||\"连接失败\");window.__jtConn.invalidate();setStatusKey(\"status_camera\");return}if(enterTryOnUiPreview(t),");
 code = patch(code, "timeout-error-text",
   'n=setTimeout(()=>e(new Error("API timeout credit or network")),3e4)',
   'n=setTimeout(()=>e(new Error("API timeout or network")),window.__jtConnectTimeoutMs||3e4)');
@@ -185,5 +190,14 @@ code = patch(code, "toggle-camera-off",
   "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}setCameraOffStage(!0)}else",
   "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtCamGate?.markOff(!0),window.__jtConn.invalidate(),setStatusKey(\"status_camera\"),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
 
+code = patch(code, "restore-cam-user-off",
+  "async function restoreLocalCamera(){try{const e=$(\"#video-output\");e&&(e.srcObject=null);",
+  "async function restoreLocalCamera(){try{window.__jtCamUserOff=!1;window.jtCamOn?.();const e=$(\"#video-output\");e&&(e.srcObject=null);");
+code = patch(code, "hold-ms",
+  "function holdMs(){return 1e3*(layout.end_hold_seconds||18)}",
+  "function holdMs(){return Number.isFinite(window.__jtHoldMs)?window.__jtHoldMs:1e3*(layout.end_hold_seconds||18)}");
+code = patch(code, "cam-button-aria",
+  '$("#btn-cam-toggle")?.classList.toggle("is-off",t)}',
+  '$("#btn-cam-toggle")?.classList.toggle("is-off",t),$("#btn-cam-toggle")?.setAttribute("aria-pressed",t?"false":"true"),$("#btn-cam-toggle")?.setAttribute("aria-checked",t?"false":"true")}');
 window.__jtPreviewPatchReport = report;
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
