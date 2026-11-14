@@ -117,7 +117,14 @@ for (const f of files.filter((f) => /\.(js|mjs)$/.test(f))) {
   ok(vin.includes("const g = ++inputGen") && vin.includes("if (g !== inputGen || srcVideo.srcObject !== stream) return null"), "fromStream checks inputGen after play() and skips stale completion");
   ok(vin.includes("const g = ++inputGen") && vin.indexOf("const g = ++inputGen") < vin.indexOf("if (!stream)"), "inputGen increments on every fromStream call including null");
   ok(gate.includes("function failCurrent") && gate.includes("jtPortraitIn(null)") && gate.includes("__jtCamUserOff") && gate.includes("请先打开摄像头"), "cam-gate fails the current request cleanly and hints when camera is off");
-  ok(gate.includes("function clearUserOff") && gate.includes("#btn-end-close") && gate.includes("#btn-session-done") && !gate.includes("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end"), "session-end clicks clear __jtCamUserOff; 换衣/expand do not");
+  ok(gate.includes("function onSessionEnd") && gate.includes("#btn-end-close") && !gate.includes("#btn-end, #btn-end-close, #btn-session-done, #btn-end-link"), "session-end policy is only on 完成, not the combined End selector");
+  ok(gate.includes('const CAM_AFTER_SESSION = "on"') && gate.includes("function camAfterSession") && gate.includes("camAfterSession"), "CAM_AFTER_SESSION default is on and is readable at runtime");
+  ok(gate.includes("function resolvePortraitTimeout") && gate.includes('get("camTimeoutMs")') && gate.includes("6000") && gate.includes("2000") && gate.includes("15000"), "portrait timeout default is 6000ms; camTimeoutMs is clamped to 2000–15000");
+  const restorePatch = app.slice(app.indexOf("restore-cam-user-off"), app.indexOf("hold-session-end"));
+  ok(restorePatch.includes("__jtCamUserOff") && restorePatch.includes("setCameraOffStage(!0)") && restorePatch.includes("return") && !restorePatch.includes("jtCamOn"), "restoreLocalCamera stays off when __jtCamUserOff is set (no jtCamOn)");
+  ok(app.includes("hold-session-end") && app.includes("onSessionEnd") && app.includes("cam-force-off") && app.includes("__jtForceCamOff"), "hold auto-finish calls onSessionEnd; failCurrent can force the core button off");
+  const markOffBody = gate.slice(gate.indexOf("function markOff"), gate.indexOf("function clearUserOff"));
+  ok(markOffBody.includes("getTracks") && markOffBody.includes("__jtRawStream"), "markOff immediately stops the current request stream");
   ok(gate.includes("function cameraIsLive") && gate.includes("!cameraIsLive()"), "try-on intercept is skipped when the camera is actually live");
   ok(gate.includes("function closeProductModal") && gate.includes("Turn the camera on first"), "blocked 试穿 closes the product modal and has an English hint");
   ok(gate.includes("CamNoFrame") && gate.includes("no camera frames") && gate.includes("withTimeout") && gate.includes("PORTRAIT_MS"), "jtPortraitIn waits have a timeout and no-frame error");
@@ -402,7 +409,7 @@ try {
     "connect-begin": 1, "onRemoteStream-gen": 1, "connect-assign-gen": 1,
     "start-local-camera-req": 1, "start-camera-gen-guard": 1, "timeout-error-text": 1, "connect-catch-invalidate": 1, "race-succeed": 1,
     "confirm-try-guard": 1, "toggle-camera-off": 1,
-    "restore-cam-user-off": 1, "hold-ms": 1, "cam-button-aria": 1,
+    "restore-cam-user-off": 1, "hold-session-end": 1, "cam-force-off": 1, "hold-ms": 1, "cam-button-aria": 1,
   };
   for (const [name, count] of Object.entries(exactCounts)) {
     const entry = patchReport.find((p) => p.name === name);
@@ -1297,9 +1304,156 @@ try {
   ok(/Turn the camera on first/.test(p2eUi.reasonText || p2eUi.hint || "") && p2eUi.lang === "en", "P2-E: English UI shows the English camera-off hint", JSON.stringify(p2eUi));
   await p2e.ctx.close();
 
+
+  section("P1-7: expand / 换衣 keep the camera off; CAM_AFTER_SESSION on|keep (G5 / G7 / G2)");
+  const p17 = await newPage("?owner=0");
+  await tryOnCard(p17.page, 0);
+  await p17.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  await p17.page.click("#btn-cam-toggle"); // off
+  await sleep(400);
+  const p17Off = { ...(await camBtnState(p17.page)), ...(await liveGum(p17.page)) };
+  ok(p17Off.userOff && p17Off.live === 0, "P1-7: camera is off before expand", JSON.stringify(p17Off));
+  const p17Collapsed = await p17.page.evaluate(() => document.getElementById("left-panel").classList.contains("collapsed"));
+  if (p17Collapsed) {
+    await p17.page.click("#btn-expand-strip");
+    await p17.page.waitForFunction(() => !document.getElementById("left-panel").classList.contains("collapsed"), null, { timeout: 8000 });
+  }
+  await sleep(800);
+  const p17Exp = { ...(await camBtnState(p17.page)), ...(await liveGum(p17.page)), policy: await p17.page.evaluate(() => window.__jtCamGate && window.__jtCamGate.camAfterSession()) };
+  ok(p17Exp.live === 0 && p17Exp.userOff, "P1-7 G5: off → 全部款式 keeps live=0 and __jtCamUserOff", JSON.stringify(p17Exp));
+  ok(p17Exp.isOff && p17Exp.pressed === "false", "P1-7 G5: camera button stays off after expand", JSON.stringify(p17Exp));
+  ok(p17Exp.policy === "on", "P1-7: default CAM_AFTER_SESSION is on", JSON.stringify(p17Exp));
+  // 试穿 should still be blocked
+  const p17Hint = await p17.page.evaluate(async () => {
+    const cards = [...document.querySelectorAll("#explore-list .explore-card:not(.placeholder)")];
+    if (cards[1]) cards[1].click();
+    await new Promise((r) => setTimeout(r, 200));
+    const tryBtn = document.getElementById("btn-modal-try");
+    if (tryBtn) tryBtn.click();
+    await new Promise((r) => setTimeout(r, 300));
+    const reason = document.getElementById("tryon-reason");
+    return {
+      text: (reason && !reason.classList.contains("hidden") && reason.textContent) || window.__jtCamOffHint || "",
+      liveFlag: !!window.__jtTryonLive,
+    };
+  });
+  ok(/请先打开摄像头|Turn the camera on first/.test(p17Hint.text || "") && !p17Hint.liveFlag, "P1-7 G5: 试穿 after expand is still blocked", JSON.stringify(p17Hint));
+  await p17.ctx.close();
+
+  const p17ch = await newPage("?owner=0");
+  await tryOnCard(p17ch.page, 0);
+  await p17ch.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  await p17ch.page.click("#btn-cam-toggle"); // off
+  await sleep(400);
+  await p17ch.page.evaluate(() => document.getElementById("btn-change")?.click());
+  await sleep(800);
+  const p17Change = { ...(await camBtnState(p17ch.page)), ...(await liveGum(p17ch.page)) };
+  ok(p17Change.live === 0 && p17Change.userOff, "P1-7: off → 换衣 keeps live=0 and the flag", JSON.stringify(p17Change));
+  await p17ch.ctx.close();
+
+  // 'keep': after session end camera stays off; next visitor turns it on, then 试穿 works.
+  const keep = await newPage("?owner=0&camAfterSession=keep");
+  const keepPolicy = await keep.page.evaluate(() => window.__jtCamGate && window.__jtCamGate.camAfterSession());
+  ok(keepPolicy === "keep", "P1-7 keep: URL ?camAfterSession=keep is applied", String(keepPolicy));
+  await tryOnCard(keep.page, 0);
+  await keep.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  await keep.page.click("#btn-cam-toggle"); // off
+  await sleep(400);
+  await keep.page.click("#btn-end");
+  await keep.page.waitForFunction(() => !document.getElementById("end-overlay").classList.contains("hidden"), null, { timeout: 8000 });
+  await keep.page.click("#btn-end-close");
+  await sleep(1500);
+  const keepIdle = { ...(await camBtnState(keep.page)), ...(await liveGum(keep.page)) };
+  ok(keepIdle.userOff && keepIdle.live === 0, "P1-7 keep: after 完成 camera stays off", JSON.stringify(keepIdle));
+  ok(keepIdle.isOff && keepIdle.pressed === "false", "P1-7 keep: button matches camera-off after session end", JSON.stringify(keepIdle));
+  const keepBlocked = await keep.page.evaluate(async () => {
+    const cards = [...document.querySelectorAll("#explore-list .explore-card:not(.placeholder)")];
+    if (cards[1]) cards[1].click();
+    await new Promise((r) => setTimeout(r, 200));
+    document.getElementById("btn-modal-try")?.click();
+    await new Promise((r) => setTimeout(r, 300));
+    const reason = document.getElementById("tryon-reason");
+    return (reason && !reason.classList.contains("hidden") && reason.textContent) || window.__jtCamOffHint || "";
+  });
+  ok(/请先打开摄像头|Turn the camera on first/.test(keepBlocked || ""), "P1-7 keep: next 试穿 is blocked until the camera is turned on", keepBlocked);
+  await keep.page.click("#btn-cam-toggle"); // on
+  await keep.page.waitForFunction(() => window.__jtRawStream && window.__jtRawStream.getTracks().some((t) => t.readyState === "live"), null, { timeout: 8000 });
+  const keepOn = { ...(await camBtnState(keep.page)), ...(await liveGum(keep.page)) };
+  ok(!keepOn.userOff && keepOn.live === 1 && keepOn.pressed === "true", "P1-7 keep: one press turns the camera on", JSON.stringify(keepOn));
+  await tryOnCard(keep.page, 1);
+  await keep.page.waitForFunction(() => window.__jtTryonLive === true, null, { timeout: 15000 });
+  const keepNext = { ...(await liveGum(keep.page)), ...(await camBtnState(keep.page)) };
+  ok(keepNext.live === 1 && keepNext.pressed === "true", "P1-7 keep: 试穿 after turning the camera on has 1 live track", JSON.stringify(keepNext));
+  await keep.ctx.close();
+
+  section("P2-G: failed camera request shows the button off; one press reopens");
+  const p2g = await newPage("?owner=0");
+  await p2g.page.evaluate(() => { window.__gumThrows = { 0: "NotReadableError" }; });
+  await tryOnCard(p2g.page, 0);
+  await sleep(1200);
+  const p2gFail = { ...(await camBtnState(p2g.page)), ...(await liveGum(p2g.page)), ...(await playSnap(p2g.page)) };
+  ok(/摄像头被占用|Camera is in use/.test(p2gFail.reason || ""), "P2-G: failure reason is 摄像头被占用", JSON.stringify(p2gFail));
+  ok(p2gFail.live === 0 && p2gFail.isOff && p2gFail.pressed === "false", "P2-G: after failure the button shows off", JSON.stringify(p2gFail));
+  await p2g.page.evaluate(() => { window.__gumThrows = {}; });
+  await p2g.page.click("#btn-cam-toggle"); // one press should reopen
+  await p2g.page.waitForFunction(() => window.__jtRawStream && window.__jtRawStream.getTracks().some((t) => t.readyState === "live"), null, { timeout: 8000 });
+  const p2gOn = { ...(await camBtnState(p2g.page)), ...(await liveGum(p2g.page)) };
+  ok(p2gOn.live === 1 && !p2gOn.isOff && p2gOn.pressed === "true", "P2-G: one press after failure reopens the camera", JSON.stringify(p2gOn));
+  await p2g.ctx.close();
+
+  section("P2-H: camera off during a pending portrait stops the stream immediately");
+  const p2h = await newPage("?owner=0");
+  await p2h.page.evaluate(() => {
+    window.__playDelays = [20000];
+    window.__playMode = "hang";
+    window.__playLog = [];
+    window.__jtPortraitTimeoutMs = 8000;
+  });
+  await openCamera(p2h.page);
+  await p2h.page.waitForFunction(() => window.__playLog && window.__playLog.length >= 1, null, { timeout: 8000 });
+  const p2hMid = await liveGum(p2h.page);
+  ok(p2hMid.live >= 1, "P2-H: stream is live while portrait is pending", JSON.stringify(p2hMid));
+  const p2hOffStage = await p2h.page.evaluate(() => {
+    const e = document.getElementById("camera-off-stage");
+    return e && !e.classList.contains("hidden");
+  });
+  if (p2hOffStage) throw new Error("P2-H: overlay already shown before off click");
+  await p2h.page.click("#btn-cam-toggle"); // off
+  await sleep(80);
+  const p2hOff = { ...(await liveGum(p2h.page)), ...(await camBtnState(p2h.page)) };
+  ok(p2hOff.live === 0, "P2-H: live tracks are 0 immediately after off (not after the portrait timeout)", JSON.stringify(p2hOff));
+  ok(p2hOff.isOff && p2hOff.pressed === "false", "P2-H: button shows off immediately", JSON.stringify(p2hOff));
+  await p2h.ctx.close();
+
+  section("P2-F: portrait timeout default 6000ms; camTimeoutMs override and clamps");
+  const p2f = await newPage("?owner=0");
+  const p2fVals = await p2f.page.evaluate(() => {
+    const r = window.__jtCamGate.resolvePortraitTimeout;
+    return {
+      defaultMs: r("", undefined),
+      override: r("?camTimeoutMs=8000", undefined),
+      clampLow: r("?camTimeoutMs=500", undefined),
+      clampHigh: r("?camTimeoutMs=20000", undefined),
+      invalid: r("?camTimeoutMs=abc", undefined),
+      empty: r("?camTimeoutMs=", undefined),
+      hook: r("?camTimeoutMs=8000", 1200),
+    };
+  });
+  ok(p2fVals.defaultMs === 6000, "P2-F: default portrait timeout is 6000ms", JSON.stringify(p2fVals));
+  ok(p2fVals.override === 8000, "P2-F: camTimeoutMs=8000 is honored", JSON.stringify(p2fVals));
+  ok(p2fVals.clampLow === 2000, "P2-F: camTimeoutMs=500 clamps to 2000", JSON.stringify(p2fVals));
+  ok(p2fVals.clampHigh === 15000, "P2-F: camTimeoutMs=20000 clamps to 15000", JSON.stringify(p2fVals));
+  ok(p2fVals.invalid === 6000 && p2fVals.empty === 6000, "P2-F: invalid or empty camTimeoutMs uses the default", JSON.stringify(p2fVals));
+  ok(p2fVals.hook === 1200, "P2-F: __jtPortraitTimeoutMs test hook still wins", JSON.stringify(p2fVals));
+  await p2f.ctx.close();
+  const p2fUrl = await newPage("?owner=0&camTimeoutMs=8000");
+  const p2fUrlMs = await p2fUrl.page.evaluate(() => window.__jtCamGate.resolvePortraitTimeout(location.search, window.__jtPortraitTimeoutMs));
+  ok(p2fUrlMs === 8000, "P2-F: loading with ?camTimeoutMs=8000 resolves to 8000", String(p2fUrlMs));
+  await p2fUrl.ctx.close();
+
   // ---- console cleanliness (main page + flow page)
   section("console");
-  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors, ...staleExpand.errors, ...staleCam.errors, ...gumOff.errors, ...b2.errors, ...b3.errors, ...b6.errors, ...re.errors, ...v7.errors, ...v9.errors, ...v10.errors, ...offHint.errors, ...u0.errors, ...f3c.errors, ...autoEnd.errors, ...e4.errors, ...e1.errors, ...e1b.errors, ...staleTo.errors, ...p2e.errors];
+  const allErrors = [...errors, ...flow.errors, ...obsFlow.errors, ...late.errors, ...camPage.errors, ...staleExpand.errors, ...staleCam.errors, ...gumOff.errors, ...b2.errors, ...b3.errors, ...b6.errors, ...re.errors, ...v7.errors, ...v9.errors, ...v10.errors, ...offHint.errors, ...u0.errors, ...f3c.errors, ...autoEnd.errors, ...e4.errors, ...e1.errors, ...e1b.errors, ...staleTo.errors, ...p2e.errors, ...p17.errors, ...p17ch.errors, ...keep.errors, ...p2g.errors, ...p2h.errors, ...p2f.errors, ...p2fUrl.errors];
   const unexpected = allErrors.filter((e) => !/live\.medhug\.ai|esm\.sh|Failed to load resource.*(net::ERR|404)/.test(e));
   ok(unexpected.length === 0, "zero console errors / pageerrors (expected mocked-network noise filtered)", unexpected.slice(0, 5).join(" | "));
   if (allErrors.length) console.log(`  (filtered ${allErrors.length - unexpected.length} expected network errors)`);

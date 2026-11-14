@@ -1,5 +1,10 @@
 // Preview-card copy of the root cam-gate.js (root file is untouched).
 // - Gates the camera until a try-on / camera-toggle click (same idea as the live page).
+//
+// CAM_AFTER_SESSION (one-line change, optionally overridden by ?camAfterSession=on|keep):
+//   "on"   = after 完成 or hold auto-finish, idle camera turns back on (default; 288dce7 / P1-6).
+//   "keep" = after session end, camera stays off; the next visitor turns it on, then 试穿.
+// Portrait handshake timeout defaults to 6000ms; ?camTimeoutMs= overrides, clamped to [2000, 15000].
 // - Picks OBS virtual camera by label, else scores Logitech/C922-style devices.
 // - OBS devices request 1920x1080 with resizeMode "none" and NO 9:16 aspectRatio, so Chrome
 //   does not pre-crop the landscape canvas before the ROI math runs.
@@ -15,10 +20,36 @@
   let camReq = 0;
   let currentReq = 0;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-  const PORTRAIT_MS = () => {
-    const n = Number(window.__jtPortraitTimeoutMs);
-    return Number.isFinite(n) && n > 0 ? n : 4000;
-  };
+  // Idle camera after 完成 / hold auto-finish. Flip this one line to change the default.
+  const CAM_AFTER_SESSION = "on";
+  const PORTRAIT_TIMEOUT_DEFAULT = 6000;
+  const PORTRAIT_TIMEOUT_MIN = 2000;
+  const PORTRAIT_TIMEOUT_MAX = 15000;
+
+  function camAfterSession() {
+    try {
+      const q = new URLSearchParams(location.search).get("camAfterSession");
+      if (q === "on" || q === "keep") return q;
+    } catch (_) {}
+    const w = window.__jtCamAfterSession;
+    if (w === "on" || w === "keep") return w;
+    return CAM_AFTER_SESSION;
+  }
+
+  function resolvePortraitTimeout(search, hook) {
+    const hookN = Number(hook);
+    if (Number.isFinite(hookN) && hookN > 0) return hookN;
+    try {
+      const q = new URLSearchParams(search == null ? location.search : search).get("camTimeoutMs");
+      if (q != null && q !== "") {
+        const n = Number(q);
+        if (Number.isFinite(n)) return Math.min(PORTRAIT_TIMEOUT_MAX, Math.max(PORTRAIT_TIMEOUT_MIN, n));
+      }
+    } catch (_) {}
+    return PORTRAIT_TIMEOUT_DEFAULT;
+  }
+
+  const PORTRAIT_MS = () => resolvePortraitTimeout(location.search, window.__jtPortraitTimeoutMs);
 
   function markOff(userOff) {
     camEpoch += 1;
@@ -27,6 +58,13 @@
     // Only the camera-toggle path is "user turned the camera off".
     // 换衣 / expand also call off() → markOff(), and must keep the flag.
     if (userOff) window.__jtCamUserOff = true;
+    // P2-H: stop this request's stream immediately (toggleCamera off only called
+    // markOff, not off()). P1-5: only the stream now in __jtRawStream.
+    const s = window.__jtRawStream;
+    if (s) {
+      try { s.getTracks().forEach((t) => t.stop()); } catch (_) {}
+      window.__jtRawStream = null;
+    }
   }
 
   function clearUserOff() {
@@ -69,6 +107,8 @@
     }
     if (typeof window.jtPortraitIn === "function") window.jtPortraitIn(null);
     window.__jtTryonReason?.(camErrorText(err));
+    // P2-G: failed request = camera off, so one press reopens (not a no-op "off").
+    window.__jtForceCamOff?.();
   }
 
   function hintCamOff() {
@@ -220,10 +260,24 @@
     document.getElementById("camera-off-stage")?.classList.add("hidden");
   }
 
+  // 完成 / hold auto-finish only. End (#btn-end / #btn-session-done / #btn-end-link),
+  // 换衣, and expand must not clear the flag or apply the idle-camera policy.
+  function onSessionEnd() {
+    if (camAfterSession() === "keep") {
+      window.__jtCamUserOff = true;
+      off();
+    } else {
+      off();
+      on();
+    }
+  }
+
   document.addEventListener("click", (e) => {
-    const sessionEnd = e.target.closest("#btn-end, #btn-end-close, #btn-session-done, #btn-end-link");
-    if (sessionEnd) {
-      clearUserOff();
+    if (e.target.closest("#btn-end-close")) {
+      onSessionEnd();
+      return;
+    }
+    if (e.target.closest("#btn-end, #btn-session-done, #btn-end-link")) {
       off();
       return;
     }
@@ -237,16 +291,30 @@
       hintCamOff();
       return;
     }
-    if (e.target.closest("#btn-modal-try, #btn-cam-toggle")) on();
-    if (e.target.closest(".left-panel.collapsed .explore-card")) on();
-    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip")) off();
+    if (e.target.closest("#btn-cam-toggle")) on();
+    if (e.target.closest("#btn-modal-try, .left-panel.collapsed .explore-card")) {
+      on();
+      // After a failed request, cameraEnabled is false (P2-G). 试穿 must re-arm it
+      // so startLocalCamera can run. Do not arm on #btn-cam-toggle (that would invert toggleCamera).
+      window.__jtArmCamera?.();
+    }
+    if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip")) {
+      off();
+      // Re-open the gate so restoreLocalCamera can bring back the local preview
+      // when the visitor did not turn the camera off. Leave it closed if they did.
+      if (!window.__jtCamUserOff) on();
+    }
   }, true);
   window.jtCamOn = on;
   window.jtCamOff = off;
+  window.__jtCamAfterSession = camAfterSession();
   window.__jtCamGate = {
     markOff,
     clearUserOff,
     on,
+    onSessionEnd,
+    camAfterSession,
+    resolvePortraitTimeout,
     get epoch() { return camEpoch; },
     get currentReq() { return currentReq; },
     cameraIsLive,

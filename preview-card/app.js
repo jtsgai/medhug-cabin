@@ -1,6 +1,8 @@
 // Preview-card loader: fetches the SAME pinned core as the root app.js and patches it in memory.
 // The pinned file on disk / jsDelivr is never modified. Every patch must match, otherwise we fail loudly
 // (a silent miss would e.g. leave the raw 1920x1080 stream wired to Lucy or break asset paths).
+// Idle-camera policy after session end: CAM_AFTER_SESSION in preview-card/cam-gate.js
+// (default "on"; flip that one line, or pass ?camAfterSession=keep|on).
 const SITE = new URL("../", location.href).href; // parent of /preview-card/, e.g. https://host/
 const APP_SRC = "https://cdn.jsdelivr.net/gh/jtsgai/medhug-cabin@424f015159b7b2cca6cacb471eaf6aae439bc1ab/app.js";
 
@@ -192,7 +194,13 @@ code = patch(code, "toggle-camera-off",
 
 code = patch(code, "restore-cam-user-off",
   "async function restoreLocalCamera(){try{const e=$(\"#video-output\");e&&(e.srcObject=null);",
-  "async function restoreLocalCamera(){try{window.__jtCamUserOff=!1;window.jtCamOn?.();const e=$(\"#video-output\");e&&(e.srcObject=null);");
+  "async function restoreLocalCamera(){try{if(window.__jtCamUserOff){cameraEnabled=!1,setCameraOffStage(!0);return}const e=$(\"#video-output\");e&&(e.srcObject=null);");
+code = patch(code, "hold-session-end",
+  "holdTimer=setTimeout(()=>{disconnectApi(),expandPanel(),triedOrder=[],mode=\"interactive\",restoreLocalCamera()}",
+  "holdTimer=setTimeout(()=>{window.__jtCamGate?.onSessionEnd?.();disconnectApi(),expandPanel(),triedOrder=[],mode=\"interactive\",restoreLocalCamera()}");
+code = patch(code, "cam-force-off",
+  "function setCameraOffStage(t){",
+  "window.__jtForceCamOff=function(){cameraEnabled=!1,setCameraOffStage(!0)};window.__jtArmCamera=function(){cameraEnabled=!0,setCameraOffStage(!1)};function setCameraOffStage(t){");
 code = patch(code, "hold-ms",
   "function holdMs(){return 1e3*(layout.end_hold_seconds||18)}",
   "function holdMs(){return Number.isFinite(window.__jtHoldMs)?window.__jtHoldMs:1e3*(layout.end_hold_seconds||18)}");
