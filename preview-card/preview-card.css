@@ -374,15 +374,15 @@ html.is-fullscreen-compare .left-panel .btn-lang,
 html.is-fullscreen-compare .left-panel .zone-label,
 html.is-fullscreen-compare .left-panel .zone-4 { display: none !important; }
 /* Keep current garment name visible in the slim right rail (plan §3.1), including 全屏对照. */
-html.is-fullscreen-compare .left-panel .rail-current {
+html.is-fullscreen-compare .left-panel.collapsed .rail-current {
   display: flex !important;
   flex-direction: column;
   padding: 6px 4px;
   gap: 2px;
   pointer-events: none;
 }
-html.is-fullscreen-compare .left-panel .rail-current-label { font-size: 10px; letter-spacing: 0.1em; }
-html.is-fullscreen-compare .left-panel .rail-current-name { font-size: 12px; line-height: 1.3; word-break: break-word; }
+html.is-fullscreen-compare .left-panel.collapsed .rail-current-label { font-size: 10px; letter-spacing: 0.1em; }
+html.is-fullscreen-compare .left-panel.collapsed .rail-current-name { font-size: 12px; line-height: 1.3; word-break: break-word; }
 html.is-fullscreen-compare .left-panel .cat-tabs { grid-template-columns: 1fr; gap: 6px; }
 html.is-fullscreen-compare .left-panel .cat-tab { min-height: 40px; font-size: 14px; padding: 4px; }
 html.is-fullscreen-compare .left-panel .explore-list { grid-template-columns: 1fr; }

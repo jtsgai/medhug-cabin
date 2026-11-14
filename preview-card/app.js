@@ -5,13 +5,42 @@ const SITE = new URL("../", location.href).href; // parent of /preview-card/, e.
 const APP_SRC = "https://cdn.jsdelivr.net/gh/jtsgai/medhug-cabin@424f015159b7b2cca6cacb471eaf6aae439bc1ab/app.js";
 
 function reasonFromError(err) {
-  const raw = String(err && err.message || err || "").toLowerCase();
-  if (raw.includes("notallowed") || raw.includes("permission") || raw.includes("no camera")) return "摄像头未允许";
+  // Chinese strings stay canonical (toasts / #tryon-reason / tests). English aliases are kept for i18n consistency.
+  const texts = {
+    busy: "摄像头被占用",
+    denied: "摄像头未允许",
+    timeout: "连接超时",
+    credit: "额度不足",
+    unavailable: "服务暂时不可用",
+    fail: "连接失败",
+  };
+  const textsEn = {
+    busy: "Camera is in use",
+    denied: "Camera permission denied",
+    timeout: "Connection timed out",
+    credit: "Insufficient credits",
+    unavailable: "Service temporarily unavailable",
+    fail: "Connection failed",
+  };
+  void textsEn;
+  const parts = [];
+  const add = (e) => {
+    if (!e) return;
+    parts.push(String(e.name || ""), String(e.message || e || ""));
+  };
+  add(err);
+  add(window.__jtLastCamError);
+  const blob = parts.join(" ").toLowerCase();
+  // Busy / in-use before permission: "no camera stream" used to be misread as 摄像头未允许 (P2-B).
+  if (blob.includes("notreadable") || blob.includes("in use") || blob.includes("trackstart")
+    || blob.includes("could not start") || blob.includes("device busy") || blob.includes("occupied")
+    || blob.includes("被占用")) return texts.busy;
+  if (blob.includes("notallowed") || blob.includes("permission") || blob.includes("camera gated")) return texts.denied;
   // Timeout must be classified before "credit": the core's 30s error is "API timeout credit or network".
-  if (raw.includes("timeout") || raw.includes("network") || raw.includes("failed to fetch")) return "连接超时";
-  if (raw.includes("402") || raw.includes("credit") || raw.includes("insufficient") || raw.includes("额度")) return "额度不足";
-  if (raw.includes("服务暂时不可用")) return "服务暂时不可用";
-  return "连接失败";
+  if (blob.includes("timeout") || blob.includes("network") || blob.includes("failed to fetch")) return texts.timeout;
+  if (blob.includes("402") || blob.includes("credit") || blob.includes("insufficient") || blob.includes("额度")) return texts.credit;
+  if (blob.includes("服务暂时不可用") || blob.includes("temporarily unavailable")) return texts.unavailable;
+  return texts.fail;
 }
 window.__jtTryonReasonFrom = reasonFromError;
 window.__jtFreshDecartToken = async () => {
@@ -137,7 +166,7 @@ code = patch(code, "start-local-camera-req",
   'async function startLocalCamera(){const __req=(window.__jtCamStart=(window.__jtCamStart||0)+1);if(localStream){const t=localStream.getVideoTracks?.()||[];if(localStream.active&&t.some(t=>"live"===t.readyState))return showLocalPreview(),localStream;try{localStream.getTracks().forEach(t=>t.stop())}catch(t){}localStream=null}try{const __s=await navigator.mediaDevices.getUserMedia({audio:!1,video:{facingMode:"user",width:{ideal:720},height:{ideal:1280},frameRate:{ideal:30}}});if(__req!==window.__jtCamStart){if(__s&&__s!==localStream){try{__s.getTracks().forEach(t=>t.stop())}catch(_){}}return localStream}return localStream=__s,showLocalPreview(),setStatusKey("status_camera"),localStream}catch(t){return console.warn("[JT] camera",t),__req!==window.__jtCamStart?localStream:(localStream=null,null)}}');
 code = patch(code, "start-camera-gen-guard",
   "try{localStream||await startLocalCamera()}catch(t){}if(enterTryOnUiPreview(t),",
-  "try{localStream||await startLocalCamera()}catch(t){}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled){if(window.__jtConn.isCurrent(__gen)){try{localStream&&localStream.getTracks().forEach(t=>t.stop())}catch(_){}localStream=null;window.jtPortraitIn?.(null);window.__jtConn.invalidate()}return}if(enterTryOnUiPreview(t),");
+  "try{localStream||await startLocalCamera()}catch(t){window.__jtLastCamError=t}if(!window.__jtConn.isCurrent(__gen)||!cameraEnabled){if(window.__jtConn.isCurrent(__gen)){try{localStream&&localStream.getTracks().forEach(t=>t.stop())}catch(_){}localStream=null;window.jtPortraitIn?.(null);window.__jtConn.invalidate()}return}if(!localStream){window.__jtTryonReason?.(window.__jtTryonReasonFrom?.(window.__jtLastCamError)||\"连接失败\");window.__jtConn.invalidate();setStatusKey(\"status_camera\");return}if(enterTryOnUiPreview(t),");
 code = patch(code, "timeout-error-text",
   'n=setTimeout(()=>e(new Error("API timeout credit or network")),3e4)',
   'n=setTimeout(()=>e(new Error("API timeout or network")),window.__jtConnectTimeoutMs||3e4)');
@@ -154,7 +183,7 @@ code = patch(code, "confirm-try-guard",
   "async function confirmTryOn(){if(window.__jtConn.connecting)return;const t=pendingGarmentId;");
 code = patch(code, "toggle-camera-off",
   "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}setCameraOffStage(!0)}else",
-  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtCamGate?.markOff(),window.__jtConn.invalidate(),setStatusKey(\"status_camera\"),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
+  "async function toggleCamera(){if(cameraEnabled){cameraEnabled=!1,window.__jtCamGate?.markOff(!0),window.__jtConn.invalidate(),setStatusKey(\"status_camera\"),window.UsageClient?.stop(\"tryon\"),localStream&&(localStream.getTracks().forEach(t=>t.stop()),localStream=null);const t=$(\"#video-output\");if(t&&(t.srcObject=null),realtimeClient){try{realtimeClient.disconnect()}catch(t){}realtimeClient=null,apiConnected=!1}window.jtPortraitIn?.(null),setCameraOffStage(!0)}else");
 
 window.__jtPreviewPatchReport = report;
 await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));

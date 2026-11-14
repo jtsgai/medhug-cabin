@@ -16,10 +16,39 @@
   let currentReq = 0;
   const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
 
-  function markOff() {
+  function markOff(userOff) {
     camEpoch += 1;
     currentReq = 0;
     window.__jtAllowCam = false;
+    // Only the camera-toggle path is "user turned the camera off".
+    // 换衣 / expand / End also call off() → markOff(), but a later 试穿 should be able to reopen.
+    if (userOff) window.__jtCamUserOff = true;
+  }
+
+  function camErrorText(err) {
+    return (window.__jtTryonReasonFrom && window.__jtTryonReasonFrom(err))
+      || (err && (err.message || String(err)))
+      || "连接失败";
+  }
+
+  // Current request failed: drop stale settings / portrait and show a classified reason.
+  // A stale request must still not touch those globals (P1-5).
+  function failCurrent(err) {
+    window.__jtLastCamError = err;
+    window.__jtCamSettings = null;
+    if (window.__jtRawStream) {
+      try { window.__jtRawStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+      window.__jtRawStream = null;
+    }
+    if (typeof window.jtPortraitIn === "function") window.jtPortraitIn(null);
+    window.__jtTryonReason?.(camErrorText(err));
+  }
+
+  function hintCamOff() {
+    const shown = "请先打开摄像头";
+    window.__jtCamOffHint = shown;
+    window.__jtCamOffHintEn = "Turn the camera on first";
+    window.__jtTryonReason?.(shown);
   }
 
   // A stale/late request may only stop its OWN tracks. It must not clear
@@ -90,7 +119,13 @@
     const video = picked.obs
       ? { deviceId, width: { ideal: 1920 }, height: { ideal: 1080 }, resizeMode: "none", frameRate: { ideal: 30, max: 30 } }
       : { deviceId, width: { ideal: 720 }, height: { ideal: 1280 }, aspectRatio: { ideal: 9 / 16 }, frameRate: { ideal: 30, max: 30 } };
-    const stream = await orig({ audio: false, video });
+    let stream;
+    try {
+      stream = await orig({ audio: false, video });
+    } catch (err) {
+      if (isFresh(reqId, epoch)) failCurrent(err);
+      throw err;
+    }
     if (!isFresh(reqId, epoch)) abortOwn(stream);
     window.__jtRawStream = stream;
     recordTrackSettings(stream);
@@ -102,7 +137,10 @@
     return stream;
   };
 
-  function on() { window.__jtAllowCam = true; }
+  function on() {
+    window.__jtAllowCam = true;
+    window.__jtCamUserOff = false;
+  }
   function off() {
     markOff();
     const canvasStream = window.__jtVton?.getStream?.();
@@ -127,6 +165,14 @@
   }
 
   document.addEventListener("click", (e) => {
+    const wantsTry = e.target.closest("#btn-modal-try, .left-panel.collapsed .explore-card");
+    if (wantsTry && window.__jtCamUserOff) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      hintCamOff();
+      return;
+    }
     if (e.target.closest("#btn-modal-try, #btn-cam-toggle")) on();
     if (e.target.closest(".left-panel.collapsed .explore-card")) on();
     if (e.target.closest("#btn-change, #btn-return-dot, #btn-expand-strip, #btn-end, #btn-end-close, #btn-session-done")) off();

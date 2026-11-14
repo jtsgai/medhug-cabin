@@ -20,6 +20,7 @@ let outStream = null;
 let layout = null;
 let layoutKey = "";
 let fps = 20;
+let inputGen = 0;
 
 function readInitialPreset() {
   const q = params.get("obs");
@@ -160,9 +161,11 @@ function streamIsLive(s) {
 }
 
 async function fromStream(stream) {
+  const g = ++inputGen;
   if (!stream) {
     stopLoop();
     if (srcVideo) srcVideo.srcObject = null;
+    if (g !== inputGen) return null;
     window.__jtVtonIn = null;
     window.__jtCamSettings = null;
     clearCanvas();
@@ -173,6 +176,8 @@ async function fromStream(stream) {
   fps = currentFps();
   srcVideo.srcObject = stream;
   await srcVideo.play().catch(() => {});
+  // Camera off / End / a newer feed during play() must not revive the canvas stream (P2-A).
+  if (g !== inputGen || srcVideo.srcObject !== stream) return null;
   stopLoop();
   refreshLayout();
   drawFrame();
@@ -221,6 +226,8 @@ window.__jtVton = {
   // Test hook: feed a synthetic MediaStream (e.g. canvas.captureStream()) through the real pipeline.
   feed: fromStream,
   drawNow: drawFrame,
+  getInputGen: () => inputGen,
+  isDrawing: () => rafId !== 0,
 };
 
 publish(computeVtonLayout(0, 0, { obsPresetEnabled, fps: currentFps() }));
